@@ -6,7 +6,10 @@ import 'package:quiz_panel/screens/auth/approval_pending_screen.dart';
 import 'package:quiz_panel/screens/auth/login_screen.dart';
 import 'package:quiz_panel/screens/auth/register_screen.dart';
 import 'package:quiz_panel/screens/splash/splash_screen.dart';
+import 'package:quiz_panel/screens/student/quiz_attempt_screen.dart';
+import 'package:quiz_panel/screens/student/quiz_start_screen.dart';
 import 'package:quiz_panel/screens/student/student_home_screen.dart';
+import 'package:quiz_panel/screens/student/student_quiz_list_screen.dart';
 import 'package:quiz_panel/screens/super_admin/super_admin_dashboard.dart';
 import 'package:quiz_panel/screens/teacher/question_management_screen.dart'; // New
 import 'package:quiz_panel/screens/teacher/quiz_management_screen.dart';
@@ -26,6 +29,9 @@ class AppRoutePaths {
 
   // Student paths
   static const String studentDashboard = '/student/dashboard';
+  static const String studentQuizList = '/student/subjects/:subjectId';
+  static const String studentQuizStart = '/student/quiz/:quizId/start';
+  static const String studentQuizAttempt = '/student/quiz/attempt/:quizId';
 
   // Admin paths
   static const String adminDashboard = '/admin/dashboard';
@@ -46,6 +52,10 @@ class AppRouteNames {
 
   // Student names
   static const String studentDashboard = 'studentDashboard';
+  static const String studentQuizList = 'studentQuizList';
+  static const String studentQuizStart = 'studentQuizStart';
+  static const String studentQuizAttempt = 'studentQuizAttempt';
+
 
   // Admin names
   static const String adminDashboard = 'adminDashboard';
@@ -117,6 +127,39 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.studentDashboard,
     name: AppRouteNames.studentDashboard,
     builder: (context, state) => const StudentHomeScreen(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.studentQuizList,
+    name: AppRouteNames.studentQuizList,
+    builder: (context, state) {
+      final SubjectModel? subject = state.extra as SubjectModel?;
+      if (subject == null) {
+        return const StudentHomeScreen();
+      }
+      return  StudentQuizListScreen(subject: subject);
+    },
+  ),
+  GoRoute(
+    path: AppRoutePaths.studentQuizStart,
+    name: AppRouteNames.studentQuizStart,
+    builder: (context, state) {
+      final QuizModel? quiz = state.extra as QuizModel?;
+      if (quiz == null) {
+        return const StudentHomeScreen();
+      }
+      return QuizStartScreen(quiz: quiz);
+    },
+  ),
+  GoRoute(
+    path: AppRoutePaths.studentQuizAttempt,
+    name: AppRouteNames.studentQuizAttempt,
+    builder: (context, state) {
+      final QuizModel? quiz = state.extra as QuizModel?;
+      if (quiz == null) {
+        return const StudentHomeScreen(); // safety fallback
+      }
+      return QuizAttemptScreen(quiz: quiz);
+    },
   ),
 
   // --- ADMIN ROUTES ---

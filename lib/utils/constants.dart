@@ -17,6 +17,13 @@ class UserStatus {
   static const String rejected = 'rejected';
 }
 
+// Content Statuses (for Subjects and Quizzes)
+class ContentStatus {
+  static const String published = 'published';
+  static const String draft = 'draft';
+  static const String archived = 'archived'; // Future use ke liye
+}
+
 // Default Values
 class DefaultValues {
   static const String defaultRole = UserRoles.student;

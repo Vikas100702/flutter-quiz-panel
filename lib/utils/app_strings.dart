@@ -30,6 +30,8 @@ class AppStrings {
   static const String userDataNotFound = 'No user data found in database. Please contact support.';
   static const String emailInUseError = 'This email is already in use by another account.';
   static const String weakPasswordError = 'The password provided is too weak.';
+  static const String firestoreIndexError = 'Error loading data. If this is your first time, Firestore may need an index. Please check the browser console (F12 or Ctrl+Shift+I) for a URL link to create the index.';
+
 
   // --- Dashboard Titles ---
   static const String studentDashboardTitle = 'Student Dashboard';
@@ -57,7 +59,7 @@ class AppStrings {
   static const String userApproved = 'User Approved Successfully';
   static const String userRejected = 'User Rejected Successfully';
 
-  // --- Teacher Dashboard (NEW SECTION) ---
+  // --- Teacher Dashboard ---
   static const String createSubjectTitle = 'Create New Subject';
   static const String subjectNameLabel = 'Subject Name (e.g., General Knowledge)';
   static const String subjectDescLabel = 'Subject Description (Optional)';
@@ -65,6 +67,22 @@ class AppStrings {
   static const String subjectCreatedSuccess = 'Subject Created Successfully';
   static const String mySubjectsTitle = 'My Subjects';
   static const String noSubjectsFound = 'You have not created any subjects yet. Click the button above to get started.';
+  static const String subjectStatusLabel = 'Status:';
+  static const String subjectStatusDraft = 'Draft';
+  static const String subjectStatusPublished = 'Published';
+  static const String publishButton = 'Publish';
+  static const String unpublishButton = 'Unpublish';
+  static const String subjectStatusUpdated = 'Subject status updated!';
+  static const String publishSubject = 'Publish Subject';
+  static const String publishQuiz = 'Publish Quiz';
+  static const String subjectPublished = 'Subject Published';
+  static const String subjectUnpublished = 'Subject Unpublished';
+  static const String quizPublished = 'Quiz Published';
+  static const String quizUnpublished = 'Quiz Unpublished';
+  static const String statusLabel = 'Status:';
+  static const String statusDraft = 'Draft';
+  static const String statusPublished = 'Published';
+
 
   // --- Quiz Management ---
   static const String manageQuizzesTitle = 'Manage Quizzes';
@@ -78,6 +96,11 @@ class AppStrings {
   static const String totalQuestionsLabel = 'Total Questions';
   static const String minutesLabel = 'min';
   static const String addQuestionsButton = 'Add Questions';
+
+  // --- Quiz Start Screen ---
+  static const String quizInstructions = 'Quiz Instructions';
+  static const String marksPerQuestionLabel = 'Marks Per Question';
+  static const String startQuizButton = 'Start Quiz';
 
   // --- Question Management ---
   static const String manageQuestionsTitle = 'Manage Questions';
@@ -94,6 +117,24 @@ class AppStrings {
   static const String noQuestionsFound = 'You have not added any questions to this quiz yet.';
   static const String questionMissing = 'Question text cannot be empty.';
   static const String optionsMissing = 'All four options must be filled.';
+
+  // --- Student Flow ---
+  static const String studentHomeTitle = 'Available Subjects';
+  static const String studentWelcome = 'Welcome,';
+  static const String noSubjectsAvailable = 'There are no subjects available to take a quiz on at this time.';
+  static const String quizzesForSubjectTitle = 'Available Quizzes for';
+  static const String noQuizzesAvailable = 'There are no quizzes available for this subject yet.';
+  static const String quizRulesTitle = 'Quiz Rules';
+  static const String quizRulesDetails = 'This quiz contains %d questions and must be completed in %d minutes.'; // %d are placeholders
+
+  // --- Student Flow (Quiz Attempt) ---
+  static const String previousButton = 'Previous';
+  static const String nextButton = 'Next';
+  static const String submitButton = 'Submit';
+  static const String submitQuizTitle = 'Submit Quiz?';
+  static const String submitQuizMessage = 'Are you sure you want to submit your quiz?';
+  static const String cancelButton = 'Cancel';
+
 
 
   // --- Buttons ---

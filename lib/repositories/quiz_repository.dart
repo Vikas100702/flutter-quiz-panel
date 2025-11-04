@@ -1,13 +1,10 @@
-// lib/repositories/quiz_repository.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// 1. Import the new QuestionModel
 import 'package:quiz_panel/models/question_model.dart';
 import 'package:quiz_panel/models/quiz_model.dart';
 import 'package:quiz_panel/models/subject_model.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
-// 2. 'constants.dart' import removed (it was unused)
+import 'package:quiz_panel/utils/constants.dart';
 
 // --- 1. Provider for the Repository ---
 final quizRepositoryProvider = Provider<QuizRepository>((ref) {
@@ -17,6 +14,7 @@ final quizRepositoryProvider = Provider<QuizRepository>((ref) {
 // --- 2. The Repository Class ---
 class QuizRepository {
   final FirebaseFirestore _db;
+
   QuizRepository(this._db);
 
   // --- 3. Subject Functions ---
@@ -27,11 +25,13 @@ class QuizRepository {
   }) async {
     try {
       final newSubject = SubjectModel(
-        subjectId: '', // Will be set by Firestore
+        subjectId: '',
+        // Will be set by Firestore
         name: name,
         description: description,
         createdBy: teacherUid,
         createdAt: Timestamp.now(),
+        status: ContentStatus.draft, // Default status 'draft'
       );
       // 'add' creates a new document with an auto-generated ID
       await _db.collection('subjects').add(newSubject.toMap());
@@ -42,7 +42,8 @@ class QuizRepository {
     }
   }
 
-  Stream<List<SubjectModel>> getSubjects(String teacherUid) {
+  // Function for TEACHER dashboard
+  Stream<List<SubjectModel>> getSubjectsForTeacher(String teacherUid) {
     // This query requires the composite index we created
     return _db
         .collection('subjects')
@@ -56,28 +57,60 @@ class QuizRepository {
     });
   }
 
-  // --- 4. Quiz Functions (FIXED) ---
+  // Function for STUDENT dashboard
+  Stream<List<SubjectModel>> getAllPublishedSubjects() {
+    try {
+      return _db
+          .collection('subjects')
+          .where('status', isEqualTo: ContentStatus.published)
+          .orderBy('name', descending: false) // Alphabetical
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs
+            .map((doc) => SubjectModel.fromFirestore(doc))
+            .toList();
+      });
+    } catch (e) {
+      return Stream.value([]);
+    }
+  }
+
+  // Function for TEACHER to publish a subject
+  Future<void> updateSubjectStatus({
+    required String subjectId,
+    required String newStatus,
+  }) async {
+    try {
+      final docRef = _db.collection('subjects').doc(subjectId);
+      await docRef.update({'status': newStatus});
+    } on FirebaseException catch (e) {
+      throw e.message ?? AppStrings.genericError;
+    } catch (e) {
+      throw AppStrings.genericError;
+    }
+  }
+
+  // --- 4. Quiz Functions ---
   Future<void> createQuiz({
     required String title,
     required String subjectId,
     required int duration,
     required int totalQuestions,
-    // 3. --- FIX: Add missing parameters ---
     required String teacherUid,
     required int marksPerQuestion,
   }) async {
     try {
       final newQuiz = QuizModel(
-        quizId: '', // Will be set by Firestore
+        quizId: '',
+        // Will be set by Firestore
         subjectId: subjectId,
         title: title,
         durationMin: duration,
         totalQuestions: totalQuestions,
         createdAt: Timestamp.now(),
-        // 4. --- FIX: Pass the missing parameters ---
         createdBy: teacherUid,
         marksPerQuestion: marksPerQuestion,
-        status: 'draft', // New quizzes are always 'draft' by default
+        status: ContentStatus.draft, // Default status 'draft'
       );
       await _db.collection('quizzes').add(newQuiz.toMap());
     } on FirebaseException catch (e) {
@@ -87,6 +120,7 @@ class QuizRepository {
     }
   }
 
+  // Function for TEACHER quiz management screen
   Stream<List<QuizModel>> getQuizzesForSubject(String subjectId) {
     // This query requires the composite index we created
     return _db
@@ -101,12 +135,24 @@ class QuizRepository {
     });
   }
 
-  // --- 5. NEW QUESTION FUNCTIONS ---
+  // Function for STUDENT quiz list screen
+  Stream<List<QuizModel>> getPublishedQuizzesForSubject(String subjectId) {
+    return _db
+        .collection('quizzes')
+        .where('subjectId', isEqualTo: subjectId)
+        .where('status', isEqualTo: ContentStatus.published)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => QuizModel.fromFirestore(doc))
+          .toList();
+    });
+  }
 
-  // Gets a live stream of all questions for a specific quiz
+  // --- 5. Question Functions ---
+
   Stream<List<QuestionModel>> getQuestionsForQuiz(String quizId) {
-    // This is a simple query on a sub-collection.
-    // It does *not* require a custom index.
     return _db
         .collection('quizzes')
         .doc(quizId)
@@ -119,14 +165,11 @@ class QuizRepository {
     });
   }
 
-  // Adds a new question to a quiz
   Future<void> addQuestionToQuiz({
     required String quizId,
     required QuestionModel question,
   }) async {
     try {
-      // Go into the 'questions' sub-collection of the specific quiz
-      // and add a new document
       await _db
           .collection('quizzes')
           .doc(quizId)
@@ -139,4 +182,3 @@ class QuizRepository {
     }
   }
 }
-

@@ -7,6 +7,7 @@ import 'package:quiz_panel/providers/subject_provider.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/repositories/quiz_repository.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
+import 'package:quiz_panel/utils/constants.dart';
 
 class TeacherDashboard extends ConsumerStatefulWidget {
   const TeacherDashboard({super.key});
@@ -29,73 +30,51 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
 
   // --- Logic to Create a New Subject ---
   Future<void> _createSubject() async {
-    // Get the currently logged-in teacher's UID
     final teacherUid = ref.read(userDataProvider).value?.uid;
     if (teacherUid == null || teacherUid.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error: Could not find teacher ID. Please re-login.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      _showError(AppStrings.genericError); // Show generic error
       return;
     }
 
     if (_nameController.text.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Subject Name cannot be empty.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      _showError('Subject Name cannot be empty.'); // This should be in AppStrings
       return;
     }
 
-    setState(() {
-      _isCreating = true;
-    });
+    setState(() { _isCreating = true; });
 
     try {
-      // Call the 'Chef' (QuizRepository)
       await ref.read(quizRepositoryProvider).createSubject(
         name: _nameController.text.trim(),
         description: _descController.text.trim(),
         teacherUid: teacherUid,
       );
 
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(AppStrings.subjectCreatedSuccess),
-            backgroundColor: Colors.green,
-          ),
-        );
-        _nameController.clear();
-        _descController.clear();
-        FocusScope.of(context).unfocus();
-      }
+      _showError(AppStrings.subjectCreatedSuccess, isError: false);
+      _nameController.clear();
+      _descController.clear();
+      if (mounted) FocusScope.of(context).unfocus();
+
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      _showError(e.toString());
     } finally {
       if (mounted) {
-        setState(() {
-          _isCreating = false;
-        });
+        setState(() { _isCreating = false; });
       }
     }
   }
+
+  // Helper to show SnackBar
+  void _showError(String message, {bool isError = true}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
 
   // --- Main Build Method ---
   @override
@@ -114,27 +93,22 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
           ),
         ],
       ),
-      // We use SingleChildScrollView to make the page scrollable
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // --- 1. The "Create Subject" Form ---
               _buildCreateSubjectForm(context),
-
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 24),
-
-              // --- 2. The "My Subjects" List ---
               Text(
                 AppStrings.mySubjectsTitle,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 16),
-              _buildSubjectsList(context),
+              _buildSubjectsList(context, ref), // Pass ref
             ],
           ),
         ),
@@ -191,7 +165,157 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
   }
 
   // --- Helper Widget: Subject List ---
-  Widget _buildSubjectsList(BuildContext context) {
+  //    (We pass 'ref' to call repository functions)
+  /*Widget _buildSubjectsList(BuildContext context, WidgetRef ref) {
+    final subjectsAsync = ref.watch(subjectsProvider);
+
+    return subjectsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) {
+        // This is where the Firestore Index error appeared
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              '${AppStrings.firestoreIndexError}\n\nError: ${error.toString()}',
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      },
+      data: (subjects) {
+        if (subjects.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(AppStrings.noSubjectsFound),
+            ),
+          );
+        }
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            int crossAxisCount = 1;
+            if (constraints.maxWidth > 1200) {
+              crossAxisCount = 3;
+            }
+            else if (constraints.maxWidth > 800) {
+              crossAxisCount = 2;
+            }
+
+            return GridView.builder(
+              itemCount: subjects.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: 2.8, // Make cards a bit wider
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemBuilder: (context, index) {
+                final subject = subjects[index];
+                // Check if the subject is published
+                final bool isPublished = subject.status == 'published';
+
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // --- 1. CLICKABLE AREA (FOR NAVIGATION) ---
+                        InkWell(
+                          onTap: () {
+                            context.pushNamed(
+                              AppRouteNames.quizManagement,
+                              pathParameters: {'subjectId': subject.subjectId},
+                              extra: subject,
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                subject.name,
+                                style: Theme.of(context).textTheme.titleLarge,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (subject.description != null && subject.description!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Text(
+                                    subject.description!,
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+
+                        // --- 2. NEW WIDGETS (STATUS & BUTTON) ---
+                        const Spacer(), // Pushes to the bottom
+                        const Divider(),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Status Text
+                              Text(
+                                '${AppStrings.subjectStatusLabel} ${isPublished ? AppStrings.subjectStatusPublished : AppStrings.subjectStatusDraft}',
+                                style: TextStyle(
+                                  color: isPublished ? Colors.green[700] : Colors.orange[700],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+
+                              // Publish/Unpublish Button
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: isPublished ? Colors.red : Colors.green,
+                                ),
+                                child: Text(isPublished ? AppStrings.unpublishButton : AppStrings.publishButton),
+                                onPressed: () async {
+                                  // This is the toggle logic
+                                  final newStatus = isPublished ? 'draft' : 'published';
+                                  try {
+                                    // Call the 'Chef'
+                                    await ref.read(quizRepositoryProvider).updateSubjectStatus(
+                                      subjectId: subject.subjectId,
+                                      newStatus: newStatus,
+                                    );
+                                    if (mounted) {
+                                      _showError(AppStrings.subjectStatusUpdated, isError: false);
+                                    }
+                                  } catch (e) {
+                                    _showError(e.toString());
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }*/
+  Widget _buildSubjectsList(BuildContext context, WidgetRef ref) {
     // 2. Watch the 'Manager' (subjectsProvider)
     final subjectsAsync = ref.watch(subjectsProvider);
 
@@ -207,7 +331,7 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              'Error loading subjects.\n\n${error.toString()}',
+              '${AppStrings.firestoreIndexError}\n\nError: ${error.toString()}',
               style: const TextStyle(color: Colors.red),
               textAlign: TextAlign.center,
             ),
@@ -231,7 +355,6 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
         // We use LayoutBuilder for a responsive grid
         return LayoutBuilder(
           builder: (context, constraints) {
-            // Determine cross axis count based on available width
             int crossAxisCount = 1; // Default for mobile
             if (constraints.maxWidth > 1200) {
               crossAxisCount = 4;
@@ -247,67 +370,99 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
-                childAspectRatio: 2.5, // Widen the cards
+                childAspectRatio: 2.0,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
               itemBuilder: (context, index) {
                 final subject = subjects[index];
+                // Check if subject is published
+                final bool isPublished =
+                    subject.status == ContentStatus.published;
 
-                // --- 4. THIS IS THE UPDATE ---
-                // We wrap the Card in InkWell to make it clickable
-                return InkWell(
-                  onTap: () {
-                    // 5. Navigate using GoRouter
-                    context.pushNamed(
-                      AppRouteNames.quizManagement, // The 'name' of the route
-
-                      // --- FIX (from Step 12.8) ---
-                      // The parameter is 'pathParameters', not 'params'
-                      pathParameters: {'subjectId': subject.subjectId},
-                      // --- END FIX ---
-
-                      // We pass the *entire* subject object to the screen
-                      extra: subject,
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(12),
-                  child: Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            subject.name,
-                            style: Theme.of(context).textTheme.titleLarge,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-
-                          // --- FIX (from Step 12.9) ---
-                          // Check if description is not null AND not empty
-                          if (subject.description != null &&
-                              subject.description!.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
-                              child: Text(
-                                // We are safe to use '!' because of the check above
-                                subject.description!,
-                                style: Theme.of(context).textTheme.bodySmall,
-                                maxLines: 2,
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            context.pushNamed(
+                              AppRouteNames.quizManagement,
+                              pathParameters: {'subjectId': subject.subjectId},
+                              extra: subject,
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                subject.name,
+                                style: Theme.of(context).textTheme.titleLarge,
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                          // --- END FIX ---
+                              if (subject.description != null &&
+                                  subject.description!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Text(
+                                    subject.description!,
+                                    style:
+                                    Theme.of(context).textTheme.bodySmall,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
 
-                        ],
-                      ),
+                        const Spacer(),
+                        const Divider(),
+                        
+                        SwitchListTile(
+                          title: Text(
+                            isPublished
+                                ? AppStrings.statusPublished
+                                : AppStrings.statusDraft,
+                            style: TextStyle(
+                              color: isPublished ? Colors.green : Colors.orange,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: const Text(AppStrings.publishSubject),
+                          value: isPublished,
+                          onChanged: (newValue) {
+                            final newStatus = newValue
+                                ? ContentStatus.published
+                                : ContentStatus.draft;
+                            ref
+                                .read(quizRepositoryProvider)
+                                .updateSubjectStatus(
+                              subjectId: subject.subjectId,
+                              newStatus: newStatus,
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  newValue
+                                      ? AppStrings.subjectPublished
+                                      : AppStrings.subjectUnpublished,
+                                ),
+                                backgroundColor:
+                                newValue ? Colors.green : Colors.orange,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 );

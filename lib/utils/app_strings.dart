@@ -79,6 +79,22 @@ class AppStrings {
   static const String minutesLabel = 'min';
   static const String addQuestionsButton = 'Add Questions';
 
+  // --- Question Management ---
+  static const String manageQuestionsTitle = 'Manage Questions';
+  static const String createQuestionTitle = 'Add New Question';
+  static const String questionLabel = 'Question Text';
+  static const String option1Label = 'Option 1';
+  static const String option2Label = 'Option 2';
+  static const String option3Label = 'Option 3';
+  static const String option4Label = 'Option 4';
+  static const String correctAnswerLabel = 'Correct Answer';
+  static const String addQuestionButton = 'Add Question';
+  static const String questionAddedSuccess = 'Question Added Successfully';
+  static const String allQuestionsTitle = 'All Questions';
+  static const String noQuestionsFound = 'You have not added any questions to this quiz yet.';
+  static const String questionMissing = 'Question text cannot be empty.';
+  static const String optionsMissing = 'All four options must be filled.';
+
 
   // --- Buttons ---
   static const String logoutButton = 'Logout';

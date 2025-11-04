@@ -1,0 +1,101 @@
+rules_version = '2';
+
+service cloud.firestore {
+    match /databases/{database}/documents {
+
+        // ----------------- Helper Functions -----------------
+        function isSignedIn() {
+            return request.auth != null;
+        }
+
+        function userDoc() {
+            return get(/databases/$(database)/documents/users/$(request.auth.uid));
+        }
+
+        function hasUserDoc() {
+            return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+        }
+
+        function isRole(role) {
+            return isSignedIn() &&
+                    hasUserDoc() &&
+                    userDoc().data.role == role;
+        }
+
+        function isApproved() {
+            return isSignedIn() &&
+                    hasUserDoc() &&
+                    userDoc().data.status == 'approved';
+        }
+
+        function isSuperAdmin() {
+            return isRole('super_admin') && isApproved();
+        }
+
+        function isAdmin() {
+            return isRole('admin') && isApproved();
+        }
+
+        function isTeacher() {
+            return isRole('teacher') && isApproved();
+        }
+
+        function isStudent() {
+            return isRole('student') && isApproved();
+        }
+
+        // ----------------- Collection Rules -----------------
+
+        // users
+        match /users/{userId} {
+            allow read, update, delete: if isSuperAdmin() ||
+                    (isAdmin() && (resource.data.role == 'teacher' || resource.data.role == 'student')) ||
+                    (isSignedIn() && request.auth.uid == userId);
+
+            allow create: if
+                    (
+                        (request.resource.data.role == 'student' || request.resource.data.role == 'teacher') &&
+                            request.auth.uid == userId
+                    ) ||
+                        isSuperAdmin();
+        }
+
+        // subjects
+        match /subjects/{subjectId} {
+            allow read: if isSignedIn() && isApproved();
+            allow create, update, delete: if isTeacher() || isAdmin() || isSuperAdmin();
+        }
+
+        // quizzes and nested questions
+        match /quizzes/{quizId} {
+            allow read: if isSignedIn() && isApproved();
+            allow create, update, delete: if isTeacher() || isAdmin() || isSuperAdmin();
+
+            match /questions/{questionId} {
+                allow read: if isStudent() || isTeacher() || isAdmin() || isSuperAdmin();
+                allow create, update, delete: if isTeacher() || isAdmin() || isSuperAdmin();
+            }
+        }
+
+        // attempts
+        match /attempts/{attemptId} {
+            allow create: if isStudent();
+            allow read: if (isStudent() && resource.data.studentId == request.auth.uid) ||
+                    isSuperAdmin() || isAdmin();
+        }
+
+        // teacher_profiles
+        match /teacher_profiles/{userId} {
+            allow create: if request.auth.uid == userId;
+            allow read, update: if isSuperAdmin() || isAdmin() ||
+                    (isTeacher() && request.auth.uid == userId);
+        }
+
+        // student_profiles
+        match /student_profiles/{userId} {
+            allow create: if request.auth.uid == userId;
+            allow read, update: if isSuperAdmin() || isAdmin() ||
+                    (isStudent() && request.auth.uid == userId);
+        }
+    }
+}

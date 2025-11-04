@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -274,3 +275,298 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
   }
 }
 
+*/
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:quiz_panel/models/quiz_model.dart'; // QuizModel import
+import 'package:quiz_panel/utils/app_routes.dart';
+import 'package:quiz_panel/models/subject_model.dart';
+import 'package:quiz_panel/providers/quiz_provider.dart';
+import 'package:quiz_panel/providers/user_data_provider.dart';
+import 'package:quiz_panel/repositories/quiz_repository.dart';
+import 'package:quiz_panel/utils/app_strings.dart';
+import 'package:quiz_panel/utils/constants.dart'; // ContentStatus ke liye import
+
+class QuizManagementScreen extends ConsumerStatefulWidget {
+  final SubjectModel subject;
+
+  const QuizManagementScreen({
+    super.key,
+    required this.subject,
+  });
+
+  @override
+  ConsumerState<QuizManagementScreen> createState() =>
+      _QuizManagementScreenState();
+}
+
+class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
+  final _titleController = TextEditingController();
+  final _durationController = TextEditingController(text: '25');
+  final _questionsController = TextEditingController(text: '25');
+  bool _isCreating = false;
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _durationController.dispose();
+    _questionsController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _createQuiz() async {
+    final teacherUid = ref.read(userDataProvider).value?.uid;
+    if (teacherUid == null || teacherUid.isEmpty) {
+      _showError('Error: Could not find teacher ID. Please re-login.');
+      return;
+    }
+    if (_titleController.text.isEmpty) {
+      _showError('Quiz Title cannot be empty.');
+      return;
+    }
+    final duration = int.tryParse(_durationController.text);
+    final totalQuestions = int.tryParse(_questionsController.text);
+
+    if (duration == null || duration <= 0) {
+      _showError('Please enter a valid duration.');
+      return;
+    }
+    if (totalQuestions == null || totalQuestions <= 0) {
+      _showError('Please enter a valid number of questions.');
+      return;
+    }
+
+    setState(() { _isCreating = true; });
+
+    try {
+      await ref.read(quizRepositoryProvider).createQuiz(
+        title: _titleController.text.trim(),
+        subjectId: widget.subject.subjectId,
+        duration: duration,
+        totalQuestions: totalQuestions,
+        teacherUid: teacherUid,
+        marksPerQuestion: 4,
+      );
+
+      if (mounted) {
+        _showError(AppStrings.quizCreatedSuccess, isError: false);
+        _titleController.clear();
+        FocusScope.of(context).unfocus();
+      }
+    } catch (e) {
+      _showError(e.toString());
+    } finally {
+      if (mounted) {
+        setState(() { _isCreating = false; });
+      }
+    }
+  }
+
+  void _showError(String message, {bool isError = true}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.subject.name),
+        backgroundColor: Colors.blue[700],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildCreateQuizForm(context),
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 24),
+              Text(
+                AppStrings.myQuizzesTitle,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              _buildQuizzesList(context),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreateQuizForm(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              AppStrings.createQuizTitle,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                labelText: AppStrings.quizTitleLabel,
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.title),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _durationController,
+                    decoration: const InputDecoration(
+                      labelText: AppStrings.quizDurationLabel,
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.timer),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    controller: _questionsController,
+                    decoration: const InputDecoration(
+                      labelText: AppStrings.totalQuestionsLabel,
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.question_mark),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              onPressed: _isCreating ? null : _createQuiz,
+              child: _isCreating
+                  ? const CircularProgressIndicator()
+                  : const Text(AppStrings.createQuizButton),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- WIDGET UPDATE (Yahaan changes hain) ---
+  Widget _buildQuizzesList(BuildContext context) {
+    // Hum 'quizzesProvider' (Teacher waala) watch kar rahe hain
+    final quizzesAsync = ref.watch(quizzesProvider(widget.subject.subjectId));
+
+    return quizzesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Error loading quizzes.\n\n${error.toString()}',
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      },
+      data: (quizzes) {
+        if (quizzes.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(AppStrings.noQuizzesFound),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: quizzes.length,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemBuilder: (context, index) {
+            final quiz = quizzes[index];
+            final bool isPublished = quiz.status == ContentStatus.published;
+
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8.0),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                title: Text(quiz.title),
+                subtitle: Text(
+                  '${quiz.totalQuestions} ${AppStrings.totalQuestionsLabel} | ${quiz.durationMin} ${AppStrings.minutesLabel}',
+                ),
+
+                // --- YEH HAI NAYA LOGIC ---
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Publish Switch
+                    Switch(
+                      value: isPublished,
+                      onChanged: (newValue) {
+                        final newStatus = newValue
+                            ? ContentStatus.published
+                            : ContentStatus.draft;
+
+                        // Repository function ko call karein
+                        ref.read(quizRepositoryProvider).updateQuizStatus(
+                          quizId: quiz.quizId,
+                          newStatus: newStatus,
+                        );
+
+                        // User ko feedback dein
+                        _showError(
+                          newValue
+                              ? AppStrings.quizPublished
+                              : AppStrings.quizUnpublished,
+                          isError: false,
+                        );
+                      },
+                    ),
+                    // Navigate to Questions Button
+                    IconButton(
+                      icon: const Icon(Icons.arrow_forward_ios),
+                      tooltip: AppStrings.addQuestionsButton,
+                      onPressed: () {
+                        // Question management screen par navigate karein
+                        context.pushNamed(
+                          AppRouteNames.questionManagement,
+                          pathParameters: {'quizId': quiz.quizId},
+                          extra: quiz,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                // --- END NAYA LOGIC ---
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}

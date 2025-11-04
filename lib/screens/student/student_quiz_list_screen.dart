@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// --- ZAROORI IMPORTS ---
+import 'package:go_router/go_router.dart';
+import 'package:quiz_panel/utils/app_routes.dart';
+import 'package:quiz_panel/models/quiz_model.dart'; // QuizModel import kiya
+// -----------------------
+
 import 'package:quiz_panel/models/subject_model.dart';
 import 'package:quiz_panel/providers/quiz_provider.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
@@ -14,6 +20,7 @@ class StudentQuizListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // publishedQuizzesProvider ko watch kar rahe hain
     final quizzesAsync = ref.watch(publishedQuizzesProvider(subject.subjectId));
 
     return Scaffold(
@@ -24,7 +31,7 @@ class StudentQuizListScreen extends ConsumerWidget {
         // 2. Loading State
         loading: () => const Center(child: CircularProgressIndicator()),
 
-        // 3. Error State
+        // 3. Error State (Index missing error handling)
         error: (error, stackTrace) {
           return Center(
             child: Padding(
@@ -40,7 +47,7 @@ class StudentQuizListScreen extends ConsumerWidget {
 
         // 4. Data State
         data: (quizzes) {
-          // If quiz is not published
+          // Agar koi quiz published nahi hai
           if (quizzes.isEmpty) {
             return const Center(
               child: Padding(
@@ -65,13 +72,17 @@ class StudentQuizListScreen extends ConsumerWidget {
                   title: Text(quiz.title,
                       style: Theme.of(context).textTheme.titleMedium),
                   subtitle: Text(
-                    '${quiz.totalQuestions} Questions | ${quiz.durationMin} Minutes',
+                    // AppStrings se minutes label ka istemaal karein
+                    '${quiz.totalQuestions} Questions | ${quiz.durationMin} ${AppStrings.minutesLabel}',
                   ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
-                    // TODO: (Step 5)
-                    // Here we navigate to the 'Quiz Attempt Screen'
-                    // context.pushNamed(AppRouteNames.startQuiz, extra: quiz);
+                    // --- FINAL NAVIGATION LOGIC ---
+                    context.pushNamed(
+                      AppRouteNames.studentQuizStart, // QuizStartScreen ka route name
+                      pathParameters: {'quizId': quiz.quizId},
+                      extra: quiz, // Poora quiz object pass karein
+                    );
                   },
                 ),
               );

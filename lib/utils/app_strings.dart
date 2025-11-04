@@ -135,6 +135,19 @@ class AppStrings {
   static const String submitQuizMessage = 'Are you sure you want to submit your quiz?';
   static const String cancelButton = 'Cancel';
 
+  // --- Quiz Result Screen ---
+  static const String resultsTitle = 'Results';
+  static const String finalScore = 'Final Score';
+  static const String scoreBreakdown = 'Score Breakdown';
+  static const String totalQuestions = 'Total Questions';
+  static const String correctAnswers = 'Correct Answers';
+  static const String incorrectAnswers = 'Incorrect Answers';
+  static const String unansweredQuestions = 'Unanswered';
+  static const String reviewYourAnswers = 'Review Your Answers';
+  static const String backToDashboardButton = 'Back to Dashboard';
+  static const String congratulations = 'Congratulations!';
+  static const String betterLuckNextTime = 'Try Again!';
+
 
 
   // --- Buttons ---

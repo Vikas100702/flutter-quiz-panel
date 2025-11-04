@@ -7,6 +7,7 @@ import 'package:quiz_panel/screens/auth/login_screen.dart';
 import 'package:quiz_panel/screens/auth/register_screen.dart';
 import 'package:quiz_panel/screens/splash/splash_screen.dart';
 import 'package:quiz_panel/screens/student/quiz_attempt_screen.dart';
+import 'package:quiz_panel/screens/student/quiz_result_screen.dart';
 import 'package:quiz_panel/screens/student/quiz_start_screen.dart';
 import 'package:quiz_panel/screens/student/student_home_screen.dart';
 import 'package:quiz_panel/screens/student/student_quiz_list_screen.dart';
@@ -32,6 +33,7 @@ class AppRoutePaths {
   static const String studentQuizList = '/student/subjects/:subjectId';
   static const String studentQuizStart = '/student/quiz/:quizId/start';
   static const String studentQuizAttempt = '/student/quiz/attempt/:quizId';
+  static const String studentQuizResult = '/student/quizzes/:quizId/result';
 
   // Admin paths
   static const String adminDashboard = '/admin/dashboard';
@@ -55,6 +57,7 @@ class AppRouteNames {
   static const String studentQuizList = 'studentQuizList';
   static const String studentQuizStart = 'studentQuizStart';
   static const String studentQuizAttempt = 'studentQuizAttempt';
+  static const String studentQuizResult = 'studentQuizResult';
 
 
   // Admin names
@@ -159,6 +162,17 @@ final List<GoRoute> appRoutes = [
         return const StudentHomeScreen(); // safety fallback
       }
       return QuizAttemptScreen(quiz: quiz);
+    },
+  ),
+  GoRoute(
+    path: AppRoutePaths.studentQuizResult,
+    name: AppRouteNames.studentQuizResult,
+    builder: (context, state) {
+      final QuizModel? quiz = state.extra as QuizModel?;
+      if (quiz == null) {
+        return const StudentHomeScreen();
+      }
+      return QuizResultScreen(quiz: quiz);
     },
   ),
 

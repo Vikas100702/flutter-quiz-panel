@@ -5,6 +5,8 @@ import 'package:quiz_panel/firebase_options.dart';
 import 'package:quiz_panel/providers/app_router_provider.dart';
 import 'package:quiz_panel/screens/auth/auth_wrapper.dart';
 
+import 'config/theme/app_theme.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -24,11 +26,10 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
-      title: 'Online Quiz Panel',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.light,
+      title: 'QuizMaster Pro',
 
         // Connect the router
         // We tell MaterialApp to use GoRouter for all routing.

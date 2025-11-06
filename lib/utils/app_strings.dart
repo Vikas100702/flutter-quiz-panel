@@ -10,6 +10,16 @@ class AppStrings {
   static const String noAccount = "Don't have an account?";
   static const String registerNow = 'Register Now';
 
+  // --- Forgot Password Screen ---
+  static const String forgotPasswordTitle = 'Reset Password';
+  static const String resetPasswordButton = 'Send Reset Link';
+  static const String resetEmailSent = 'Reset Email Sent!';
+  static const String checkEmailInstructions = 'Check your email for password reset instructions';
+  static const String emailNotFoundError = 'No account found with this email address';
+  static const String invalidEmailError = 'Please enter a valid email address';
+  static const String resetFailedError = 'Failed to send reset email. Please try again.';
+  static const String enterEmailPrompt = 'Please enter your email address';
+
   // --- Register Screen ---
   static const String registerTitle = 'Create Account';
   static const String nameLabel = 'Full Name';

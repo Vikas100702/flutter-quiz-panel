@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_panel/widgets/splash/splash_content.dart';
 
 // This is a "dumb" screen. It only shows a loading indicator.
 // The actual routing logic is now handled by GoRouter's redirect.
@@ -8,9 +9,8 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
+      backgroundColor: Colors.transparent,
+      body: SplashContent(),
     );
   }
 }

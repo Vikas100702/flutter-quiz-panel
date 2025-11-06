@@ -3,6 +3,7 @@ import 'package:quiz_panel/models/quiz_model.dart';
 import 'package:quiz_panel/models/subject_model.dart';
 import 'package:quiz_panel/screens/admin/admin_dashboard.dart';
 import 'package:quiz_panel/screens/auth/approval_pending_screen.dart';
+import 'package:quiz_panel/screens/auth/forgot_password_screen.dart';
 import 'package:quiz_panel/screens/auth/login_screen.dart';
 import 'package:quiz_panel/screens/auth/register_screen.dart';
 import 'package:quiz_panel/screens/splash/splash_screen.dart';
@@ -20,6 +21,7 @@ import 'package:quiz_panel/screens/teacher/teacher_dashboard.dart';
 class AppRoutePaths {
   static const String splash = '/';
   static const String login = '/login';
+  static const String forgotPassword = '/forgot-password';
   static const String register = '/register';
   static const String pendingApproval = '/pending-approval';
 
@@ -44,6 +46,7 @@ class AppRoutePaths {
 class AppRouteNames {
   static const String splash = 'splash';
   static const String login = 'login';
+  static const String forgotPassword = 'forgot-password';
   static const String register = 'register';
   static const String pendingApproval = 'pendingApproval';
 
@@ -78,6 +81,11 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.login,
     name: AppRouteNames.login,
     builder: (context, state) => const LoginScreen(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.forgotPassword,
+    name: 'forgot-password',
+    builder: (context, state) => const ForgotPasswordScreen(),
   ),
   GoRoute(
     path: AppRoutePaths.register,

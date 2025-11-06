@@ -81,4 +81,44 @@ class AdminRepository {
       throw AppStrings.genericError;
     }
   }
+
+  // --- 6. Get All Users ---
+  Stream<List<UserModel>> getAllUsers() {
+    try {
+      return _db
+          .collection('users')
+          .orderBy(
+            'createdAt',
+            descending: true,
+          ) // Order by creation date, new users will be at top
+          .snapshots()
+          .map((snapshot) {
+            return snapshot.docs
+                .map((doc) => UserModel.fromFirestore(doc))
+                .toList();
+          });
+    } catch (e) {
+      return Stream.value([]); // If the stream fails, return an empty list
+    }
+  }
+
+  // --- 7. Deactivate/Reactivate User ---
+  // This function updates a user's 'isActive' status.
+  Future<void> updateUserActiveStatus({
+    required String uid,
+    required bool isActive,
+  }) async {
+    try {
+      final userDocRef = _db.collection('users').doc(uid);
+      await userDocRef.update({'isActive': isActive});
+    } on FirebaseException catch (e) {
+      throw e.message ?? AppStrings.genericError;
+    } catch (e) {
+      throw AppStrings.genericError;
+    }
+  }
+
+// TODO: Hum yahaan future mein aur functions add karenge:
+// - Future<void> deleteUser({required String uid})
+// - Future<void> updateUserRole({required String uid, required String newRole})
 }

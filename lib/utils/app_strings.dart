@@ -58,6 +58,16 @@ class AppStrings {
   static const String rejectConfirm = 'Are you sure you want to reject this user?';
   static const String userApproved = 'User Approved Successfully';
   static const String userRejected = 'User Rejected Successfully';
+  static const String allUsersTitle = 'All Users';
+  static const String noUsersFound = 'No users found in the system.';
+  static const String deactivateUserButton = 'Deactivate';
+  static const String reactivateUserButton = 'Reactivate';
+  static const String deactivateConfirm = 'Are you sure you want to deactivate this user?';
+  static const String reactivateConfirm = 'Are you sure you want to reactivate this user?';
+  static const String userDeactivated = 'User Deactivated';
+  static const String userReactivated = 'User Reactivated';
+  static const String statusActive = 'Active';
+  static const String statusInactive = 'Inactive';
 
   // --- Teacher Dashboard ---
   static const String createSubjectTitle = 'Create New Subject';

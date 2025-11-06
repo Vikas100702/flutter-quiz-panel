@@ -66,7 +66,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (userData.value != null) {
         final user = userData.value!;
 
-        // Check Status
+        // Check Status (Pending or Rejected)
         if (user.status == UserStatus.pending ||
             user.status == UserStatus.rejected) {
           // If user is pending/rejected, they can ONLY be on the pending screen.
@@ -78,6 +78,18 @@ final routerProvider = Provider<GoRouter>((ref) {
 
         // Check Role (if status is 'approved')
         if (user.status == UserStatus.approved) {
+
+          // If user is approved but NOT active (deactivated by admin)
+          if (!user.isActive) {
+            // Send them to the pending screen.
+            // We need to update this screen to show a "Deactivated" message.
+            if (location != AppRoutePaths.pendingApproval) {
+              return AppRoutePaths.pendingApproval;
+            }
+            return null; // Already on the right screen
+          }
+
+          // If user is approved AND active, proceed to check their role
           String dashboardPath;
           switch (user.role) {
             case UserRoles.superAdmin:

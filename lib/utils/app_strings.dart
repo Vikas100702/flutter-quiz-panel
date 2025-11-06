@@ -6,6 +6,7 @@ class AppStrings {
   static const String emailLabel = 'Email';
   static const String passwordLabel = 'Password';
   static const String loginButton = 'Login';
+  static const String loginWithGoogleButton = 'Sign in with Google';
   static const String forgotPassword = 'Forgot Password?';
   static const String noAccount = "Don't have an account?";
   static const String registerNow = 'Register Now';
@@ -31,6 +32,15 @@ class AppStrings {
   static const String haveAccount = 'Already have an account?';
   static const String loginNow = 'Login Now';
 
+  // --- Email Verify Screen --- (ALL NEW)
+  static const String verifyEmailTitle = 'Verify Your Email';
+  static const String verifyEmailMessage = 'A verification link has been sent to:';
+  static const String checkYourInbox = 'Please check your inbox (and spam folder) to verify your account.';
+  static const String resendEmailButton = 'Resend Email';
+  static const String resendEmailSuccess = 'Verification email sent!';
+  static const String resendEmailCooldown = 'You can resend in %s seconds'; // %s is a placeholder
+  static const String refreshStatusButton = 'I\'ve Verified, Continue';
+
   // --- Error Messages ---
   static const String genericError = 'An unknown error occurred. Please try again.';
   static const String networkError = 'Network error. Please check your internet connection.';
@@ -41,6 +51,7 @@ class AppStrings {
   static const String emailInUseError = 'This email is already in use by another account.';
   static const String weakPasswordError = 'The password provided is too weak.';
   static const String firestoreIndexError = 'Error loading data. If this is your first time, Firestore may need an index. Please check the browser console (F12 or Ctrl+Shift+I) for a URL link to create the index.';
+  static const String googleSignInFailed = 'Google Sign-In failed. Please try again.';
 
 
   // --- Dashboard Titles ---

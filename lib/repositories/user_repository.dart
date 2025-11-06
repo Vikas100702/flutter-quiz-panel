@@ -32,7 +32,7 @@ class UserRepository {
     }
   }
 
-  // Register user in firestore
+  // Register user in firestore (For Email/Password)
   // This function saves the user's data to the
   // 'users' collection after they are created in Auth.
   Future<void> registerUserInFireStore({
@@ -45,7 +45,7 @@ class UserRepository {
       // Determine the status based on the role
       String status;
       if(role == UserRoles.student) {
-        // Students are auto-approved
+        // Students are auto-approved (but will need email verification)
         status = UserStatus.approved;
       } else if(role == UserRoles.teacher) {
         // Teachers must be approved by an admin or super admin
@@ -64,7 +64,7 @@ class UserRepository {
         email: userCredential.user?.email ?? '',
         phoneNumber: userCredential.user?.phoneNumber,
         photoURL: userCredential.user?.photoURL,
-        authProviders: ['password'], // Default for email/pass registration
+        authProviders: ['password'], // --- UPDATED ---: Specify auth provider
         createdAt: Timestamp.now(),
         approvedBy: null, // No one has approved yet
         isActive: true,
@@ -111,6 +111,69 @@ class UserRepository {
       // We will add more functions here later, such as:
       // - updateUserData(...)
       // - approveUser(...)
+    } on FirebaseException catch (e) {
+      throw e.message ?? AppStrings.genericError;
+    } catch (e) {
+      throw AppStrings.genericError;
+    }
+  }
+
+  // --- NEW FUNCTION (For Google Sign-In) ---
+  Future<void> registerGoogleUserInFirestore({
+    required UserCredential userCredential,
+  }) async {
+    try {
+      final user = userCredential.user;
+      if (user == null) return;
+
+      final userDocRef = _db.collection('users').doc(user.uid);
+      final docSnap = await userDocRef.get();
+
+      // 1. Check if user ALREADY exists in Firestore
+      if (docSnap.exists) {
+        // User already exists, maybe update their photoURL or auth provider list
+        await userDocRef.update({
+          'photoURL': user.photoURL,
+          'authProviders': FieldValue.arrayUnion(['google.com']),
+        });
+        return;
+      }
+
+      // 2. If user does NOT exist, create them
+      // Google users are auto-approved and default to 'student'
+      final newUser = UserModel(
+        uid: user.uid,
+        role: UserRoles.student,
+        status: UserStatus.approved,
+        displayName: user.displayName ?? 'Google User',
+        email: user.email ?? '',
+        phoneNumber: user.phoneNumber,
+        photoURL: user.photoURL,
+        authProviders: ['google.com'], // Auth provider is Google
+        createdAt: Timestamp.now(),
+        approvedBy: 'google_auth', // Auto-approved
+        isActive: true,
+      );
+
+      // Use a batch to create user and profile
+      final batch = _db.batch();
+
+      // Set user document
+      batch.set(userDocRef, newUser.toMap());
+
+      // Set student_profile document
+      final profileDocRef = _db.collection('student_profiles').doc(newUser.uid);
+      batch.set(profileDocRef, {
+        'studentId': newUser.uid,
+        'name': newUser.displayName,
+        'email': newUser.email,
+        'institution': null,
+        'grade': null,
+      });
+
+      // Commit the batch
+      await batch.commit();
+
     } on FirebaseException catch (e) {
       throw e.message ?? AppStrings.genericError;
     } catch (e) {

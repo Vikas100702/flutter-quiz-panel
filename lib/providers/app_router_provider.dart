@@ -19,79 +19,82 @@ final routerProvider = Provider<GoRouter>((ref) {
   // Create and return the GoRouter
   return GoRouter(
     initialLocation: AppRoutePaths.splash, // Start at the splash screen
-    // Use the list of routes we defined in app_routes.dart
-    routes: appRoutes,
+    routes: appRoutes, // app_routes.dart से
 
     // --- THIS IS THE "GATEKEEPER" LOGIC ---
     redirect: (BuildContext context, GoRouterState state) {
       // --- Watch the providers ---
-      // We watch the state of our two main providers.
       final authState = ref.watch(authStateProvider);
       final userData = ref.watch(userDataProvider);
 
-      // Get the path the user is trying to go to
       final String location = state.matchedLocation;
 
       // --- Handle Loading State ---
-      // If auth is loading OR user data is loading,
-      // and we are NOT on the splash screen, go to splash.
-      // This prevents seeing a "flash" of the login screen.
       if ((authState.isLoading || userData.isLoading) &&
           location != AppRoutePaths.splash) {
         return AppRoutePaths.splash;
       }
 
       // --- Handle Logged-Out User ---
-      // If auth is done loading, and there is no user.
       if (!authState.isLoading && authState.value == null) {
-        // If the user is trying to go anywhere BUT login or register, send them to the login screen.
         if (location != AppRoutePaths.login &&
             location != AppRoutePaths.register &&
             location != AppRoutePaths.forgotPassword) {
           return AppRoutePaths.login;
         }
-
-        // Otherwise, let them stay on /login or /register
         return null;
       }
 
       // --- Handle Logged-In User ---
-      // If we have an auth user, but the user data (role/status) has an error.
       if (userData.hasError) {
-        // TODO: Create an error screen
-        // For now, let's just show the error on the splash screen
-        return AppRoutePaths.splash;
+        // यदि यूजर ऑथेंटिकेटेड है लेकिन Firestore में नहीं मिला (शायद नया गूगल साइन-इन)
+        // तो उन्हें लॉग इन करने दें। user_repository इसे हैंडल करेगा।
+        // लेकिन अगर वे पहले से ही लॉग इन हैं और कोई और एरर है, तो उन्हें लॉगआउट करें।
+        if (location == AppRoutePaths.login || location == AppRoutePaths.splash) {
+          return null;
+        }
+        // सुरक्षित फॉलबैक के लिए लॉगिन पर वापस भेजें
+        return AppRoutePaths.login;
       }
 
       // If we have both auth user and user data.
-      if (userData.value != null) {
-        final user = userData.value!;
+      if (userData.value != null && authState.value != null) {
+        final userModel = userData.value!;
+        final authUser = authState.value!;
+
+        // --- NEW: EMAIL VERIFICATION CHECK ---
+        // जांचें कि क्या यूजर ने ईमेल/पासवर्ड से साइन अप किया है और वेरिफाइड नहीं है
+        final isPasswordUser = userModel.authProviders.contains('password');
+        if (isPasswordUser && !authUser.emailVerified) {
+          // यदि वे वेरिफाइड नहीं हैं, तो वे केवल /verify-email स्क्रीन पर जा सकते हैं
+          if (location != AppRoutePaths.verifyEmail) {
+            return AppRoutePaths.verifyEmail;
+          }
+          return null; // पहले से ही सही स्क्रीन पर हैं
+        }
+        // --- END NEW CHECK ---
 
         // Check Status (Pending or Rejected)
-        if (user.status == UserStatus.pending ||
-            user.status == UserStatus.rejected) {
-          // If user is pending/rejected, they can ONLY be on the pending screen.
+        if (userModel.status == UserStatus.pending ||
+            userModel.status == UserStatus.rejected) {
           if (location != AppRoutePaths.pendingApproval) {
             return AppRoutePaths.pendingApproval;
           }
-          return null; // Already on the right screen
+          return null;
         }
 
         // Check Role (if status is 'approved')
-        if (user.status == UserStatus.approved) {
-          // If user is approved but NOT active (deactivated by admin)
-          if (!user.isActive) {
-            // Send them to the pending screen.
-            // We need to update this screen to show a "Deactivated" message.
+        if (userModel.status == UserStatus.approved) {
+          if (!userModel.isActive) {
             if (location != AppRoutePaths.pendingApproval) {
               return AppRoutePaths.pendingApproval;
             }
-            return null; // Already on the right screen
+            return null;
           }
 
-          // If user is approved AND active, proceed to check their role
+          // Role-based dashboard path
           String dashboardPath;
-          switch (user.role) {
+          switch (userModel.role) {
             case UserRoles.superAdmin:
               dashboardPath = AppRoutePaths.superAdminDashboard;
               break;
@@ -106,17 +109,18 @@ final routerProvider = Provider<GoRouter>((ref) {
               dashboardPath = AppRoutePaths.studentDashboard;
           }
 
-          // If user is on a "public" page (login, splash, register) send them to their correct dashboard.
+          // If user is on a "public" page, send them to their dashboard.
           if (location == AppRoutePaths.splash ||
               location == AppRoutePaths.login ||
               location == AppRoutePaths.register ||
-              location == AppRoutePaths.pendingApproval) {
+              location == AppRoutePaths.pendingApproval ||
+              location == AppRoutePaths.verifyEmail) { // Added verifyEmail
             return dashboardPath;
           }
         }
       }
 
-      // If no other logic matched, let the user go (e.g., they are logged in and approved, and already on their correct dashboard).
+      // If no other logic matched, let the user go.
       return null;
     },
   );

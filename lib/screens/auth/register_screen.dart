@@ -1,7 +1,9 @@
 // lib/screens/auth/register_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
+// --- UPDATED ---
+// import 'package:flutter_riverpod/legacy.dart'; // legacy की अब आवश्यकता नहीं है
+// --- END UPDATED ---
 import 'package:go_router/go_router.dart';
 import 'package:quiz_panel/providers/auth_provider.dart';
 import 'package:quiz_panel/repositories/user_repository.dart';
@@ -26,10 +28,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _isLoading = false;
   String _selectedRole = UserRoles.student;
 
-  // Create a provider for register state
-  static final registerStateProvider = StateNotifierProvider<RegisterNotifier, RegisterState>((ref) {
-    return RegisterNotifier();
-  });
+  // --- UPDATED ---
+  // StateNotifierProvider की अब यहाँ आवश्यकता नहीं है, हम इसे सरल रख सकते हैं
+  // --- END UPDATED ---
+
 
   void _registerUser(BuildContext context) async {
     FocusScope.of(context).unfocus();
@@ -37,6 +39,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() { _isLoading = true; });
 
     try {
+      // 1. Create user in Firebase Auth
       final userCredential = await ref
           .read(authRepositoryProvider)
           .registerWithEmailAndPassword(
@@ -45,6 +48,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
 
       if (userCredential.user != null) {
+        // 2. Create user document in Firestore
         await ref
             .read(userRepositoryProvider)
             .registerUserInFireStore(
@@ -52,7 +56,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           name: _nameController.text.trim(),
           role: _selectedRole,
         );
+
+        // --- NEW: Send verification email ---
+        await ref
+            .read(authRepositoryProvider)
+            .sendEmailVerification(userCredential.user!);
+        // --- END NEW ---
       }
+      // राउटर बाकी काम खुद करेगा (यूजर को /verify-email पर रीडायरेक्ट करेगा)
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -97,47 +108,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 }
 
-// State management for register screen
-class RegisterState {
-  final bool isLoading;
-  final String selectedRole;
-  final String? error;
-
-  RegisterState({
-    this.isLoading = false,
-    this.selectedRole = UserRoles.student,
-    this.error,
-  });
-
-  RegisterState copyWith({
-    bool? isLoading,
-    String? selectedRole,
-    String? error,
-  }) {
-    return RegisterState(
-      isLoading: isLoading ?? this.isLoading,
-      selectedRole: selectedRole ?? this.selectedRole,
-      error: error ?? this.error,
-    );
-  }
-}
-
-class RegisterNotifier extends StateNotifier<RegisterState> {
-  RegisterNotifier() : super(RegisterState());
-
-  void setLoading(bool loading) {
-    state = state.copyWith(isLoading: loading);
-  }
-
-  void setRole(String role) {
-    state = state.copyWith(selectedRole: role);
-  }
-
-  void setError(String error) {
-    state = state.copyWith(error: error);
-  }
-
-  void clearError() {
-    state = state.copyWith(error: null);
-  }
-}
+// --- UPDATED ---
+// State management classes को हटा दिया गया है क्योंकि वे अब उपयोग में नहीं थीं।
+// --- END UPDATED ---

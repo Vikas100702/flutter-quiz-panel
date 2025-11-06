@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/models/quiz_attempt_state.dart';
 import 'package:quiz_panel/models/quiz_model.dart';
 import 'package:quiz_panel/providers/quiz_attempt_provider.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
+import 'package:quiz_panel/widgets/buttons/app_button.dart';
 
 class QuizResultScreen extends ConsumerWidget {
   final QuizModel quiz;
+
   const QuizResultScreen({super.key, required this.quiz});
 
   // Helper widget to display a single metric card
@@ -29,14 +32,11 @@ class QuizResultScreen extends ConsumerWidget {
         width: 200, // Fixed width for desktop layout
         child: Column(
           children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text(title, style: AppTextStyles.titleMedium),
             const SizedBox(height: 8),
             Text(
               value.toString(),
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+              style: AppTextStyles.displaySmall.copyWith(
                 color: color,
                 fontWeight: FontWeight.bold,
               ),
@@ -73,7 +73,8 @@ class QuizResultScreen extends ConsumerWidget {
 
     // 2. Score aur Max Score calculate karein
     final totalQuestions = resultState.questions.length;
-    final maxScore = resultState.quiz.totalQuestions * resultState.quiz.marksPerQuestion;
+    final maxScore =
+        resultState.quiz.totalQuestions * resultState.quiz.marksPerQuestion;
     final percentage = (resultState.score / maxScore) * 100;
     final bool passed = percentage >= 40; // Example passing criteria: 40%
 
@@ -99,9 +100,11 @@ class QuizResultScreen extends ConsumerWidget {
               children: [
                 // --- 3. Pass/Fail Status and Main Score ---
                 Text(
-                  passed ? AppStrings.congratulations : AppStrings.betterLuckNextTime,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: passed ? Colors.green.shade800 : Colors.red.shade800,
+                  passed
+                      ? AppStrings.congratulations
+                      : AppStrings.betterLuckNextTime,
+                  style: AppTextStyles.displayMedium.copyWith(
+                    color: passed ? AppColors.success : AppColors.error,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -117,19 +120,19 @@ class QuizResultScreen extends ConsumerWidget {
                       children: [
                         Text(
                           AppStrings.finalScore,
-                          style: Theme.of(context).textTheme.titleLarge,
+                          style: AppTextStyles.titleLarge,
                         ),
                         const SizedBox(height: 12),
                         Text(
                           '${resultState.score} / $maxScore',
-                          style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                            color: passed ? Colors.green : Colors.red,
+                          style: AppTextStyles.displayLarge.copyWith(
+                            color: passed ? AppColors.success : AppColors.error,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
                         Text(
                           '${percentage.toStringAsFixed(1)}%',
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          style: AppTextStyles.displaySmall,
                         ),
                       ],
                     ),
@@ -140,7 +143,7 @@ class QuizResultScreen extends ConsumerWidget {
                 // --- 4. Metrics Breakdown (Correct/Incorrect/Unanswered) ---
                 Text(
                   AppStrings.scoreBreakdown,
-                  style: Theme.of(context).textTheme.headlineSmall,
+                  style: AppTextStyles.displaySmall,
                 ),
                 const Divider(height: 20),
 
@@ -155,25 +158,25 @@ class QuizResultScreen extends ConsumerWidget {
                         context: context,
                         title: AppStrings.totalQuestions,
                         value: totalQuestions,
-                        color: Colors.blueGrey,
+                        color: AppColors.textSecondary,
                       ),
                       _buildMetricCard(
                         context: context,
                         title: AppStrings.correctAnswers,
                         value: resultState.totalCorrect,
-                        color: Colors.green,
+                        color: AppColors.success,
                       ),
                       _buildMetricCard(
                         context: context,
                         title: AppStrings.incorrectAnswers,
                         value: resultState.totalIncorrect,
-                        color: Colors.red,
+                        color: AppColors.error,
                       ),
                       _buildMetricCard(
                         context: context,
                         title: AppStrings.unansweredQuestions,
                         value: resultState.totalUnanswered,
-                        color: Colors.orange,
+                        color: AppColors.warning,
                       ),
                     ],
                   ),
@@ -181,18 +184,16 @@ class QuizResultScreen extends ConsumerWidget {
                 const SizedBox(height: 40),
 
                 // --- 5. Review Button (Future scope) ---
-                ElevatedButton.icon(
+                AppButton(
+                  text: AppStrings.reviewYourAnswers,
+                  icon: Icons.analytics,
+                  type: AppButtonType.primary,
                   onPressed: () {
-                    // TODO: Implement Review/Detailed Analysis Screen
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Detailed analysis is coming soon!')),
+                      const SnackBar(
+                          content: Text('Detailed analysis is coming soon!')),
                     );
                   },
-                  icon: const Icon(Icons.analytics),
-                  label: Text(AppStrings.reviewYourAnswers),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
                 ),
               ],
             ),

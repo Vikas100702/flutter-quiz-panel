@@ -280,6 +280,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/models/quiz_model.dart'; // QuizModel import
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/models/subject_model.dart';
@@ -287,15 +288,14 @@ import 'package:quiz_panel/providers/quiz_provider.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/repositories/quiz_repository.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
-import 'package:quiz_panel/utils/constants.dart'; // ContentStatus ke liye import
+import 'package:quiz_panel/utils/constants.dart';
+import 'package:quiz_panel/widgets/buttons/app_button.dart';
+import 'package:quiz_panel/widgets/inputs/app_text_field.dart'; // ContentStatus ke liye import
 
 class QuizManagementScreen extends ConsumerStatefulWidget {
   final SubjectModel subject;
 
-  const QuizManagementScreen({
-    super.key,
-    required this.subject,
-  });
+  const QuizManagementScreen({super.key, required this.subject});
 
   @override
   ConsumerState<QuizManagementScreen> createState() =>
@@ -338,17 +338,21 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
       return;
     }
 
-    setState(() { _isCreating = true; });
+    setState(() {
+      _isCreating = true;
+    });
 
     try {
-      await ref.read(quizRepositoryProvider).createQuiz(
-        title: _titleController.text.trim(),
-        subjectId: widget.subject.subjectId,
-        duration: duration,
-        totalQuestions: totalQuestions,
-        teacherUid: teacherUid,
-        marksPerQuestion: 4,
-      );
+      await ref
+          .read(quizRepositoryProvider)
+          .createQuiz(
+            title: _titleController.text.trim(),
+            subjectId: widget.subject.subjectId,
+            duration: duration,
+            totalQuestions: totalQuestions,
+            teacherUid: teacherUid,
+            marksPerQuestion: 4,
+          );
 
       if (mounted) {
         _showError(AppStrings.quizCreatedSuccess, isError: false);
@@ -359,7 +363,9 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
       _showError(e.toString());
     } finally {
       if (mounted) {
-        setState(() { _isCreating = false; });
+        setState(() {
+          _isCreating = false;
+        });
       }
     }
   }
@@ -369,7 +375,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
+        backgroundColor: isError ? AppColors.error : AppColors.success,
       ),
     );
   }
@@ -379,7 +385,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.subject.name),
-        backgroundColor: Colors.blue[700],
+        backgroundColor: AppColors.primary,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -393,7 +399,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
               const SizedBox(height: 24),
               Text(
                 AppStrings.myQuizzesTitle,
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: AppTextStyles.displaySmall,
               ),
               const SizedBox(height: 16),
               _buildQuizzesList(context),
@@ -413,56 +419,40 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              AppStrings.createQuizTitle,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text(AppStrings.createQuizTitle, style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
-            TextField(
+            AppTextField(
               controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: AppStrings.quizTitleLabel,
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.title),
-              ),
+              label: AppStrings.quizTitleLabel,
+              prefixIcon: Icons.title,
             ),
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
-                  child: TextField(
+                  child: AppTextField(
                     controller: _durationController,
-                    decoration: const InputDecoration(
-                      labelText: AppStrings.quizDurationLabel,
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.timer),
-                    ),
+                    label: AppStrings.quizDurationLabel,
+                    prefixIcon: Icons.timer,
                     keyboardType: TextInputType.number,
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: TextField(
+                  child: AppTextField(
                     controller: _questionsController,
-                    decoration: const InputDecoration(
-                      labelText: AppStrings.totalQuestionsLabel,
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.question_mark),
-                    ),
+                    label: AppStrings.totalQuestionsLabel,
+                    prefixIcon: Icons.question_mark,
                     keyboardType: TextInputType.number,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+            AppButton(
+              text: AppStrings.createQuizButton,
               onPressed: _isCreating ? null : _createQuiz,
-              child: _isCreating
-                  ? const CircularProgressIndicator()
-                  : const Text(AppStrings.createQuizButton),
+              isLoading: _isCreating,
             ),
           ],
         ),
@@ -483,7 +473,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Text(
               'Error loading quizzes.\n\n${error.toString()}',
-              style: const TextStyle(color: Colors.red),
+              style: const TextStyle(color: AppColors.error),
               textAlign: TextAlign.center,
             ),
           ),
@@ -514,9 +504,10 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
-                title: Text(quiz.title),
+                title: Text(quiz.title, style: AppTextStyles.titleMedium),
                 subtitle: Text(
                   '${quiz.totalQuestions} ${AppStrings.totalQuestionsLabel} | ${quiz.durationMin} ${AppStrings.minutesLabel}',
+                  style: AppTextStyles.bodyMedium,
                 ),
 
                 // --- YEH HAI NAYA LOGIC ---
@@ -526,16 +517,19 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                     // Publish Switch
                     Switch(
                       value: isPublished,
+                      activeThumbColor: AppColors.success,
                       onChanged: (newValue) {
                         final newStatus = newValue
                             ? ContentStatus.published
                             : ContentStatus.draft;
 
                         // Repository function ko call karein
-                        ref.read(quizRepositoryProvider).updateQuizStatus(
-                          quizId: quiz.quizId,
-                          newStatus: newStatus,
-                        );
+                        ref
+                            .read(quizRepositoryProvider)
+                            .updateQuizStatus(
+                              quizId: quiz.quizId,
+                              newStatus: newStatus,
+                            );
 
                         // User ko feedback dein
                         _showError(
@@ -550,6 +544,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                     IconButton(
                       icon: const Icon(Icons.arrow_forward_ios),
                       tooltip: AppStrings.addQuestionsButton,
+                      color: AppColors.textTertiary,
                       onPressed: () {
                         // Question management screen par navigate karein
                         context.pushNamed(

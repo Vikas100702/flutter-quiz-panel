@@ -1,9 +1,15 @@
 // lib/providers/password_reset_provider.dart
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:quiz_panel/providers/auth_provider.dart';
+import 'package:quiz_panel/repositories/auth_repository.dart';
 
-// Provider for managing password reset state
-final passwordResetProvider = StateNotifierProvider<PasswordResetNotifier, PasswordResetState>((ref) {
-  return PasswordResetNotifier();
+// Provider ko update karein taake yeh AuthRepository ko read kar sake
+final passwordResetProvider =
+StateNotifierProvider<PasswordResetNotifier, PasswordResetState>((ref) {
+  // AuthRepository ko watch karein
+  final authRepository = ref.watch(authRepositoryProvider);
+  // Notifier ko AuthRepository pass karein
+  return PasswordResetNotifier(authRepository);
 });
 
 class PasswordResetState {
@@ -31,7 +37,7 @@ class PasswordResetState {
     return PasswordResetState(
       isLoading: isLoading ?? this.isLoading,
       isSuccess: isSuccess ?? this.isSuccess,
-      error: error ?? this.error,
+      error: error, // Error ko null bhi set kar sakein
       email: email ?? this.email,
       lastSent: lastSent ?? this.lastSent,
     );
@@ -46,7 +52,11 @@ class PasswordResetState {
 }
 
 class PasswordResetNotifier extends StateNotifier<PasswordResetState> {
-  PasswordResetNotifier() : super(PasswordResetState());
+  // AuthRepository ko hold karne ke liye variable banayein
+  final AuthRepository _authRepository;
+
+  // Constructor ko update karein taake yeh AuthRepository le
+  PasswordResetNotifier(this._authRepository) : super(PasswordResetState());
 
   Future<void> sendResetEmail(String email) async {
     state = state.copyWith(
@@ -56,8 +66,10 @@ class PasswordResetNotifier extends StateNotifier<PasswordResetState> {
     );
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      // --- YEH HAI ASAL FIX ---
+      // Simulate API call ko asal call se badlein
+      // await Future.delayed(const Duration(seconds: 2)); // Isay hata dein
+      await _authRepository.sendPasswordResetEmail(email); // Yeh asal call hai
 
       state = state.copyWith(
         isLoading: false,
@@ -67,7 +79,7 @@ class PasswordResetNotifier extends StateNotifier<PasswordResetState> {
     } catch (error) {
       state = state.copyWith(
         isLoading: false,
-        error: error.toString(),
+        error: error.toString(), // Error message ko state mein save karein
         isSuccess: false,
       );
     }

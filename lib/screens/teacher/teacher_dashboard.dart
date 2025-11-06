@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/providers/auth_provider.dart';
 import 'package:quiz_panel/providers/subject_provider.dart';
@@ -8,6 +9,8 @@ import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/repositories/quiz_repository.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/utils/constants.dart';
+import 'package:quiz_panel/widgets/buttons/app_button.dart';
+import 'package:quiz_panel/widgets/inputs/app_text_field.dart';
 
 class TeacherDashboard extends ConsumerStatefulWidget {
   const TeacherDashboard({super.key});
@@ -37,29 +40,36 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
     }
 
     if (_nameController.text.isEmpty) {
-      _showError('Subject Name cannot be empty.'); // This should be in AppStrings
+      _showError(
+        'Subject Name cannot be empty.',
+      ); // This should be in AppStrings
       return;
     }
 
-    setState(() { _isCreating = true; });
+    setState(() {
+      _isCreating = true;
+    });
 
     try {
-      await ref.read(quizRepositoryProvider).createSubject(
-        name: _nameController.text.trim(),
-        description: _descController.text.trim(),
-        teacherUid: teacherUid,
-      );
+      await ref
+          .read(quizRepositoryProvider)
+          .createSubject(
+            name: _nameController.text.trim(),
+            description: _descController.text.trim(),
+            teacherUid: teacherUid,
+          );
 
       _showError(AppStrings.subjectCreatedSuccess, isError: false);
       _nameController.clear();
       _descController.clear();
       if (mounted) FocusScope.of(context).unfocus();
-
     } catch (e) {
       _showError(e.toString());
     } finally {
       if (mounted) {
-        setState(() { _isCreating = false; });
+        setState(() {
+          _isCreating = false;
+        });
       }
     }
   }
@@ -70,11 +80,10 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
+        backgroundColor: isError ? AppColors.error : AppColors.success,
       ),
     );
   }
-
 
   // --- Main Build Method ---
   @override
@@ -82,7 +91,7 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.teacherDashboardTitle),
-        backgroundColor: Colors.blue[700],
+        backgroundColor: AppColors.primary,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -105,7 +114,7 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
               const SizedBox(height: 24),
               Text(
                 AppStrings.mySubjectsTitle,
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: AppTextStyles.displaySmall,
               ),
               const SizedBox(height: 16),
               _buildSubjectsList(context, ref), // Pass ref
@@ -128,35 +137,26 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
           children: [
             Text(
               AppStrings.createSubjectTitle,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: AppTextStyles.titleLarge,
             ),
-            const SizedBox(height: 16),
-            TextField(
+            const SizedBox(height: 24),
+            AppTextField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: AppStrings.subjectNameLabel,
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.title),
-              ),
+              label: AppStrings.subjectNameLabel,
+              prefixIcon: Icons.title,
             ),
             const SizedBox(height: 16),
-            TextField(
+            AppTextField(
               controller: _descController,
-              decoration: const InputDecoration(
-                labelText: AppStrings.subjectDescLabel,
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.description),
-              ),
+              label: AppStrings.subjectDescLabel,
+              prefixIcon: Icons.description,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+            AppButton(
+              text: AppStrings.createSubjectButton,
               onPressed: _isCreating ? null : _createSubject,
-              child: _isCreating
-                  ? const CircularProgressIndicator()
-                  : const Text(AppStrings.createSubjectButton),
+              isLoading: _isCreating,
+              type: AppButtonType.primary,
             ),
           ],
         ),
@@ -332,7 +332,7 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
             padding: const EdgeInsets.all(16.0),
             child: Text(
               '${AppStrings.firestoreIndexError}\n\nError: ${error.toString()}',
-              style: const TextStyle(color: Colors.red),
+              style: TextStyle(color: AppColors.error),
               textAlign: TextAlign.center,
             ),
           ),
@@ -404,7 +404,7 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                             children: [
                               Text(
                                 subject.name,
-                                style: Theme.of(context).textTheme.titleLarge,
+                                style: AppTextStyles.titleLarge,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -414,8 +414,9 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                                   padding: const EdgeInsets.only(top: 4.0),
                                   child: Text(
                                     subject.description!,
-                                    style:
-                                    Theme.of(context).textTheme.bodySmall,
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.textTertiary,
+                                    ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -426,19 +427,22 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
 
                         const Spacer(),
                         const Divider(),
-                        
+
                         SwitchListTile(
                           title: Text(
                             isPublished
                                 ? AppStrings.statusPublished
                                 : AppStrings.statusDraft,
                             style: TextStyle(
-                              color: isPublished ? Colors.green : Colors.orange,
+                              color: isPublished
+                                  ? AppColors.success
+                                  : AppColors.warning,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           subtitle: const Text(AppStrings.publishSubject),
                           value: isPublished,
+                          activeThumbColor: AppColors.success,
                           onChanged: (newValue) {
                             final newStatus = newValue
                                 ? ContentStatus.published
@@ -446,9 +450,9 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                             ref
                                 .read(quizRepositoryProvider)
                                 .updateSubjectStatus(
-                              subjectId: subject.subjectId,
-                              newStatus: newStatus,
-                            );
+                                  subjectId: subject.subjectId,
+                                  newStatus: newStatus,
+                                );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
@@ -456,8 +460,9 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                                       ? AppStrings.subjectPublished
                                       : AppStrings.subjectUnpublished,
                                 ),
-                                backgroundColor:
-                                newValue ? Colors.green : Colors.orange,
+                                backgroundColor: newValue
+                                    ? AppColors.success
+                                    : AppColors.warning,
                               ),
                             );
                           },
@@ -474,4 +479,3 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
     );
   }
 }
-

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/providers/auth_provider.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 
@@ -11,7 +12,7 @@ class AdminDashboard extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.adminDashboardTitle),
-        backgroundColor: Colors.orange[700],
+        backgroundColor: AppColors.warning,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -22,8 +23,13 @@ class AdminDashboard extends ConsumerWidget {
           ),
         ],
       ),
-      body: const Center(
-        child: Text(AppStrings.welcomeAdmin),
+      body: Center(
+        child: Text(
+          AppStrings.welcomeAdmin,
+          style: AppTextStyles.displaySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
       ),
     );
   }

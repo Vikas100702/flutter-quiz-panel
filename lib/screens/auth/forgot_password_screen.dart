@@ -2,7 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quiz_panel/providers/auth_provider.dart';
+// Password reset provider ko import karein
+import 'package:quiz_panel/providers/password_reset_provider.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/config/theme/app_theme.dart';
@@ -14,19 +15,20 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     with SingleTickerProviderStateMixin {
-
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
 
   final TextEditingController _emailController = TextEditingController();
-  bool _isLoading = false;
-  bool _isSuccess = false;
+  // --- Local state (isLoading, isSuccess) hata dein ---
+  // bool _isLoading = false;
+  // bool _isSuccess = false;
 
   @override
   void initState() {
@@ -59,6 +61,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
   void dispose() {
     _controller.dispose();
     _emailController.dispose();
+    // Screen dispose hone par provider ko reset karein
+    Future.microtask(() => ref.read(passwordResetProvider.notifier).resetState());
     super.dispose();
   }
 
@@ -69,7 +73,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please enter your email address'),
+          content: const Text(AppStrings.enterEmailPrompt),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -79,57 +83,16 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     if (!_isValidEmail(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please enter a valid email address'),
+          content: const Text(AppStrings.invalidEmailError),
           backgroundColor: AppColors.warning,
         ),
       );
       return;
     }
 
-    setState(() { _isLoading = true; });
-
-    try {
-      // Temporary simulation until the method is implemented
-      // await _simulatePasswordReset(email);
-      await ref.read(authRepositoryProvider).sendPasswordResetEmail(email);
-
-
-      setState(() {
-        _isLoading = false;
-        _isSuccess = true;
-      });
-
-      // Auto navigate back after success
-      await Future.delayed(const Duration(seconds: 3));
-      if (mounted) {
-        context.go(AppRoutePaths.login);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() { _isLoading = false; });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_getErrorMessage(e.toString())),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
-  // Temporary simulation method - replace with actual implementation
-  Future<void> _simulatePasswordReset(String email) async {
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Simulate different scenarios for testing
-    if (email.contains('test@error.com')) {
-      throw 'user-not-found';
-    } else if (email.contains('invalid')) {
-      throw 'invalid-email';
-    }
-
-    // Success case - this is where the actual Firebase call will go
-    // await ref.read(authRepositoryProvider).sendPasswordResetEmail(email);
+    // --- Local state set karne ke bajaye notifier ko call karein ---
+    // setState(() { _isLoading = true; }); // Hata dein
+    ref.read(passwordResetProvider.notifier).sendResetEmail(email);
   }
 
   bool _isValidEmail(String email) {
@@ -137,33 +100,54 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     return emailRegex.hasMatch(email);
   }
 
-  String _getErrorMessage(String error) {
-    if (error.contains('user-not-found')) {
-      return 'No account found with this email address';
-    } else if (error.contains('invalid-email')) {
-      return 'Please enter a valid email address';
-    } else if (error.contains('network-request-failed')) {
-      return AppStrings.networkError;
-    } else {
-      return 'Failed to send reset email. Please try again.';
-    }
-  }
+  // --- Is function ki zaroorat nahi, provider error handle karega ---
+  // String _getErrorMessage(String error) { ... }
 
   void _handleBack() {
-    if (!_isLoading) {
+    // isLoading state ab provider se milegi
+    if (!ref.read(passwordResetProvider).isLoading) {
       context.go(AppRoutePaths.login);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // --- Provider ki state ko watch karein ---
+    final state = ref.watch(passwordResetProvider);
+    final bool isLoading = state.isLoading;
+    final bool isSuccess = state.isSuccess;
+
+    // --- Error aur Success ko listen karein ---
+    ref.listen(passwordResetProvider, (previous, next) {
+      // Agar error ho toh SnackBar dikhayein
+      if (next.error != null && previous?.error != next.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        // Error ko clear karein taake dubara na dikhe
+        ref.read(passwordResetProvider.notifier).clearError();
+      }
+
+      // Agar success ho toh login par navigate karein
+      if (next.isSuccess && previous?.isSuccess != next.isSuccess) {
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            context.go(AppRoutePaths.login);
+          }
+        });
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: _handleBack,
         ),
-        title: const Text('Reset Password'),
+        title: const Text(AppStrings.forgotPasswordTitle),
         centerTitle: true,
       ),
       body: ResponsiveAuthLayout(
@@ -179,13 +163,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
               ),
             );
           },
-          child: _isSuccess ? _buildSuccessState() : _buildResetForm(),
+          // isSuccess ko provider se read karein
+          child: isSuccess ? _buildSuccessState() : _buildResetForm(isLoading),
         ),
       ),
     );
   }
 
-  Widget _buildResetForm() {
+  Widget _buildResetForm(bool isLoading) {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -203,7 +188,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
             prefixIcon: Icons.email_rounded,
             keyboardType: TextInputType.emailAddress,
             onSubmitted: (_) => _resetPassword(),
-            enabled: !_isLoading,
+            enabled: !isLoading, // isLoading provider se
           ),
           const SizedBox(height: 24),
 
@@ -238,9 +223,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
           // Reset Button
           AppButton(
-            text: 'Send Reset Link',
-            onPressed: _isLoading ? null : _resetPassword,
-            isLoading: _isLoading,
+            text: AppStrings.resetPasswordButton,
+            onPressed: isLoading ? null : _resetPassword,
+            isLoading: isLoading, // isLoading provider se
             type: AppButtonType.primary,
             icon: Icons.send_rounded,
           ),
@@ -249,7 +234,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
           // Back to Login
           AppButton(
             text: 'Back to Login',
-            onPressed: _isLoading ? null : _handleBack,
+            onPressed: isLoading ? null : _handleBack,
             type: AppButtonType.outline,
             icon: Icons.arrow_back_rounded,
           ),
@@ -280,7 +265,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
         // Success Message
         Text(
-          'Reset Email Sent!',
+          AppStrings.resetEmailSent,
           style: AppTextStyles.displaySmall.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w700,
@@ -290,7 +275,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
         const SizedBox(height: 16),
 
         Text(
-          'Check your email for password reset instructions',
+          AppStrings.checkEmailInstructions,
           style: AppTextStyles.bodyLarge.copyWith(
             color: AppColors.textTertiary,
           ),
@@ -367,7 +352,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
         const SizedBox(height: 24),
 
         Text(
-          'Forgot Password?',
+          AppStrings.forgotPasswordTitle,
           style: AppTextStyles.displaySmall.copyWith(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w700,

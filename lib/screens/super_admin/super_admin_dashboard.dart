@@ -361,6 +361,7 @@ void _showConfirmationDialog({
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/models/user_model.dart'; // Import UserModel
 import 'package:quiz_panel/providers/admin_provider.dart';
 import 'package:quiz_panel/providers/auth_provider.dart';
@@ -380,7 +381,7 @@ class SuperAdminDashboard extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text(AppStrings.superAdminDashboardTitle),
-          backgroundColor: Colors.red[700],
+          backgroundColor: AppColors.error,
           actions: [
             IconButton(
               icon: const Icon(Icons.logout),
@@ -392,6 +393,7 @@ class SuperAdminDashboard extends ConsumerWidget {
           ],
           // 2. Add the TabBar to the AppBar
           bottom: const TabBar(
+            indicatorColor: Colors.white,
             tabs: [
               Tab(
                 icon: Icon(Icons.pending_actions),
@@ -457,10 +459,9 @@ class _PendingTeacherList extends ConsumerWidget {
                     // --- REJECT BUTTON (FIXED) ---
                     IconButton(
                       icon: const Icon(Icons.close),
-                      color: Colors.red,
+                      color: AppColors.error,
                       tooltip: AppStrings.rejectButton,
                       onPressed: () {
-                        // --- THIS IS THE FIX ---
                         // Show confirmation dialog FIRST
                         _showConfirmationDialog(
                           context: context,
@@ -474,18 +475,17 @@ class _PendingTeacherList extends ConsumerWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                   content: Text(AppStrings.userRejected),
-                                  backgroundColor: Colors.red),
+                                  backgroundColor: AppColors.error),
                             );
                           },
                         );
-                        // --- END FIX ---
                       },
                     ),
 
                     // --- APPROVE BUTTON (FIXED) ---
                     IconButton(
                       icon: const Icon(Icons.check),
-                      color: Colors.green,
+                      color: AppColors.success,
                       tooltip: AppStrings.approveButton,
                       onPressed: () {
                         // Get the current super_admin's UID
@@ -500,8 +500,6 @@ class _PendingTeacherList extends ConsumerWidget {
                           );
                           return;
                         }
-
-                        // --- THIS IS THE FIX ---
                         // Show confirmation dialog FIRST
                         _showConfirmationDialog(
                           context: context,
@@ -520,7 +518,6 @@ class _PendingTeacherList extends ConsumerWidget {
                             );
                           },
                         );
-                        // --- END FIX ---
                       },
                     ),
                   ],
@@ -582,7 +579,7 @@ class _AllUsersList extends ConsumerWidget {
                       // Reject Button
                       IconButton(
                         icon: const Icon(Icons.close),
-                        color: Colors.red,
+                        color: AppColors.error,
                         tooltip: AppStrings.rejectButton,
                         onPressed: () {
                           _showConfirmationDialog(
@@ -600,7 +597,7 @@ class _AllUsersList extends ConsumerWidget {
                       // Approve Button
                       IconButton(
                         icon: const Icon(Icons.check),
-                        color: Colors.green,
+                        color: AppColors.success,
                         tooltip: AppStrings.approveButton,
                         onPressed: () {
                           final currentAdminUid =
@@ -628,7 +625,7 @@ class _AllUsersList extends ConsumerWidget {
                         icon: Icon(user.isActive
                             ? Icons.block // Deactivate icon
                             : Icons.check_circle_outline), // Reactivate icon
-                        color: user.isActive ? Colors.red : Colors.green,
+                        color: user.isActive ? AppColors.error : AppColors.success,
                         tooltip: user.isActive
                             ? AppStrings.deactivateUserButton
                             : AppStrings.reactivateUserButton,
@@ -656,7 +653,7 @@ class _AllUsersList extends ConsumerWidget {
                                       ? AppStrings.userDeactivated
                                       : AppStrings.userReactivated),
                                   backgroundColor:
-                                  user.isActive ? Colors.red : Colors.green,
+                                  user.isActive ? AppColors.error : AppColors.success,
                                 ),
                               );
                             },
@@ -680,19 +677,19 @@ class _AllUsersList extends ConsumerWidget {
     IconData icon;
     switch (role) {
       case UserRoles.superAdmin:
-        color = Colors.red;
+        color = AppColors.error;
         icon = Icons.shield;
         break;
       case UserRoles.admin:
-        color = Colors.orange;
+        color = AppColors.warning;
         icon = Icons.verified_user;
         break;
       case UserRoles.teacher:
-        color = Colors.blue;
+        color = AppColors.primary;
         icon = Icons.school;
         break;
       default:
-        color = Colors.grey;
+        color = AppColors.textTertiary;
         icon = Icons.person;
     }
     return Chip(
@@ -709,7 +706,7 @@ class _AllUsersList extends ConsumerWidget {
       return Chip(
         label: const Text(AppStrings.statusInactive,
             style: const TextStyle(color: Colors.white)),
-        backgroundColor: Colors.grey[700],
+        backgroundColor: AppColors.textTertiary,
       );
     }
 
@@ -718,15 +715,15 @@ class _AllUsersList extends ConsumerWidget {
     String label;
     switch (status) {
       case UserStatus.approved:
-        color = Colors.green;
+        color = AppColors.success;
         label = AppStrings.statusActive; // Use 'Active' string
         break;
       case UserStatus.pending:
-        color = Colors.orange;
+        color = AppColors.warning;
         label = UserStatus.pending; // Use 'pending_approval' string
         break;
       default: // rejected
-        color = Colors.red;
+        color = AppColors.error;
         label = UserStatus.rejected;
     }
     return Chip(

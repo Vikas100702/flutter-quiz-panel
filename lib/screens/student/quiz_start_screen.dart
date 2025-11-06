@@ -122,29 +122,28 @@ class QuizStartScreen extends ConsumerWidget {
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 // --- ZAROORI IMPORTS ---
 import 'package:go_router/go_router.dart';
+import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
+
 // -----------------------
 import 'package:quiz_panel/models/quiz_model.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
+import 'package:quiz_panel/widgets/buttons/app_button.dart';
 
 class QuizStartScreen extends ConsumerWidget {
   final QuizModel quiz;
 
-  const QuizStartScreen({
-    super.key,
-    required this.quiz,
-  });
+  const QuizStartScreen({super.key, required this.quiz});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textTheme = Theme.of(context).textTheme;
+    // final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(quiz.title),
-      ),
+      appBar: AppBar(title: Text(quiz.title)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
@@ -160,7 +159,7 @@ class QuizStartScreen extends ConsumerWidget {
                   // --- 1. Instructions Title ---
                   Text(
                     AppStrings.quizInstructions,
-                    style: textTheme.headlineMedium,
+                    style: AppTextStyles.displaySmall,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
@@ -192,29 +191,16 @@ class QuizStartScreen extends ConsumerWidget {
                   const SizedBox(height: 32),
 
                   // --- 5. Start Quiz Button ---
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    ),
+                  AppButton(
+                    text: AppStrings.startQuizButton,
+                    type: AppButtonType.primary,
                     onPressed: () {
-                      // --- FINAL NAVIGATION LOGIC ---
-                      // Hum 'pushReplacementNamed' ka istemaal karte hain taaki
-                      // student quiz ke dauraan 'back' button se wapas na ja sake.
                       context.pushReplacementNamed(
                         AppRouteNames.studentQuizAttempt,
                         pathParameters: {'quizId': quiz.quizId},
                         extra: quiz,
                       );
                     },
-                    child: Text(
-                      AppStrings.startQuizButton,
-                      style: textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -226,21 +212,26 @@ class QuizStartScreen extends ConsumerWidget {
   }
 
   Widget _buildInstructionRow(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required String value,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
     final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(icon, color: Theme.of(context).colorScheme.primary),
+          Icon(icon, color: AppColors.primary),
           const SizedBox(width: 16),
-          Text(title, style: textTheme.titleMedium),
+          Text(title, style: AppTextStyles.titleMedium),
           const Spacer(),
-          Text(value, style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: AppTextStyles.titleLarge.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

@@ -46,7 +46,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!authState.isLoading && authState.value == null) {
         // If the user is trying to go anywhere BUT login or register, send them to the login screen.
         if (location != AppRoutePaths.login &&
-            location != AppRoutePaths.register) {
+            location != AppRoutePaths.register &&
+            location != AppRoutePaths.forgotPassword) {
           return AppRoutePaths.login;
         }
 
@@ -78,7 +79,6 @@ final routerProvider = Provider<GoRouter>((ref) {
 
         // Check Role (if status is 'approved')
         if (user.status == UserStatus.approved) {
-
           // If user is approved but NOT active (deactivated by admin)
           if (!user.isActive) {
             // Send them to the pending screen.

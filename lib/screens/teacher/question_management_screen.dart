@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/models/question_model.dart';
 import 'package:quiz_panel/models/quiz_model.dart';
 import 'package:quiz_panel/repositories/question_provider.dart';
 import 'package:quiz_panel/repositories/quiz_repository.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
+import 'package:quiz_panel/widgets/buttons/app_button.dart';
+import 'package:quiz_panel/widgets/inputs/app_text_field.dart';
 
 class QuestionManagementScreen extends ConsumerStatefulWidget {
   // This screen needs to know which quiz it's managing
@@ -101,7 +104,7 @@ class _QuestionManagementScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
+        backgroundColor: isError ? AppColors.error : AppColors.success,
       ),
     );
   }
@@ -124,7 +127,7 @@ class _QuestionManagementScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.quiz.title}: ${AppStrings.manageQuestionsTitle}'),
-        backgroundColor: Colors.blue[700],
+        backgroundColor: AppColors.primary,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -142,7 +145,7 @@ class _QuestionManagementScreenState
               // --- 2. The "All Questions" List ---
               Text(
                 AppStrings.allQuestionsTitle,
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: AppTextStyles.displaySmall,
               ),
               const SizedBox(height: 16),
               _buildQuestionsList(context),
@@ -165,15 +168,12 @@ class _QuestionManagementScreenState
           children: [
             Text(
               AppStrings.createQuestionTitle,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: AppTextStyles.titleLarge,
             ),
             const SizedBox(height: 16),
-            TextField(
+            AppTextField(
               controller: _questionController,
-              decoration: const InputDecoration(
-                labelText: AppStrings.questionLabel,
-                border: OutlineInputBorder(),
-              ),
+              label: AppStrings.questionLabel,
             ),
             const SizedBox(height: 16),
             // Options
@@ -183,14 +183,10 @@ class _QuestionManagementScreenState
             _buildOptionField(context, _option4Controller, AppStrings.option4Label, 3),
 
             const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+            AppButton(
+              text: AppStrings.addQuestionButton,
               onPressed: _isAdding ? null : _addQuestion,
-              child: _isAdding
-                  ? const CircularProgressIndicator()
-                  : const Text(AppStrings.addQuestionButton),
+              isLoading: _isAdding,
             ),
           ],
         ),
@@ -208,6 +204,7 @@ class _QuestionManagementScreenState
           Radio<int>(
             value: index,
             groupValue: _correctAnswerIndex,
+            activeColor: AppColors.primary,
             onChanged: (int? value) {
               setState(() {
                 _correctAnswerIndex = value;
@@ -241,7 +238,7 @@ class _QuestionManagementScreenState
       error: (error, stackTrace) => Center(
         child: Text(
           'Error loading questions. \n\n${error.toString()}',
-          style: const TextStyle(color: Colors.red),
+          style: const TextStyle(color: AppColors.error),
         ),
       ),
       data: (questions) {
@@ -272,13 +269,13 @@ class _QuestionManagementScreenState
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      icon: const Icon(Icons.edit, color: AppColors.primary),
                       onPressed: () {
                         // TODO: Implement Edit Question logic
                       },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      icon: const Icon(Icons.delete, color: AppColors.error),
                       onPressed: () {
                         // TODO: Implement Delete Question logic
                       },

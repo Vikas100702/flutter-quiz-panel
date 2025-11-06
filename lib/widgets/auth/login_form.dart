@@ -13,6 +13,7 @@ class LoginForm extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onLogin;
   final VoidCallback onRegister;
+  // final VoidCallback onGoogleSignIn; // --- NEW ---
 
   const LoginForm({
     super.key,
@@ -21,6 +22,7 @@ class LoginForm extends StatelessWidget {
     required this.isLoading,
     required this.onLogin,
     required this.onRegister,
+    // required this.onGoogleSignIn, // --- NEW ---
   });
 
   @override
@@ -41,6 +43,7 @@ class LoginForm extends StatelessWidget {
           prefixIcon: Icons.email_rounded,
           keyboardType: TextInputType.emailAddress,
           onSubmitted: (_) => _handleSubmit(context),
+          enabled: !isLoading, // --- UPDATED ---
         ),
         const SizedBox(height: 20),
         AppTextField(
@@ -49,6 +52,7 @@ class LoginForm extends StatelessWidget {
           prefixIcon: Icons.lock_rounded,
           isPassword: true,
           onSubmitted: (_) => _handleSubmit(context),
+          enabled: !isLoading, // --- UPDATED ---
         ),
         const SizedBox(height: 16),
 
@@ -57,7 +61,6 @@ class LoginForm extends StatelessWidget {
           alignment: Alignment.centerRight,
           child: TextButton(
             onPressed: isLoading ? null : () {
-              // TODO: Add forgot password navigation
               context.push(AppRoutePaths.forgotPassword);
             },
             child: Text(
@@ -81,8 +84,19 @@ class LoginForm extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Divider
-        _buildDivider(),
+        /*_buildDivider(),
+        const SizedBox(height: 24),*/
+
+        // --- NEW: Google Sign-In Button ---
+        /*AppButton(
+          text: AppStrings.loginWithGoogleButton,
+          onPressed: isLoading ? null : onGoogleSignIn,
+          isLoading: false, // Login isLoading se alag manage karein
+          type: AppButtonType.outline,
+          icon: Icons.g_mobiledata_rounded, // Simple Google icon
+        ),*/
         const SizedBox(height: 24),
+        // --- END NEW ---
 
         // Register Section
         _buildRegisterSection(context),

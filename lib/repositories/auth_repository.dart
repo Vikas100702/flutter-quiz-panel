@@ -1,41 +1,29 @@
 // lib/repositories/auth_repository.dart
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 
-// This is the 'Chef' class that talks to Firebase Authentication.
 class AuthRepository {
-  // We are getting an instance of Firebase Auth
-  // so we can call its functions (like signIn, signOut).
   final FirebaseAuth _firebaseAuth;
+  // final GoogleSignIn _googleSignIn;
 
-  // This is the 'Constructor'.
-  // Whoever calls AuthRepository must provide the FirebaseAuth instance.
-  // This is called "Dependency Injection".
   AuthRepository(this._firebaseAuth);
 
   // --- 1. Get Authentication Status ---
-  // This function returns a Stream. A Stream is like a pipe.
-  // Firebase will put a 'User' object in the pipe if someone is logged in,
-  // and 'null' if they are logged out.
-  // Our 'Manager' (AuthProvider) will listen to this pipe.
-
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
   // --- 2. Sign In with Email & Password ---
-  // This function will be called by our 'Manager' (AuthProvider)
-  // when the user presses the 'Login' button.
-
-  Future<void> signInWithEmailAndPassword({required String email, required String password}) async {
+  Future<void> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
     try {
-      // Tell Firebase Auth to try signing in.
-      await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-
-      // If successful, the 'authStateChanges' stream (above)
-      // will automatically send the new User object.
-    } on FirebaseAuthException catch(e) {
-      // We catch the specific Firebase error code and
-      // throw a clean, readable message for our UI.
+      await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         throw 'No user found for that email.';
       } else if (e.code == 'wrong-password') {
@@ -43,11 +31,9 @@ class AuthRepository {
       } else if (e.code == 'network-request-failed') {
         throw 'Network error. Please check your internet connection.';
       } else {
-        // General Firebase error
         throw e.message ?? 'An error occurred.';
       }
     } catch (e) {
-      // Catch any other network or general error
       throw 'An unknown error occurred. Please try again.';
     }
   }
@@ -55,30 +41,25 @@ class AuthRepository {
   // --- 3. Sign Out ---
   Future<void> signOut() async {
     try {
-      // Tell Firebase Auth to sign out.
+      // await _googleSignIn.signOut();
       await _firebaseAuth.signOut();
-
-      // When successful, the 'authStateChanges' stream (above)
-      // will automatically send 'null'.
-    } on FirebaseAuthException catch(e) {
-      // If Firebase sends an error, we 'throw' it so the UI can catch it and show a message.
+    } on FirebaseAuthException catch (e) {
       throw Exception(e.message);
     }
   }
 
   // --- 4. Register with Email & Password ---
-  // This function creates a new user in Firebase Auth.
-  // It returns the 'UserCredential' which contains the new user's 'uid'.
-  Future<UserCredential> registerWithEmailAndPassword({required String email, required String password,}) async {
+  Future<UserCredential> registerWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
     try {
-
-      // Tell Firebase Auth to create a new user.
-      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-
-      // Return the full credential
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       return userCredential;
     } on FirebaseAuthException catch (e) {
-      // Handle specific registration errors
       if (e.code == 'weak-password') {
         throw AppStrings.weakPasswordError;
       } else if (e.code == 'email-already-in-use') {
@@ -93,6 +74,47 @@ class AuthRepository {
     }
   }
 
+  // --- 5. Sign In with Google (COMPLETELY REWRITTEN) ---
+/*  Future<UserCredential> signInWithGoogle() async {
+    try {
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      // User canceled the sign-in
+      if (googleUser == null) {
+        throw 'Google Sign-In was cancelled';
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Once signed in, return the UserCredential
+      return await _firebaseAuth.signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      throw e.message ?? AppStrings.googleSignInFailed;
+    } catch (e) {
+      throw AppStrings.googleSignInFailed;
+    }
+  }*/
+
+  // --- 6. Send Email Verification ---
+  Future<void> sendEmailVerification(User user) async {
+    try {
+      await user.sendEmailVerification();
+    } on FirebaseAuthException catch (e) {
+      throw _handleFirebaseAuthException(e);
+    } catch (e) {
+      throw 'Failed to send verification email. Please try again.';
+    }
+  }
+
+  // --- 7. Send Password Reset Email ---
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _firebaseAuth.sendPasswordResetEmail(email: email);
@@ -103,6 +125,7 @@ class AuthRepository {
     }
   }
 
+  // --- Helper Function for Firebase Errors ---
   String _handleFirebaseAuthException(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
@@ -119,5 +142,4 @@ class AuthRepository {
         return 'An unexpected error occurred. Please try again.';
     }
   }
-
 }

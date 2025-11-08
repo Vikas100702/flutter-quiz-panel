@@ -1,6 +1,7 @@
 // lib/repositories/auth_repository.dart
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 
@@ -125,9 +126,62 @@ class AuthRepository {
     }
   }
 
+  // --- 8. Verify Phone Number ---
+  Future<void> verifyPhoneNumber({
+    required String phoneNumber,
+    required void Function(String verificationId, int? resendToken) onCodeSent,
+    required void Function(FirebaseAuthException e) onVerificationFailed,
+    required void Function(PhoneAuthCredential credential) onVerificationCompleted,
+  }) async {
+    try {
+      if (kIsWeb) {
+        throw Exception('Phone Auth is not supported on Web');
+      }
+
+      await _firebaseAuth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: onVerificationCompleted,
+        verificationFailed: onVerificationFailed,
+        codeSent: onCodeSent,
+        codeAutoRetrievalTimeout: (String verificationId) {
+          // Auto-retrieval timeout
+        },
+        timeout: const Duration(seconds: 60),
+      );
+    } catch (e) {
+      throw 'Failed to verify phone number: ${e.toString()}';
+    }
+  }
+
+  // --- 9. Sign In with OTP (Phone Credential) ---
+  Future<UserCredential> signInWithOtp({
+    required String verificationId,
+    required String smsCode,
+}) async {
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode
+      );
+
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      throw _handleFirebaseAuthException(e);
+    } catch (e) {
+      throw 'Failed to sign in with OTP. Please check the code and try again.';
+    }
+  }
+
   // --- Helper Function for Firebase Errors ---
   String _handleFirebaseAuthException(FirebaseAuthException e) {
     switch (e.code) {
+      case 'invalid-phone-number':
+        return 'The phone number provided is not valid.';
+      case 'session-expired':
+        return 'The OTP code has expired. Please send a new one.';
+      case 'invalid-verification-code':
+        return 'The OTP code is invalid. Please try again.';
       case 'user-not-found':
         return 'No user found with this email address.';
       case 'invalid-email':

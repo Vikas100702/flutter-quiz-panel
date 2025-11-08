@@ -5,6 +5,9 @@ import 'package:quiz_panel/screens/admin/admin_dashboard.dart';
 import 'package:quiz_panel/screens/auth/approval_pending_screen.dart';
 import 'package:quiz_panel/screens/auth/forgot_password_screen.dart';
 import 'package:quiz_panel/screens/auth/login_screen.dart';
+import 'package:quiz_panel/screens/auth/otp_verify_screen.dart';
+import 'package:quiz_panel/screens/auth/phone_login_screen.dart';
+import 'package:quiz_panel/screens/auth/phone_register_details_screen.dart';
 import 'package:quiz_panel/screens/auth/register_screen.dart';
 import 'package:quiz_panel/screens/auth/verify_email_screen.dart';
 import 'package:quiz_panel/screens/splash/splash_screen.dart';
@@ -22,6 +25,9 @@ import 'package:quiz_panel/screens/teacher/teacher_dashboard.dart';
 class AppRoutePaths {
   static const String splash = '/';
   static const String login = '/login';
+  static const String phoneLogin = '/login/phone';
+  static const String otpVerify = '/login/otp';
+  static const String phoneRegisterDetails = '/register/phone';
   static const String forgotPassword = '/forgot-password';
   static const String register = '/register';
   static const String pendingApproval = '/pending-approval';
@@ -48,6 +54,9 @@ class AppRoutePaths {
 class AppRouteNames {
   static const String splash = 'splash';
   static const String login = 'login';
+  static const String phoneLogin = 'phoneLogin';
+  static const String otpVerify = 'otpVerify';
+  static const String phoneRegisterDetails = 'phoneRegisterDetails';
   static const String forgotPassword = 'forgot-password';
   static const String register = 'register';
   static const String pendingApproval = 'pendingApproval';
@@ -94,6 +103,28 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.register,
     name: AppRouteNames.register,
     builder: (context, state) => const RegisterScreen(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.phoneLogin,
+    name: AppRouteNames.phoneLogin,
+    builder: (context, state) => const PhoneLoginScreen(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.otpVerify,
+    name: AppRouteNames.otpVerify,
+    builder: (context, state) {
+      // OTP screen ko verificationId pass karein
+      final verificationId = state.extra as String?;
+      if (verificationId == null) {
+        return const PhoneLoginScreen(); // Agar ID nahi hai toh wapas bhejein
+      }
+      return OtpVerifyScreen(verificationId: verificationId);
+    },
+  ),
+  GoRoute(
+    path: AppRoutePaths.phoneRegisterDetails,
+    name: AppRouteNames.phoneRegisterDetails,
+    builder: (context, state) => const PhoneRegisterDetailsScreen(),
   ),
   GoRoute(
     path: AppRoutePaths.pendingApproval,

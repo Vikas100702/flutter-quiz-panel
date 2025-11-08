@@ -25,6 +25,7 @@ class UserRepository {
       if (docSnap.exists) {
         return UserModel.fromFirestore(docSnap);
       } else {
+        // Yeh error string router provider ke liye bahut zaroori hai
         throw AppStrings.userDataNotFound;
       }
     } on FirebaseException catch (e) {
@@ -33,21 +34,18 @@ class UserRepository {
   }
 
   // Register user in firestore (For Email/Password)
-  // This function saves the user's data to the
-  // 'users' collection after they are created in Auth.
   Future<void> registerUserInFireStore({
     required UserCredential userCredential,
     required String name,
     required String role, // This will be 'student' or 'teacher'
   }) async {
-
     try {
       // Determine the status based on the role
       String status;
-      if(role == UserRoles.student) {
+      if (role == UserRoles.student) {
         // Students are auto-approved (but will need email verification)
         status = UserStatus.approved;
-      } else if(role == UserRoles.teacher) {
+      } else if (role == UserRoles.teacher) {
         // Teachers must be approved by an admin or super admin
         status = UserStatus.pending;
       } else {
@@ -64,27 +62,25 @@ class UserRepository {
         email: userCredential.user?.email ?? '',
         phoneNumber: userCredential.user?.phoneNumber,
         photoURL: userCredential.user?.photoURL,
-        authProviders: ['password'], // --- UPDATED ---: Specify auth provider
+        authProviders: ['password'], // Specify auth provider
         createdAt: Timestamp.now(),
         approvedBy: null, // No one has approved yet
         isActive: true,
       );
 
       // Create a WriteBatch to save all data at once
-      // A 'batch' ensures that either ALL writes succeed, or ALL fail.
-      // This prevents having a user in 'users' but not in 'profiles'
       final batch = _db.batch();
 
       // Set the main user document in 'users' collection
       final userDocRef = _db.collection('users').doc(newUser.uid);
 
-      // We must convert our UserModel to a Map to save it.
       batch.set(userDocRef, newUser.toMap());
 
       // Create the profile documents
-      if(role == UserRoles.student) {
+      if (role == UserRoles.student) {
         // Create a document in 'student_profiles'
-        final profileDocRef = _db.collection('student_profiles').doc(newUser.uid);
+        final profileDocRef =
+        _db.collection('student_profiles').doc(newUser.uid);
         batch.set(profileDocRef, {
           'studentId': newUser.uid,
           'name': name,
@@ -92,9 +88,10 @@ class UserRepository {
           'institution': null, // Can be filled out by user later
           'grade': null, // Can be filled out by user later
         });
-      } else if(role == UserRoles.teacher) {
+      } else if (role == UserRoles.teacher) {
         // Create a document in 'teacher_profiles'
-        final profileDocRef = _db.collection('teacher_profiles').doc(newUser.uid);
+        final profileDocRef =
+        _db.collection('teacher_profiles').doc(newUser.uid);
         batch.set(profileDocRef, {
           'teacherId': newUser.uid,
           'name': name,
@@ -106,11 +103,6 @@ class UserRepository {
 
       // Commit (save) the batch
       await batch.commit();
-
-      // TODO:
-      // We will add more functions here later, such as:
-      // - updateUserData(...)
-      // - approveUser(...)
     } on FirebaseException catch (e) {
       throw e.message ?? AppStrings.genericError;
     } catch (e) {
@@ -173,7 +165,75 @@ class UserRepository {
 
       // Commit the batch
       await batch.commit();
+    } on FirebaseException catch (e) {
+      throw e.message ?? AppStrings.genericError;
+    } catch (e) {
+      throw AppStrings.genericError;
+    }
+  }
 
+  // --- NEW FUNCTION (For Phone Sign-Up) ---
+  Future<void> registerPhoneUserInFirestore({
+    required User user,
+    required String name,
+    required String role, // 'student' or 'teacher'
+  }) async {
+    try {
+      final userDocRef = _db.collection('users').doc(user.uid);
+      final docSnap = await userDocRef.get();
+
+      // Failsafe: Agar user pehle se exist karta hai, toh kuch na karein
+      if (docSnap.exists) {
+        return;
+      }
+
+      // --- AAPKE REQUEST KE ANUSAAR: ---
+      // Sabhi naye phone users 'pending_approval' status se start karenge.
+      const status = UserStatus.pending;
+
+      final newUser = UserModel(
+        uid: user.uid,
+        role: role,
+        status: status, // Hamesha pending
+        displayName: name,
+        email: user.email ?? '', // Phone auth se email null ho sakta hai
+        phoneNumber: user.phoneNumber ?? '',
+        photoURL: user.photoURL,
+        authProviders: ['phone'], // Auth provider is phone
+        createdAt: Timestamp.now(),
+        approvedBy: null, // Pending hai
+        isActive: true, // Active hai, lekin pending
+      );
+
+      // Use a batch to create user and profile
+      final batch = _db.batch();
+
+      // Set user document
+      batch.set(userDocRef, newUser.toMap());
+
+      // Profile documents banayein
+      if (role == UserRoles.student) {
+        final profileDocRef =
+        _db.collection('student_profiles').doc(newUser.uid);
+        batch.set(profileDocRef, {
+          'studentId': newUser.uid,
+          'name': name,
+          'email': newUser.email,
+          'phone': newUser.phoneNumber,
+        });
+      } else if (role == UserRoles.teacher) {
+        final profileDocRef =
+        _db.collection('teacher_profiles').doc(newUser.uid);
+        batch.set(profileDocRef, {
+          'teacherId': newUser.uid,
+          'name': name,
+          'email': newUser.email,
+          'phone': newUser.phoneNumber,
+        });
+      }
+
+      // Batch ko commit (save) karein
+      await batch.commit();
     } on FirebaseException catch (e) {
       throw e.message ?? AppStrings.genericError;
     } catch (e) {

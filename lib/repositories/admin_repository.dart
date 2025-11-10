@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_panel/models/user_model.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
-
 import 'package:quiz_panel/utils/constants.dart';
 
 // --- 1. Provider for the Repository ---
@@ -118,7 +117,22 @@ class AdminRepository {
     }
   }
 
-// TODO: Hum yahaan future mein aur functions add karenge:
+  // --- 8. Update User Role ---
+  Future<void> updateUserRole({
+    required String uid,
+    required String newRole,
+  }) async {
+    try {
+      final userDocRef = _db.collection('users').doc(uid);
+      await userDocRef.update({'role': newRole});
+    } on FirebaseException catch (e) {
+      throw e.message ?? AppStrings.genericError;
+    } catch (e) {
+      throw AppStrings.genericError;
+    }
+  }
+
+  // TODO: Hum yahaan future mein aur functions add karenge:
 // - Future<void> deleteUser({required String uid})
 // - Future<void> updateUserRole({required String uid, required String newRole})
 }

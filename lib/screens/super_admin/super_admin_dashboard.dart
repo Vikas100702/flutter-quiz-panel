@@ -361,12 +361,13 @@ void _showConfirmationDialog({
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:quiz_panel/config/theme/app_theme.dart';
-import 'package:quiz_panel/models/user_model.dart'; // Import UserModel
 import 'package:quiz_panel/providers/admin_provider.dart';
 import 'package:quiz_panel/providers/auth_provider.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/repositories/admin_repository.dart';
+import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/utils/constants.dart'; // Import Constants for roles/status
 
@@ -422,7 +423,7 @@ class SuperAdminDashboard extends ConsumerWidget {
 }
 
 // -----------------------------------------------------------------
-// WIDGET 1: PENDING TEACHER LIST (No changes, this is your existing code)
+// WIDGET 1: PENDING TEACHER LIST
 // -----------------------------------------------------------------
 class _PendingTeacherList extends ConsumerWidget {
   const _PendingTeacherList();
@@ -559,6 +560,10 @@ class _AllUsersList extends ConsumerWidget {
           itemCount: users.length,
           itemBuilder: (context, index) {
             final user = users[index];
+
+            // --- 3. YEH CHECK KAREGA KI MANAGE BUTTON DIKHANA HAI YA NAHI ---
+            final bool canBeManaged = user.role == UserRoles.teacher ||
+                user.role == UserRoles.admin;
             return Card(
               margin: const EdgeInsets.all(8.0),
               child: ListTile(
@@ -660,6 +665,24 @@ class _AllUsersList extends ConsumerWidget {
                           );
                         },
                       ),
+                    ],
+
+                    // --- 4. MANAGE ROLE BUTTON ---
+                    if(canBeManaged) ...[
+                      const VerticalDivider(),
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        color: AppColors.primary,
+                        tooltip: AppStrings.manageUserButton,
+                        onPressed: () {
+                          // Nayi screen par navigate karein
+                          context.pushNamed(
+                            AppRouteNames.editUser,
+                            pathParameters: {'userId': user.uid},
+                            extra: user, // Poora user object pass karein
+                          );
+                        },
+                      )
                     ]
                   ],
                 ),

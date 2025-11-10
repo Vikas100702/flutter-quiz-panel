@@ -89,6 +89,10 @@ class AppStrings {
   static const String userReactivated = 'User Reactivated';
   static const String statusActive = 'Active';
   static const String statusInactive = 'Inactive';
+  static const String editUserRoleTitle = 'Edit User Role';
+  static const String saveChangesButton = 'Save Changes';
+  static const String roleUpdatedSuccess = 'User role updated successfully';
+  static const String manageUserButton = 'Manage User';
 
   // --- Teacher Dashboard ---
   static const String createSubjectTitle = 'Create New Subject';

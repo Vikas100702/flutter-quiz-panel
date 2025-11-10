@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:quiz_panel/models/quiz_model.dart';
 import 'package:quiz_panel/models/subject_model.dart';
+import 'package:quiz_panel/models/user_model.dart';
 import 'package:quiz_panel/screens/admin/admin_dashboard.dart';
 import 'package:quiz_panel/screens/auth/approval_pending_screen.dart';
 import 'package:quiz_panel/screens/auth/forgot_password_screen.dart';
@@ -16,6 +17,7 @@ import 'package:quiz_panel/screens/student/quiz_result_screen.dart';
 import 'package:quiz_panel/screens/student/quiz_start_screen.dart';
 import 'package:quiz_panel/screens/student/student_home_screen.dart';
 import 'package:quiz_panel/screens/student/student_quiz_list_screen.dart';
+import 'package:quiz_panel/screens/super_admin/edit_user_screen.dart';
 import 'package:quiz_panel/screens/super_admin/super_admin_dashboard.dart';
 import 'package:quiz_panel/screens/teacher/question_management_screen.dart'; // New
 import 'package:quiz_panel/screens/teacher/quiz_management_screen.dart';
@@ -48,6 +50,7 @@ class AppRoutePaths {
   // Admin paths
   static const String adminDashboard = '/admin/dashboard';
   static const String superAdminDashboard = '/superadmin/dashboard';
+  static const String editUser = '/superadmin/users/:userId/edit';
 }
 
 // This class holds all our route 'names'
@@ -78,6 +81,7 @@ class AppRouteNames {
   // Admin names
   static const String adminDashboard = 'adminDashboard';
   static const String superAdminDashboard = 'superAdminDashboard';
+  static const String editUser = 'editUser';
 }
 
 // This is the single source of truth for all our routes.
@@ -234,5 +238,19 @@ final List<GoRoute> appRoutes = [
     name: AppRouteNames.superAdminDashboard,
     builder: (context, state) => const SuperAdminDashboard(),
   ),
+  GoRoute(
+    path: AppRoutePaths.editUser,
+    name: AppRouteNames.editUser,
+    builder: (context, state) {
+      // Get the UserModel object passed during navigation
+      final UserModel? user = state.extra as UserModel?;
+      if (user == null) {
+        // Agar data nahi hai, toh Super Admin dashboard par waapas bhejein
+        return const SuperAdminDashboard();
+      }
+      return EditUserScreen(user: user);
+    },
+  ),
+
 ];
 

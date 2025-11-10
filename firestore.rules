@@ -48,7 +48,7 @@ service cloud.firestore {
 
         // users
         match /users/{userId} {
-            allow read, update, delete: if isSuperAdmin() ||
+            allow read, delete: if isSuperAdmin() ||
                     (isAdmin() && (resource.data.role == 'teacher' || resource.data.role == 'student')) ||
                     (isSignedIn() && request.auth.uid == userId);
 
@@ -58,6 +58,14 @@ service cloud.firestore {
                             request.auth.uid == userId
                     ) ||
                         isSuperAdmin();
+
+            allow update: if isSuperAdmin() || (isAdmin() && (resource.data.role == 'teacher' || resource.data.role == 'student'));
+
+            // Rule 2: Ek user khud ki non-critical info update kar sakta hai (Lekin apna role ya status nahi badal sakta)
+
+            allow update: if (isSignedIn() && request.auth.uid == userId) && request.resource.data.role == resource.data.role && request.resource.data.status == resource.data.status;
+
+
         }
 
         // subjects

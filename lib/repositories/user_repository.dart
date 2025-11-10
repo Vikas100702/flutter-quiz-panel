@@ -240,4 +240,42 @@ class UserRepository {
       throw AppStrings.genericError;
     }
   }
+
+  Future<void> updateUserData(
+      String uid, {
+        String? displayName,
+        String? phoneNumber,
+      }) async {
+    try {
+      final userDocRef = _db.collection('users').doc(uid);
+      final Map<String, dynamic> dataToUpdate = {};
+
+      if (displayName != null) {
+        dataToUpdate['displayName'] = displayName;
+      }
+      if (phoneNumber != null) {
+        dataToUpdate['phoneNumber'] = phoneNumber;
+      }
+
+      if (dataToUpdate.isNotEmpty) {
+        await userDocRef.update(dataToUpdate);
+
+        // Saath hi, role-specific profile ko bhi update karein
+        final userDoc = await userDocRef.get();
+        final user = UserModel.fromFirestore(userDoc);
+
+        if (user.role == UserRoles.student) {
+          final profileDocRef = _db.collection('student_profiles').doc(uid);
+          await profileDocRef.update(dataToUpdate);
+        } else if (user.role == UserRoles.teacher) {
+          final profileDocRef = _db.collection('teacher_profiles').doc(uid);
+          await profileDocRef.update(dataToUpdate);
+        }
+      }
+    } on FirebaseException catch (e) {
+      throw e.message ?? AppStrings.genericError;
+    } catch (e) {
+      throw AppStrings.genericError;
+    }
+  }
 }

@@ -94,6 +94,13 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
         backgroundColor: AppColors.primary,
         actions: [
           IconButton(
+            icon: const Icon(Icons.person_outline),
+            tooltip: 'Manage Profile',
+            onPressed: () {
+              context.push(AppRoutePaths.profile);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             tooltip: AppStrings.logoutButton,
             onPressed: () {

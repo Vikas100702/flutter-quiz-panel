@@ -11,6 +11,7 @@ import 'package:quiz_panel/screens/auth/phone_login_screen.dart';
 import 'package:quiz_panel/screens/auth/phone_register_details_screen.dart';
 import 'package:quiz_panel/screens/auth/register_screen.dart';
 import 'package:quiz_panel/screens/auth/verify_email_screen.dart';
+import 'package:quiz_panel/screens/profile/manage_profile_screen.dart';
 import 'package:quiz_panel/screens/splash/splash_screen.dart';
 import 'package:quiz_panel/screens/student/quiz_attempt_screen.dart';
 import 'package:quiz_panel/screens/student/quiz_result_screen.dart';
@@ -34,6 +35,7 @@ class AppRoutePaths {
   static const String register = '/register';
   static const String pendingApproval = '/pending-approval';
   static const String verifyEmail = '/verify-email';
+  static const String profile = '/profile';
 
   // Teacher paths
   static const String teacherDashboard = '/teacher/dashboard';
@@ -64,6 +66,7 @@ class AppRouteNames {
   static const String register = 'register';
   static const String pendingApproval = 'pendingApproval';
   static const String verifyEmail = 'verifyEmail';
+  static const String profile = '/profile';
 
   // Teacher names
   static const String teacherDashboard = 'teacherDashboard';
@@ -139,6 +142,11 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.verifyEmail,
     name: AppRouteNames.verifyEmail,
     builder: (context, state) => const VerifyEmailScreen(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.profile,
+    name: AppRouteNames.profile,
+    builder: (context, state) => const ManageProfileScreen(),
   ),
 
   // --- TEACHER ROUTES ---

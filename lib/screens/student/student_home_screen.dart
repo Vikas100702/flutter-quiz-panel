@@ -363,6 +363,13 @@ class StudentHomeScreen extends ConsumerWidget {
         title: const Text(AppStrings.studentDashboardTitle),
         actions: [
           IconButton(
+            icon: const Icon(Icons.person_outline),
+            tooltip: 'Manage Profile',
+            onPressed: () {
+              context.push(AppRoutePaths.profile);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             tooltip: AppStrings.logoutButton,
             onPressed: () {

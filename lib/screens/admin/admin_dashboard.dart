@@ -93,6 +93,13 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
           backgroundColor: AppColors.warning, // Admin color
           actions: [
             IconButton(
+              icon: const Icon(Icons.person_outline),
+              tooltip: 'Manage Profile',
+              onPressed: () {
+                context.push(AppRoutePaths.profile);
+              },
+            ),
+            IconButton(
               icon: const Icon(Icons.logout),
               tooltip: AppStrings.logoutButton,
               onPressed: () {

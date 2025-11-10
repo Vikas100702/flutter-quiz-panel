@@ -599,8 +599,13 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      // --- FIX: Using Wrap instead of Row ---
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween, // Horizontal jaisa behave karega jab tak space hai
+        runAlignment: WrapAlignment.center, // Center mein align karega jab wrap hoga
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 8.0, // Buttons ke beech horizontal space
+        runSpacing: 12.0, // Buttons ke beech vertical space (jab wrap ho)
         children: [
           // --- Previous Button ---
           ElevatedButton.icon(
@@ -625,6 +630,7 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
           ),
         ],
       ),
+      // --- END FIX ---
     );
   }
 }

@@ -234,8 +234,11 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                   '${quiz.totalQuestions} ${AppStrings.totalQuestionsLabel} | ${quiz.durationMin} ${AppStrings.minutesLabel}',
                   style: AppTextStyles.bodyMedium,
                 ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
+                // --- FIX: Using Wrap instead of Row ---
+                trailing: Wrap(
+                  spacing: 4.0, // horizontal space
+                  runSpacing: 4.0, // vertical space if it wraps
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Switch(
                       value: isPublished,
@@ -274,6 +277,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                     ),
                   ],
                 ),
+                // --- END FIX ---
               ),
             );
           },

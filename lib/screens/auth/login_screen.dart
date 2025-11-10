@@ -71,35 +71,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
       body: ResponsiveAuthLayout(
         // --- 4. FORM KO COLUMN MEIN WRAP KAREIN ---
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Purana Login Form
-            LoginForm(
-              emailController: _emailController,
-              passwordController: _passwordController,
-              isLoading: _isLoading,
-              onLogin: () => _loginUser(context),
-              onRegister: () => context.push(AppRoutePaths.register),
-              // onGoogleSignIn: () => _signInWithGoogle(context),
-            ),
-
-            // --- 5. YEH NAYA ANDROID-ONLY BUTTON HAI ---
-            if (isAndroid) ...[
-              const SizedBox(height: 16),
-              AppButton(
-                text: 'Login with Phone',
-                onPressed: _isLoading
-                    ? null
-                    : () {
-                  // Phone login route par navigate karein
-                  context.push(AppRoutePaths.phoneLogin);
-                },
-                type: AppButtonType.outline,
-                icon: Icons.phone,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            // mainAxisSize: MainAxisSize.min,
+            children: [
+              // Purana Login Form
+              LoginForm(
+                emailController: _emailController,
+                passwordController: _passwordController,
+                isLoading: _isLoading,
+                onLogin: () => _loginUser(context),
+                onRegister: () => context.push(AppRoutePaths.register),
+                // onGoogleSignIn: () => _signInWithGoogle(context),
               ),
+          
+              // --- 5. YEH NAYA ANDROID-ONLY BUTTON HAI ---
+              if (isAndroid) ...[
+                const SizedBox(height: 16),
+                AppButton(
+                  text: 'Login with Phone',
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                    // Phone login route par navigate karein
+                    context.push(AppRoutePaths.phoneLogin);
+                  },
+                  type: AppButtonType.outline,
+                  icon: Icons.phone,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

@@ -11,7 +11,7 @@ import 'package:quiz_panel/repositories/admin_repository.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/utils/constants.dart';
-import 'package:quiz_panel/utils/responsive.dart'; // <-- 1. IMPORT
+// import 'package:quiz_panel/utils/responsive.dart'; // Ab iski zaroorat nahi hai
 
 class SuperAdminDashboard extends ConsumerWidget {
   const SuperAdminDashboard({super.key});
@@ -67,7 +67,7 @@ class SuperAdminDashboard extends ConsumerWidget {
 }
 
 // -----------------------------------------------------------------
-// WIDGET 1: PENDING TEACHER LIST (Unchanged)
+// WIDGET 1: PENDING TEACHER LIST (Yeh theek hai, isme changes ki zaroorat nahi)
 // -----------------------------------------------------------------
 class _PendingTeacherList extends ConsumerWidget {
   const _PendingTeacherList();
@@ -164,7 +164,7 @@ class _PendingTeacherList extends ConsumerWidget {
 }
 
 // -----------------------------------------------------------------
-// WIDGET 2: ALL USERS LIST (MODIFIED)
+// WIDGET 2: ALL USERS LIST (MODIFIED FOR MOBILE)
 // -----------------------------------------------------------------
 class _AllUsersList extends ConsumerWidget {
   const _AllUsersList();
@@ -182,39 +182,73 @@ class _AllUsersList extends ConsumerWidget {
         }
 
         return ListView.builder(
+          padding: const EdgeInsets.all(8.0), // List ke liye padding
           itemCount: users.length,
           itemBuilder: (context, index) {
             final user = users[index];
 
+            // --- FIX: ListTile ko Custom Card se replace kiya ---
             return Card(
-              margin: const EdgeInsets.all(8.0),
-              child: ListTile(
-                title: Text(user.displayName),
-                subtitle: Text(user.email),
-                onTap: Responsive.isMobile(context)
-                    ? null // Mobile par onTap disable karein
-                    : () {
-                  // Desktop par onTap active rakhein
-                  context.pushNamed(
-                    AppRouteNames.userDetails,
-                    pathParameters: {'userId': user.uid},
-                    extra: user,
-                  );
-                },
-                // --- 3. RESPONSIVE TRAILING ACTIONS ---
-                trailing: Responsive.isMobile(context)
-                    ? _buildMobileActions(context, ref, user)
-                    : _buildDesktopActions(context, ref, user),
+              margin: const EdgeInsets.symmetric(vertical: 6.0),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Row 1: Name and Actions
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Name
+                        Expanded(
+                          child: Text(
+                            user.displayName,
+                            style: AppTextStyles.titleLarge,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        // Action Icons
+                        _buildActionIcons(context, ref, user),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+
+                    // Row 2: Email
+                    Text(
+                      user.email,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textTertiary),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Divider(height: 16),
+
+                    // Row 3: Chips
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 4.0,
+                      children: [
+                        _buildRoleChip(user.role),
+                        _buildStatusChip(user.status, user.isActive),
+                      ],
+                    )
+                  ],
+                ),
               ),
             );
+            // --- END FIX ---
           },
         );
       },
     );
   }
 
-  // --- 4. DESKTOP/TABLET LAYOUT: Buttons in a Row ---
-  Widget _buildDesktopActions(
+  // --- NEW HELPER: Sirf action icons dikhane ke liye ---
+  Widget _buildActionIcons(
       BuildContext context, WidgetRef ref, UserModel user) {
     final bool canBeManaged =
         user.role == UserRoles.teacher || user.role == UserRoles.admin;
@@ -222,11 +256,6 @@ class _AllUsersList extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildRoleChip(user.role),
-        const SizedBox(width: 8),
-        _buildStatusChip(user.status, user.isActive),
-        const SizedBox(width: 8),
-
         // Approve/Reject (sirf pending users ke liye)
         if (user.status == UserStatus.pending) ...[
           IconButton(
@@ -258,97 +287,27 @@ class _AllUsersList extends ConsumerWidget {
 
         // Manage Role (sirf teacher/admin ke liye)
         if (canBeManaged) ...[
-          const VerticalDivider(),
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: const Icon(Icons.edit, size: 20),
             color: AppColors.primary,
             tooltip: AppStrings.manageUserButton,
             onPressed: () => _onManagePressed(context, user),
           ),
-        ]
-      ],
-    );
-  }
-
-  // --- 5. MOBILE LAYOUT: PopupMenuButton ---
-  Widget _buildMobileActions(
-      BuildContext context, WidgetRef ref, UserModel user) {
-    final bool canBeManaged =
-        user.role == UserRoles.teacher || user.role == UserRoles.admin;
-
-    return PopupMenuButton<String>(
-      onSelected: (value) {
-        if (value == 'view') {
-          _onViewPressed(context, user);
-        }
-        if (value == 'approve') {
-          _onApprovePressed(context, ref, user);
-        } else if (value == 'reject') {
-          _onRejectPressed(context, ref, user);
-        } else if (value == 'deactivate') {
-          _onDeactivatePressed(context, ref, user, !user.isActive);
-        } else if (value == 'manage') {
-          _onManagePressed(context, user);
-        }
-      },
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        // Role/Status ko non-clickable display ke liye
-        PopupMenuItem(
-          enabled: false,
-          child: Wrap(
-            spacing: 8,
-            children: [
-              _buildRoleChip(user.role),
-              _buildStatusChip(user.status, user.isActive),
-            ],
-          ),
-        ),
-        const PopupMenuDivider(),
-
-        // Conditional actions
-        if (user.status == UserStatus.pending) ...[
-          PopupMenuItem<String>(
-            value: 'approve',
-            child: const ListTile(
-              leading: Icon(Icons.check, color: AppColors.success),
-              title: Text(AppStrings.approveButton),
-            ),
-          ),
-          PopupMenuItem<String>(
-            value: 'reject',
-            child: const ListTile(
-              leading: Icon(Icons.close, color: AppColors.error),
-              title: Text(AppStrings.rejectButton),
-            ),
-          ),
-        ] else if (user.role != UserRoles.superAdmin) ...[
-          PopupMenuItem<String>(
-            value: 'deactivate',
-            child: ListTile(
-              leading: Icon(
-                user.isActive ? Icons.block : Icons.check_circle_outline,
-                color: user.isActive ? AppColors.error : AppColors.success,
-              ),
-              title: Text(user.isActive
-                  ? AppStrings.deactivateUserButton
-                  : AppStrings.reactivateUserButton),
-            ),
-          ),
         ],
-        if (canBeManaged) ...[
-          PopupMenuItem<String>(
-            value: 'manage',
-            child: const ListTile(
-              leading: Icon(Icons.edit, color: AppColors.primary),
-              title: Text(AppStrings.manageUserButton),
-            ),
-          ),
-        ]
+
+        // View Details Button (Mobile ke liye zaroori)
+        IconButton(
+          icon: const Icon(Icons.arrow_forward_ios, size: 16),
+          color: AppColors.textTertiary,
+          tooltip: 'View Details',
+          onPressed: () => _onViewPressed(context, user),
+        ),
       ],
     );
   }
 
-  // --- 4. YEH NAYA HELPER FUNCTION ADD KAREIN ---
+  // --- Action Handlers (Inhe extract kar liya) ---
+
   void _onViewPressed(BuildContext context, UserModel user) {
     context.pushNamed(
       AppRouteNames.userDetails,
@@ -357,7 +316,6 @@ class _AllUsersList extends ConsumerWidget {
     );
   }
 
-  // --- 6. Refactored logic ---
   void _onApprovePressed(BuildContext context, WidgetRef ref, UserModel user) {
     final currentAdminUid = ref.read(userDataProvider).value?.uid;
     if (currentAdminUid == null) return;
@@ -446,36 +404,48 @@ class _AllUsersList extends ConsumerWidget {
       avatar: Icon(icon, color: Colors.white, size: 16),
       label: Text(role, style: const TextStyle(color: Colors.white)),
       backgroundColor: color,
+      labelPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+      padding: const EdgeInsets.all(4.0),
     );
   }
 
   // Helper widget
   Widget _buildStatusChip(String status, bool isActive) {
     if (!isActive) {
-      return const Chip(
-        label: Text(AppStrings.statusInactive,
+      return Chip(
+        avatar: const Icon(Icons.block, color: Colors.white, size: 16),
+        label: const Text(AppStrings.statusInactive,
             style: TextStyle(color: Colors.white)),
         backgroundColor: AppColors.textTertiary,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+        padding: const EdgeInsets.all(4.0),
       );
     }
     Color color;
     String label;
+    IconData icon;
     switch (status) {
       case UserStatus.approved:
         color = AppColors.success;
         label = AppStrings.statusActive;
+        icon = Icons.check_circle;
         break;
       case UserStatus.pending:
         color = AppColors.warning;
         label = UserStatus.pending;
+        icon = Icons.pending;
         break;
       default:
         color = AppColors.error;
         label = UserStatus.rejected;
+        icon = Icons.cancel;
     }
     return Chip(
+      avatar: Icon(icon, color: Colors.white, size: 16),
       label: Text(label, style: const TextStyle(color: Colors.white)),
       backgroundColor: color,
+      labelPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+      padding: const EdgeInsets.all(4.0),
     );
   }
 }

@@ -54,10 +54,10 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
       await ref
           .read(quizRepositoryProvider)
           .createSubject(
-            name: _nameController.text.trim(),
-            description: _descController.text.trim(),
-            teacherUid: teacherUid,
-          );
+        name: _nameController.text.trim(),
+        description: _descController.text.trim(),
+        teacherUid: teacherUid,
+      );
 
       _showError(AppStrings.subjectCreatedSuccess, isError: false);
       _nameController.clear();
@@ -132,7 +132,7 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
     );
   }
 
-  // --- Helper Widget: Create Subject Form ---
+  // --- Helper Widget: Create Subject Form (FIXED) ---
   Widget _buildCreateSubjectForm(BuildContext context) {
     return Card(
       elevation: 4,
@@ -147,17 +147,31 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
               style: AppTextStyles.titleLarge,
             ),
             const SizedBox(height: 24),
-            AppTextField(
-              controller: _nameController,
-              label: AppStrings.subjectNameLabel,
-              prefixIcon: Icons.title,
+            // --- FIX: Using Wrap for responsiveness ---
+            Wrap(
+              runSpacing: 16,
+              spacing: 16,
+              children: [
+                ConstrainedBox(
+                  // MinWidth rakhein taaki desktop par accha dikhe
+                  constraints: const BoxConstraints(minWidth: 250),
+                  child: AppTextField(
+                    controller: _nameController,
+                    label: AppStrings.subjectNameLabel,
+                    prefixIcon: Icons.title,
+                  ),
+                ),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 250),
+                  child: AppTextField(
+                    controller: _descController,
+                    label: AppStrings.subjectDescLabel,
+                    prefixIcon: Icons.description,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            AppTextField(
-              controller: _descController,
-              label: AppStrings.subjectDescLabel,
-              prefixIcon: Icons.description,
-            ),
+            // --- END FIX ---
             const SizedBox(height: 20),
             AppButton(
               text: AppStrings.createSubjectButton,
@@ -172,156 +186,6 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
   }
 
   // --- Helper Widget: Subject List ---
-  //    (We pass 'ref' to call repository functions)
-  /*Widget _buildSubjectsList(BuildContext context, WidgetRef ref) {
-    final subjectsAsync = ref.watch(subjectsProvider);
-
-    return subjectsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) {
-        // This is where the Firestore Index error appeared
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              '${AppStrings.firestoreIndexError}\n\nError: ${error.toString()}',
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        );
-      },
-      data: (subjects) {
-        if (subjects.isEmpty) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(AppStrings.noSubjectsFound),
-            ),
-          );
-        }
-
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            int crossAxisCount = 1;
-            if (constraints.maxWidth > 1200) {
-              crossAxisCount = 3;
-            }
-            else if (constraints.maxWidth > 800) {
-              crossAxisCount = 2;
-            }
-
-            return GridView.builder(
-              itemCount: subjects.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                childAspectRatio: 2.8, // Make cards a bit wider
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemBuilder: (context, index) {
-                final subject = subjects[index];
-                // Check if the subject is published
-                final bool isPublished = subject.status == 'published';
-
-                return Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // --- 1. CLICKABLE AREA (FOR NAVIGATION) ---
-                        InkWell(
-                          onTap: () {
-                            context.pushNamed(
-                              AppRouteNames.quizManagement,
-                              pathParameters: {'subjectId': subject.subjectId},
-                              extra: subject,
-                            );
-                          },
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                subject.name,
-                                style: Theme.of(context).textTheme.titleLarge,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (subject.description != null && subject.description!.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4.0),
-                                  child: Text(
-                                    subject.description!,
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-
-                        // --- 2. NEW WIDGETS (STATUS & BUTTON) ---
-                        const Spacer(), // Pushes to the bottom
-                        const Divider(),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // Status Text
-                              Text(
-                                '${AppStrings.subjectStatusLabel} ${isPublished ? AppStrings.subjectStatusPublished : AppStrings.subjectStatusDraft}',
-                                style: TextStyle(
-                                  color: isPublished ? Colors.green[700] : Colors.orange[700],
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-
-                              // Publish/Unpublish Button
-                              TextButton(
-                                style: TextButton.styleFrom(
-                                  foregroundColor: isPublished ? Colors.red : Colors.green,
-                                ),
-                                child: Text(isPublished ? AppStrings.unpublishButton : AppStrings.publishButton),
-                                onPressed: () async {
-                                  // This is the toggle logic
-                                  final newStatus = isPublished ? 'draft' : 'published';
-                                  try {
-                                    // Call the 'Chef'
-                                    await ref.read(quizRepositoryProvider).updateSubjectStatus(
-                                      subjectId: subject.subjectId,
-                                      newStatus: newStatus,
-                                    );
-                                    if (mounted) {
-                                      _showError(AppStrings.subjectStatusUpdated, isError: false);
-                                    }
-                                  } catch (e) {
-                                    _showError(e.toString());
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  }*/
   Widget _buildSubjectsList(BuildContext context, WidgetRef ref) {
     // 2. Watch the 'Manager' (subjectsProvider)
     final subjectsAsync = ref.watch(subjectsProvider);
@@ -457,9 +321,9 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                             ref
                                 .read(quizRepositoryProvider)
                                 .updateSubjectStatus(
-                                  subjectId: subject.subjectId,
-                                  newStatus: newStatus,
-                                );
+                              subjectId: subject.subjectId,
+                              newStatus: newStatus,
+                            );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(

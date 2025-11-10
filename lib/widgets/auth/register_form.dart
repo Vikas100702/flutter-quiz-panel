@@ -31,6 +31,29 @@ class RegisterForm extends StatelessWidget {
     required this.onLogin,
   });
 
+  String? _passwordValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return AppStrings.passwordRequiredError;
+    }
+    if (value.length < 6) {
+      return AppStrings.passwordMinLength;
+    }
+    if (!value.contains(RegExp(r'[A-Z]'))) {
+      return AppStrings.passwordUppercaseError;
+    }
+    if (!value.contains(RegExp(r'[a-z]'))) {
+      return AppStrings.passwordLowercaseError;
+    }
+    if (!value.contains(RegExp(r'[0-9]'))) {
+      return AppStrings.passwordNumberError;
+    }
+    // Aap special characters ki list ko customize kar sakte hain
+    if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+      return AppStrings.passwordSpecialCharError;
+    }
+    return null; // Sab theek hai
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -73,6 +96,7 @@ class RegisterForm extends StatelessWidget {
               isPassword: true,
               hint: AppStrings.passwordMinLength,
               onSubmitted: (_) => _handleSubmit(context),
+              validator: _passwordValidator,
             ),
             const SizedBox(height: 24),
 

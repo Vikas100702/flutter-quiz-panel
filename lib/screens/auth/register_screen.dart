@@ -60,6 +60,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             .sendEmailVerification(userCredential.user!);
         // --- END NEW ---
       }
+
+      if(mounted) {
+        context.go(AppRoutePaths.splash);
+      }
       // राउटर बाकी काम खुद करेगा (यूजर को /verify-email पर रीडायरेक्ट करेगा)
     } catch (e) {
       if (mounted) {

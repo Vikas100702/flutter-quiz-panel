@@ -48,12 +48,14 @@ class _AppTextFieldState extends State<AppTextField> {
           ),
         ),
         const SizedBox(height: 8),
-        TextField(
+        TextFormField(
           controller: widget.controller,
           obscureText: widget.isPassword && _obscureText,
           keyboardType: widget.keyboardType,
           enabled: widget.enabled,
-          onSubmitted: widget.onSubmitted,
+          onFieldSubmitted: widget.onSubmitted,
+          validator: widget.validator,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
             hintText: widget.hint,
             prefixIcon: widget.prefixIcon != null

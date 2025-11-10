@@ -32,6 +32,13 @@ class AppStrings {
   static const String haveAccount = 'Already have an account?';
   static const String loginNow = 'Login Now';
 
+  // --- NEW PASSWORD ERRORS ---
+  static const String passwordRequiredError = 'Password is required.';
+  static const String passwordUppercaseError = 'Password must contain an uppercase letter.';
+  static const String passwordLowercaseError = 'Password must contain a lowercase letter.';
+  static const String passwordNumberError = 'Password must contain a number.';
+  static const String passwordSpecialCharError = 'Password must contain a special character (e.g., !@#\$%).';
+
   // --- Email Verify Screen --- (ALL NEW)
   static const String verifyEmailTitle = 'Verify Your Email';
   static const String verifyEmailMessage = 'A verification link has been sent to:';

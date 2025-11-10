@@ -64,3 +64,24 @@ final allUsersProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
     error: (e, s) => Stream.value([]),
   );
 });
+
+// --- 3. Stream Provider for Managed Users (Sirf Admin ke liye) ---
+final adminManagedUsersProvider =
+StreamProvider.autoDispose<List<UserModel>>((ref) {
+  final currentUserData = ref.watch(userDataProvider);
+
+  return currentUserData.when(
+    data: (user) {
+      // Yeh provider sirf Admin ke liye chalega
+      if (user != null && user.role == UserRoles.admin) {
+        final adminRepo = ref.watch(adminRepositoryProvider);
+        // Naya function call karein
+        return adminRepo.getManagedUsers();
+      } else {
+        return Stream.value([]);
+      }
+    },
+    loading: () => Stream.value([]),
+    error: (e, s) => Stream.value([]),
+  );
+});

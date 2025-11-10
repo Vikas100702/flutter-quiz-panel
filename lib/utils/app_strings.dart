@@ -93,6 +93,9 @@ class AppStrings {
   static const String saveChangesButton = 'Save Changes';
   static const String roleUpdatedSuccess = 'User role updated successfully';
   static const String manageUserButton = 'Manage User';
+  static const String manageUsersTitle = 'Manage Users';
+  static const String myContentTitle = 'My Content';
+  static const String noManagedUsers = 'No teachers or students found.';
 
   // --- Teacher Dashboard ---
   static const String createSubjectTitle = 'Create New Subject';

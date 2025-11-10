@@ -81,7 +81,7 @@ class AdminRepository {
     }
   }
 
-  // --- 6. Get All Users ---
+  // --- 6. Get All Users (for super admin) ---
   Stream<List<UserModel>> getAllUsers() {
     try {
       return _db
@@ -117,7 +117,7 @@ class AdminRepository {
     }
   }
 
-  // --- 8. Update User Role ---
+  // --- 8. Update User Role (For Super Admin) ---
   Future<void> updateUserRole({
     required String uid,
     required String newRole,
@@ -129,6 +129,26 @@ class AdminRepository {
       throw e.message ?? AppStrings.genericError;
     } catch (e) {
       throw AppStrings.genericError;
+    }
+  }
+
+  // --- 9. Get Managed Users (For Admin) ---
+  // Gets only teachers and students
+  Stream<List<UserModel>> getManagedUsers() {
+    try {
+      return _db
+          .collection('users')
+          // Yeh query 'teacher' aur 'student' roles waale users ko laayegi
+          .where('role', whereIn: [UserRoles.teacher, UserRoles.student])
+          .orderBy('createdAt', descending: true)
+          .snapshots()
+          .map((snapshot) {
+            return snapshot.docs
+                .map((doc) => UserModel.fromFirestore(doc))
+                .toList();
+          });
+    } catch (e) {
+      return Stream.value([]);
     }
   }
 

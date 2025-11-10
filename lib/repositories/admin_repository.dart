@@ -152,6 +152,32 @@ class AdminRepository {
     }
   }
 
+  // --- 10. Get Role-Specific Profile Data ---
+  Future<Map<String, dynamic>> getRoleProfileData(String uid,
+      String role) async {
+    String profileCollection;
+    if (role == UserRoles.student) {
+      profileCollection = 'student_profiles';
+    } else if (role == UserRoles.teacher) {
+      profileCollection = 'teacher_profiles';
+    } else {
+      // Admin/SuperAdmin ke paas separate profile collection nahi hai
+      return {};
+    }
+
+    try {
+      final docSnap = await _db.collection(profileCollection).doc(uid).get();
+      if (docSnap.exists) {
+        return docSnap.data() as Map<String, dynamic>;
+      }
+      return {};
+    } catch (e) {
+      // Error throw mat karein, bas empty data return karein
+      print('Error fetching profile data: $e');
+      return {};
+    }
+  }
+
   // TODO: Hum yahaan future mein aur functions add karenge:
 // - Future<void> deleteUser({required String uid})
 // - Future<void> updateUserRole({required String uid, required String newRole})

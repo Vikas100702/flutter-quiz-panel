@@ -41,7 +41,7 @@ class SuperAdminDashboard extends ConsumerWidget {
             ),
           ],
           bottom: const TabBar(
-            isScrollable: true, // <-- 2. Mobile par scrollable
+            tabAlignment: TabAlignment.fill,
             indicatorColor: Colors.white,
             tabs: [
               Tab(
@@ -191,6 +191,16 @@ class _AllUsersList extends ConsumerWidget {
               child: ListTile(
                 title: Text(user.displayName),
                 subtitle: Text(user.email),
+                onTap: Responsive.isMobile(context)
+                    ? null // Mobile par onTap disable karein
+                    : () {
+                  // Desktop par onTap active rakhein
+                  context.pushNamed(
+                    AppRouteNames.userDetails,
+                    pathParameters: {'userId': user.uid},
+                    extra: user,
+                  );
+                },
                 // --- 3. RESPONSIVE TRAILING ACTIONS ---
                 trailing: Responsive.isMobile(context)
                     ? _buildMobileActions(context, ref, user)
@@ -268,6 +278,9 @@ class _AllUsersList extends ConsumerWidget {
 
     return PopupMenuButton<String>(
       onSelected: (value) {
+        if (value == 'view') {
+          _onViewPressed(context, user);
+        }
         if (value == 'approve') {
           _onApprovePressed(context, ref, user);
         } else if (value == 'reject') {
@@ -332,6 +345,15 @@ class _AllUsersList extends ConsumerWidget {
           ),
         ]
       ],
+    );
+  }
+
+  // --- 4. YEH NAYA HELPER FUNCTION ADD KAREIN ---
+  void _onViewPressed(BuildContext context, UserModel user) {
+    context.pushNamed(
+      AppRouteNames.userDetails,
+      pathParameters: {'userId': user.uid},
+      extra: user,
     );
   }
 

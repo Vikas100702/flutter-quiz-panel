@@ -3,6 +3,7 @@ import 'package:quiz_panel/models/quiz_model.dart';
 import 'package:quiz_panel/models/subject_model.dart';
 import 'package:quiz_panel/models/user_model.dart';
 import 'package:quiz_panel/screens/admin/admin_dashboard.dart';
+import 'package:quiz_panel/screens/admin/user_details_screen.dart';
 import 'package:quiz_panel/screens/auth/approval_pending_screen.dart';
 import 'package:quiz_panel/screens/auth/forgot_password_screen.dart';
 import 'package:quiz_panel/screens/auth/login_screen.dart';
@@ -53,6 +54,7 @@ class AppRoutePaths {
   static const String adminDashboard = '/admin/dashboard';
   static const String superAdminDashboard = '/superadmin/dashboard';
   static const String editUser = '/superadmin/users/:userId/edit';
+  static const String userDetails = '/admin/users/:userId/details';
 }
 
 // This class holds all our route 'names'
@@ -85,6 +87,7 @@ class AppRouteNames {
   static const String adminDashboard = 'adminDashboard';
   static const String superAdminDashboard = 'superAdminDashboard';
   static const String editUser = 'editUser';
+  static const String userDetails = 'userDetails';
 }
 
 // This is the single source of truth for all our routes.
@@ -257,6 +260,19 @@ final List<GoRoute> appRoutes = [
         return const SuperAdminDashboard();
       }
       return EditUserScreen(user: user);
+    },
+  ),
+  GoRoute(
+    path: AppRoutePaths.userDetails,
+    name: AppRouteNames.userDetails,
+    builder: (context, state) {
+      // Get the UserModel object passed during navigation
+      final UserModel? user = state.extra as UserModel?;
+      if (user == null) {
+        // Agar data nahi hai, toh fallback
+        return const LoginScreen();
+      }
+      return UserDetailsScreen(user: user);
     },
   ),
 

@@ -108,7 +108,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             ),
           ],
           bottom: const TabBar(
-            isScrollable: true, // <-- 2. Mobile par scrollable
+            tabAlignment: TabAlignment.fill,
             indicatorColor: Colors.white,
             tabs: [
               Tab(
@@ -494,6 +494,16 @@ class _ManagedUserList extends ConsumerWidget {
               child: ListTile(
                 title: Text(user.displayName),
                 subtitle: Text(user.email),
+                onTap: Responsive.isMobile(context)
+                    ? null // Mobile par onTap disable karein
+                    : () {
+                  // Desktop par onTap active rakhein
+                  context.pushNamed(
+                    AppRouteNames.userDetails,
+                    pathParameters: {'userId': user.uid},
+                    extra: user,
+                  );
+                },
                 // --- 6. RESPONSIVE TRAILING ACTIONS ---
                 trailing: Responsive.isMobile(context)
                     ? _buildMobileActions(context, ref, user)
@@ -536,7 +546,10 @@ class _ManagedUserList extends ConsumerWidget {
       BuildContext context, WidgetRef ref, UserModel user) {
     return PopupMenuButton<String>(
       onSelected: (value) {
-        if (value == 'deactivate') {
+        if (value == 'view') {
+          _onViewPressed(context, user);
+        }
+        else if (value == 'deactivate') {
           _onDeactivatePressed(context, ref, user, !user.isActive);
         }
       },
@@ -567,6 +580,15 @@ class _ManagedUserList extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  // --- 4. YEH NAYA HELPER FUNCTION ADD KAREIN ---
+  void _onViewPressed(BuildContext context, UserModel user) {
+    context.pushNamed(
+      AppRouteNames.userDetails,
+      pathParameters: {'userId': user.uid},
+      extra: user,
     );
   }
 

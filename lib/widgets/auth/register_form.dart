@@ -31,31 +31,6 @@ class RegisterForm extends StatelessWidget {
     required this.onLogin,
   });
 
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Password is required.';
-    }
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters long.';
-    }
-    if (value.length > 4096) {
-      return 'Password cannot be longer than 4096 characters.';
-    }
-    if (!value.contains(RegExp(r'[A-Z]'))) {
-      return 'Password must contain at least one uppercase letter.';
-    }
-    if (!value.contains(RegExp(r'[a-z]'))) {
-      return 'Password must contain at least one lowercase letter.';
-    }
-    if (!value.contains(RegExp(r'[0-9]'))) {
-      return 'Password must contain at least one number.';
-    }
-    if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
-      return 'Password must contain at least one special character.';
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -97,7 +72,6 @@ class RegisterForm extends StatelessWidget {
               prefixIcon: Icons.lock_rounded,
               isPassword: true,
               hint: AppStrings.passwordMinLength,
-              validator: _validatePassword,
               onSubmitted: (_) => _handleSubmit(context),
             ),
             const SizedBox(height: 24),

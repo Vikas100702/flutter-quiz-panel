@@ -6,17 +6,18 @@ import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/widgets/buttons/app_button.dart';
 import 'package:quiz_panel/widgets/layout/responsive_layout.dart';
+import 'package:quiz_panel/utils/responsive.dart'; // <-- 1. IMPORT RESPONSIVE HELPER
 
 class ApprovalPendingScreen extends ConsumerStatefulWidget {
   const ApprovalPendingScreen({super.key});
 
   @override
-  ConsumerState<ApprovalPendingScreen> createState() => _ApprovalPendingScreenState();
+  ConsumerState<ApprovalPendingScreen> createState() =>
+      _ApprovalPendingScreenState();
 }
 
 class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     with SingleTickerProviderStateMixin {
-
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
@@ -58,7 +59,9 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
   }
 
   Future<void> _handleSignOut() async {
-    setState(() { _isLoggingOut = true; });
+    setState(() {
+      _isLoggingOut = true;
+    });
 
     try {
       await ref.read(authRepositoryProvider).signOut();
@@ -73,19 +76,25 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
       }
     } finally {
       if (mounted) {
-        setState(() { _isLoggingOut = false; });
+        setState(() {
+          _isLoggingOut = false;
+        });
       }
     }
   }
 
   Future<void> _checkStatus() async {
-    setState(() { _isCheckingStatus = true; });
+    setState(() {
+      _isCheckingStatus = true;
+    });
 
     // Simulate API call to check status
     await Future.delayed(const Duration(seconds: 2));
 
     if (mounted) {
-      setState(() { _isCheckingStatus = false; });
+      setState(() {
+        _isCheckingStatus = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Status checked - still pending approval'),
@@ -150,7 +159,7 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
               const SizedBox(height: 40),
 
               // Action Buttons
-              _buildActionButtons(),
+              _buildActionButtons(), // <-- 2. YEH WIDGET AB RESPONSIVE HAI
             ],
           ),
         ),
@@ -339,25 +348,44 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     );
   }
 
+  // --- 3. YEH METHOD UPDATE KIYA GAYA ---
   Widget _buildActionButtons() {
-    return Column(
-      children: [
-        AppButton(
-          text: 'Check Status',
-          onPressed: _isCheckingStatus || _isLoggingOut ? null : _checkStatus,
-          isLoading: _isCheckingStatus,
-          type: AppButtonType.outline,
-          icon: Icons.refresh_rounded,
-        ),
-        const SizedBox(height: 12),
-        AppButton(
-          text: AppStrings.logoutButton,
-          onPressed: _isLoggingOut || _isCheckingStatus ? null : _handleSignOut,
-          isLoading: _isLoggingOut,
-          type: AppButtonType.text,
-          icon: Icons.logout_rounded,
-        ),
-      ],
+    // Button widgets ko define karein
+    final checkStatusButton = AppButton(
+      text: 'Check Status',
+      onPressed: _isCheckingStatus || _isLoggingOut ? null : _checkStatus,
+      isLoading: _isCheckingStatus,
+      type: AppButtonType.outline,
+      icon: Icons.refresh_rounded,
+    );
+
+    final logoutButton = AppButton(
+      text: AppStrings.logoutButton,
+      onPressed: _isLoggingOut || _isCheckingStatus ? null : _handleSignOut,
+      isLoading: _isLoggingOut,
+      type: AppButtonType.text,
+      icon: Icons.logout_rounded,
+    );
+
+    // Responsive helper ka istemaal karein
+    return Responsive(
+      // Mobile: Column mein
+      mobile: Column(
+        children: [
+          checkStatusButton,
+          const SizedBox(height: 12),
+          logoutButton,
+        ],
+      ),
+      // Desktop: Row mein
+      desktop: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          checkStatusButton,
+          const SizedBox(width: 16),
+          logoutButton,
+        ],
+      ),
     );
   }
 }

@@ -1,384 +1,25 @@
-/*
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quiz_panel/providers/admin_provider.dart';
-import 'package:quiz_panel/providers/auth_provider.dart';
-import 'package:quiz_panel/providers/user_data_provider.dart';
-import 'package:quiz_panel/repositories/admin_repository.dart';
-import 'package:quiz_panel/utils/app_strings.dart';
-import 'package:quiz_panel/utils/constants.dart';
-
-class SuperAdminDashboard extends ConsumerWidget {
-  const SuperAdminDashboard({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppStrings.superAdminDashboardTitle),
-        backgroundColor: Colors.red[700],
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: AppStrings.logoutButton,
-            onPressed: () {
-              ref.read(authRepositoryProvider).signOut();
-            },
-          ),
-        ],
-      ),
-      // We extracted the list to its own widget
-      body: const _PendingTeacherList(),
-    );
-  }
-}
-
-// -----------------------------------------------------------------
-// WIDGET 1: PENDING TEACHER LIST
-// -----------------------------------------------------------------
-
-// This widget handles fetching and displaying the list
-class _PendingTeacherList extends ConsumerWidget {
-  const _PendingTeacherList();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // We watch the "manager" provider
-    final pendingUsers = ref.watch(pendingTeachersProvider);
-
-    // Use .when() to handle loading, error, and data states
-    return pendingUsers.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, s) => Center(child: Text('Error: ${e.toString()}')),
-      data: (users) {
-        // If the list is empty, show a message
-        if (users.isEmpty) {
-          return const Center(child: Text(AppStrings.noPendingApprovals));
-        }
-
-        // If we have data, build the list
-        return ListView.builder(
-          itemCount: users.length,
-          itemBuilder: (context, index) {
-            final user = users[index];
-
-            return Card(
-              margin: const EdgeInsets.all(8.0),
-              child: ListTile(
-                title: Text(user.displayName),
-                subtitle: Text(user.email),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // --- REJECT BUTTON (FIXED) ---
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      color: Colors.red,
-                      tooltip: AppStrings.rejectButton,
-                      onPressed: () {
-                        // --- THIS IS THE FIX ---
-                        // Show confirmation dialog FIRST
-                        _showConfirmationDialog(
-                          context: context,
-                          title: AppStrings.rejectConfirm,
-                          confirmActionText: AppStrings.rejectButton,
-                          onConfirm: () {
-                            // Call the repo function
-                            ref.read(adminRepositoryProvider).rejectUser(uid: user.uid);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text(AppStrings.userRejected), backgroundColor: Colors.red),
-                            );
-                          },
-                        );
-                        // --- END FIX ---
-                      },
-                    ),
-
-                    // --- APPROVE BUTTON (FIXED) ---
-                    IconButton(
-                      icon: const Icon(Icons.check),
-                      color: Colors.green,
-                      tooltip: AppStrings.approveButton,
-                      onPressed: () {
-                        // Get the current super_admin's UID
-                        final currentAdminUid = ref.read(userDataProvider).value?.uid;
-
-                        if (currentAdminUid == null) {
-                          // Failsafe, should not happen
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Error: Could not find admin UID.')),
-                          );
-                          return;
-                        }
-
-                        // --- THIS IS THE FIX ---
-                        // Show confirmation dialog FIRST
-                        _showConfirmationDialog(
-                          context: context,
-                          title: AppStrings.approveConfirm,
-                          confirmActionText: AppStrings.approveButton,
-                          onConfirm: () {
-                            // Call the repo function
-                            ref.read(adminRepositoryProvider).approveUser(
-                              uid: user.uid,
-                              approvedByUid: currentAdminUid,
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text(AppStrings.userApproved), backgroundColor: Colors.green),
-                            );
-                          },
-                        );
-                        // --- END FIX ---
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  // --- HELPER FUNCTION FOR DIALOG ---
-  // This function shows the "Are you sure?" pop-up
-  void _showConfirmationDialog({
-    required BuildContext context,
-    required String title,
-    required String confirmActionText,
-    required VoidCallback onConfirm,
-  }) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(title),
-          actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(dialogContext).pop(); // Close dialog
-              },
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: confirmActionText == AppStrings.rejectButton
-                    ? Colors.red
-                    : Colors.green,
-              ),
-              child: Text(confirmActionText, style: TextStyle(color: Colors.white)),
-              onPressed: () {
-                onConfirm(); // Run the approve/reject function
-                Navigator.of(dialogContext).pop(); // Close dialog
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-// -----------------------------------------------------------------
-// WIDGET 2: ALL USERS LIST
-// -----------------------------------------------------------------
-class _AllUsersList extends ConsumerWidget {
-  const _AllUsersList();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // We watch the new "allUsersProvider"
-    final allUsers = ref.watch(allUsersProvider);
-
-    return allUsers.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, s) => Center(child: Text('Error: ${e.toString()}')),
-      data: (users) {
-        if (users.isEmpty) {
-          return const Center(child: Text(AppStrings.noUsersFound)); // Add this string
-        }
-
-        return ListView.builder(
-          itemCount: users.length,
-          itemBuilder: (context, index) {
-            final user = users[index];
-            return Card(
-              margin: const EdgeInsets.all(8.0),
-              child: ListTile(
-                title: Text(user.displayName),
-                subtitle: Text(user.email),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Show Role and Status
-                    _buildRoleChip(user.role),
-                    const SizedBox(width: 8),
-                    _buildStatusChip(user.status),
-                    const SizedBox(width: 8),
-
-                    // Show approve/reject buttons ONLY if user is pending
-                    if (user.status == UserStatus.pending) ...[
-                      // Reject Button
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        color: Colors.red,
-                        tooltip: AppStrings.rejectButton,
-                        onPressed: () {
-                          _showConfirmationDialog(
-                            context: context,
-                            title: AppStrings.rejectConfirm,
-                            confirmActionText: AppStrings.rejectButton,
-                            onConfirm: () {
-                              ref
-                                  .read(adminRepositoryProvider)
-                                  .rejectUser(uid: user.uid);
-                            },
-                          );
-                        },
-                      ),
-                      // Approve Button
-                      IconButton(
-                        icon: const Icon(Icons.check),
-                        color: Colors.green,
-                        tooltip: AppStrings.approveButton,
-                        onPressed: () {
-                          final currentAdminUid =
-                              ref.read(userDataProvider).value?.uid;
-                          if (currentAdminUid == null) return;
-                          _showConfirmationDialog(
-                            context: context,
-                            title: AppStrings.approveConfirm,
-                            confirmActionText: AppStrings.approveButton,
-                            onConfirm: () {
-                              ref.read(adminRepositoryProvider).approveUser(
-                                uid: user.uid,
-                                approvedByUid: currentAdminUid,
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ]
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  // Helper widget to show a colored chip for Role
-  Widget _buildRoleChip(String role) {
-    Color color;
-    IconData icon;
-    switch (role) {
-      case UserRoles.superAdmin:
-        color = Colors.red;
-        icon = Icons.shield;
-        break;
-      case UserRoles.admin:
-        color = Colors.orange;
-        icon = Icons.verified_user;
-        break;
-      case UserRoles.teacher:
-        color = Colors.blue;
-        icon = Icons.school;
-        break;
-      default:
-        color = Colors.grey;
-        icon = Icons.person;
-    }
-    return Chip(
-      avatar: Icon(icon, color: Colors.white, size: 16),
-      label: Text(role, style: const TextStyle(color: Colors.white)),
-      backgroundColor: color,
-    );
-  }
-
-  // Helper widget to show a colored chip for Status
-  Widget _buildStatusChip(String status) {
-    Color color;
-    switch (status) {
-      case UserStatus.approved:
-        color = Colors.green;
-        break;
-      case UserStatus.pending:
-        color = Colors.orange;
-        break;
-      default: // rejected
-        color = Colors.red;
-    }
-    return Chip(
-      label: Text(status, style: const TextStyle(color: Colors.white)),
-      backgroundColor: color,
-    );
-  }
-}
-
-// -----------------------------------------------------------------
-// HELPER FUNCTION (Moved here so both widgets can use it)
-// -----------------------------------------------------------------
-void _showConfirmationDialog({
-  required BuildContext context,
-  required String title,
-  required String confirmActionText,
-  required VoidCallback onConfirm,
-}) {
-  showDialog(
-    context: context,
-    builder: (dialogContext) {
-      return AlertDialog(
-        title: Text(title),
-        actions: [
-          TextButton(
-            child: const Text(AppStrings.cancelButton),
-            onPressed: () {
-              Navigator.of(dialogContext).pop(); // Close dialog
-            },
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: confirmActionText == AppStrings.rejectButton
-                  ? Colors.red
-                  : Colors.green,
-            ),
-            child: Text(confirmActionText,
-                style: const TextStyle(color: Colors.white)),
-            onPressed: () {
-              onConfirm(); // Run the approve/reject function
-              Navigator.of(dialogContext).pop(); // Close dialog
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-*/
-
+// lib/screens/super_admin/super_admin_dashboard.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quiz_panel/config/theme/app_theme.dart';
+import 'package:quiz_panel/models/user_model.dart';
 import 'package:quiz_panel/providers/admin_provider.dart';
 import 'package:quiz_panel/providers/auth_provider.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/repositories/admin_repository.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
-import 'package:quiz_panel/utils/constants.dart'; // Import Constants for roles/status
+import 'package:quiz_panel/utils/constants.dart';
+import 'package:quiz_panel/utils/responsive.dart'; // <-- 1. IMPORT
 
 class SuperAdminDashboard extends ConsumerWidget {
   const SuperAdminDashboard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Wrap the Scaffold in a DefaultTabController
     return DefaultTabController(
-      length: 2, // We will have 2 tabs
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: const Text(AppStrings.superAdminDashboardTitle),
@@ -392,8 +33,8 @@ class SuperAdminDashboard extends ConsumerWidget {
               },
             ),
           ],
-          // 2. Add the TabBar to the AppBar
           bottom: const TabBar(
+            isScrollable: true, // <-- 2. Mobile par scrollable
             indicatorColor: Colors.white,
             tabs: [
               Tab(
@@ -402,18 +43,14 @@ class SuperAdminDashboard extends ConsumerWidget {
               ),
               Tab(
                 icon: Icon(Icons.people),
-                text: AppStrings.allUsersTitle, // From app_strings.dart
+                text: AppStrings.allUsersTitle,
               ),
             ],
           ),
         ),
-        // 3. Use TabBarView to show different content for each tab
         body: const TabBarView(
           children: [
-            // Tab 1: Pending Teachers
             _PendingTeacherList(),
-
-            // Tab 2: All Users (New Widget)
             _AllUsersList(),
           ],
         ),
@@ -423,27 +60,22 @@ class SuperAdminDashboard extends ConsumerWidget {
 }
 
 // -----------------------------------------------------------------
-// WIDGET 1: PENDING TEACHER LIST
+// WIDGET 1: PENDING TEACHER LIST (Unchanged)
 // -----------------------------------------------------------------
 class _PendingTeacherList extends ConsumerWidget {
   const _PendingTeacherList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // We watch the "manager" provider
     final pendingUsers = ref.watch(pendingTeachersProvider);
 
-    // Use .when() to handle loading, error, and data states
     return pendingUsers.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, s) => Center(child: Text('Error: ${e.toString()}')),
       data: (users) {
-        // If the list is empty, show a message
         if (users.isEmpty) {
           return const Center(child: Text(AppStrings.noPendingApprovals));
         }
-
-        // If we have data, build the list
         return ListView.builder(
           itemCount: users.length,
           itemBuilder: (context, index) {
@@ -457,19 +89,16 @@ class _PendingTeacherList extends ConsumerWidget {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // --- REJECT BUTTON (FIXED) ---
                     IconButton(
                       icon: const Icon(Icons.close),
                       color: AppColors.error,
                       tooltip: AppStrings.rejectButton,
                       onPressed: () {
-                        // Show confirmation dialog FIRST
                         _showConfirmationDialog(
                           context: context,
                           title: AppStrings.rejectConfirm,
                           confirmActionText: AppStrings.rejectButton,
                           onConfirm: () {
-                            // Call the repo function
                             ref
                                 .read(adminRepositoryProvider)
                                 .rejectUser(uid: user.uid);
@@ -482,32 +111,27 @@ class _PendingTeacherList extends ConsumerWidget {
                         );
                       },
                     ),
-
-                    // --- APPROVE BUTTON (FIXED) ---
                     IconButton(
                       icon: const Icon(Icons.check),
                       color: AppColors.success,
                       tooltip: AppStrings.approveButton,
                       onPressed: () {
-                        // Get the current super_admin's UID
                         final currentAdminUid =
                             ref.read(userDataProvider).value?.uid;
 
                         if (currentAdminUid == null) {
-                          // Failsafe, should not happen
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text('Error: Could not find admin UID.')),
+                                content:
+                                Text('Error: Could not find admin UID.')),
                           );
                           return;
                         }
-                        // Show confirmation dialog FIRST
                         _showConfirmationDialog(
                           context: context,
                           title: AppStrings.approveConfirm,
                           confirmActionText: AppStrings.approveButton,
                           onConfirm: () {
-                            // Call the repo function
                             ref.read(adminRepositoryProvider).approveUser(
                               uid: user.uid,
                               approvedByUid: currentAdminUid,
@@ -530,22 +154,16 @@ class _PendingTeacherList extends ConsumerWidget {
       },
     );
   }
-
-// --- HELPER FUNCTION FOR DIALOG ---
-// This function shows the "Are you sure?" pop-up
-// NOTE: I am moving this function OUTSIDE the class
-// so both _PendingTeacherList and _AllUsersList can use it.
 }
 
 // -----------------------------------------------------------------
-// WIDGET 2: ALL USERS LIST
+// WIDGET 2: ALL USERS LIST (MODIFIED)
 // -----------------------------------------------------------------
 class _AllUsersList extends ConsumerWidget {
   const _AllUsersList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // We watch the new "allUsersProvider"
     final allUsers = ref.watch(allUsersProvider);
 
     return allUsers.when(
@@ -553,7 +171,7 @@ class _AllUsersList extends ConsumerWidget {
       error: (e, s) => Center(child: Text('Error: ${e.toString()}')),
       data: (users) {
         if (users.isEmpty) {
-          return const Center(child: Text(AppStrings.noUsersFound)); // From app_strings
+          return const Center(child: Text(AppStrings.noUsersFound));
         }
 
         return ListView.builder(
@@ -561,131 +179,15 @@ class _AllUsersList extends ConsumerWidget {
           itemBuilder: (context, index) {
             final user = users[index];
 
-            // --- 3. YEH CHECK KAREGA KI MANAGE BUTTON DIKHANA HAI YA NAHI ---
-            final bool canBeManaged = user.role == UserRoles.teacher ||
-                user.role == UserRoles.admin;
             return Card(
               margin: const EdgeInsets.all(8.0),
               child: ListTile(
                 title: Text(user.displayName),
                 subtitle: Text(user.email),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Show Role and Status
-                    _buildRoleChip(user.role),
-                    const SizedBox(width: 8),
-                    // --- Pass user.isActive to the chip ---
-                    _buildStatusChip(user.status, user.isActive),
-                    const SizedBox(width: 8),
-
-                    // Show approve/reject buttons ONLY if user is pending
-                    if (user.status == UserStatus.pending) ...[
-                      // Reject Button
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        color: AppColors.error,
-                        tooltip: AppStrings.rejectButton,
-                        onPressed: () {
-                          _showConfirmationDialog(
-                            context: context,
-                            title: AppStrings.rejectConfirm,
-                            confirmActionText: AppStrings.rejectButton,
-                            onConfirm: () {
-                              ref
-                                  .read(adminRepositoryProvider)
-                                  .rejectUser(uid: user.uid);
-                            },
-                          );
-                        },
-                      ),
-                      // Approve Button
-                      IconButton(
-                        icon: const Icon(Icons.check),
-                        color: AppColors.success,
-                        tooltip: AppStrings.approveButton,
-                        onPressed: () {
-                          final currentAdminUid =
-                              ref.read(userDataProvider).value?.uid;
-                          if (currentAdminUid == null) return;
-                          _showConfirmationDialog(
-                            context: context,
-                            title: AppStrings.approveConfirm,
-                            confirmActionText: AppStrings.approveButton,
-                            onConfirm: () {
-                              ref.read(adminRepositoryProvider).approveUser(
-                                uid: user.uid,
-                                approvedByUid: currentAdminUid,
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ]
-                    // --- Deactivate/Reactivate Button ---
-                    // Show this button ONLY if user is NOT pending
-                    // AND is NOT a Super Admin (can't disable self)
-                    else if (user.role != UserRoles.superAdmin) ...[
-                      IconButton(
-                        icon: Icon(user.isActive
-                            ? Icons.block // Deactivate icon
-                            : Icons.check_circle_outline), // Reactivate icon
-                        color: user.isActive ? AppColors.error : AppColors.success,
-                        tooltip: user.isActive
-                            ? AppStrings.deactivateUserButton
-                            : AppStrings.reactivateUserButton,
-                        onPressed: () {
-                          _showConfirmationDialog(
-                            context: context,
-                            title: user.isActive
-                                ? AppStrings.deactivateConfirm
-                                : AppStrings.reactivateConfirm,
-                            confirmActionText: user.isActive
-                                ? AppStrings.deactivateUserButton
-                                : AppStrings.reactivateUserButton,
-                            onConfirm: () {
-                              // Call the new repo function
-                              ref
-                                  .read(adminRepositoryProvider)
-                                  .updateUserActiveStatus(
-                                uid: user.uid,
-                                isActive: !user.isActive, // Toggle the status
-                              );
-                              // Show snackbar
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(user.isActive
-                                      ? AppStrings.userDeactivated
-                                      : AppStrings.userReactivated),
-                                  backgroundColor:
-                                  user.isActive ? AppColors.error : AppColors.success,
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ],
-
-                    // --- 4. MANAGE ROLE BUTTON ---
-                    if(canBeManaged) ...[
-                      const VerticalDivider(),
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        color: AppColors.primary,
-                        tooltip: AppStrings.manageUserButton,
-                        onPressed: () {
-                          // Nayi screen par navigate karein
-                          context.pushNamed(
-                            AppRouteNames.editUser,
-                            pathParameters: {'userId': user.uid},
-                            extra: user, // Poora user object pass karein
-                          );
-                        },
-                      )
-                    ]
-                  ],
-                ),
+                // --- 3. RESPONSIVE TRAILING ACTIONS ---
+                trailing: Responsive.isMobile(context)
+                    ? _buildMobileActions(context, ref, user)
+                    : _buildDesktopActions(context, ref, user),
               ),
             );
           },
@@ -694,7 +196,203 @@ class _AllUsersList extends ConsumerWidget {
     );
   }
 
-  // Helper widget to show a colored chip for Role
+  // --- 4. DESKTOP/TABLET LAYOUT: Buttons in a Row ---
+  Widget _buildDesktopActions(
+      BuildContext context, WidgetRef ref, UserModel user) {
+    final bool canBeManaged =
+        user.role == UserRoles.teacher || user.role == UserRoles.admin;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildRoleChip(user.role),
+        const SizedBox(width: 8),
+        _buildStatusChip(user.status, user.isActive),
+        const SizedBox(width: 8),
+
+        // Approve/Reject (sirf pending users ke liye)
+        if (user.status == UserStatus.pending) ...[
+          IconButton(
+            icon: const Icon(Icons.close),
+            color: AppColors.error,
+            tooltip: AppStrings.rejectButton,
+            onPressed: () => _onRejectPressed(context, ref, user),
+          ),
+          IconButton(
+            icon: const Icon(Icons.check),
+            color: AppColors.success,
+            tooltip: AppStrings.approveButton,
+            onPressed: () => _onApprovePressed(context, ref, user),
+          ),
+        ]
+        // Deactivate/Reactivate (sirf non-pending aur non-superadmin ke liye)
+        else if (user.role != UserRoles.superAdmin) ...[
+          IconButton(
+            icon: Icon(
+                user.isActive ? Icons.block : Icons.check_circle_outline),
+            color: user.isActive ? AppColors.error : AppColors.success,
+            tooltip: user.isActive
+                ? AppStrings.deactivateUserButton
+                : AppStrings.reactivateUserButton,
+            onPressed: () =>
+                _onDeactivatePressed(context, ref, user, !user.isActive),
+          ),
+        ],
+
+        // Manage Role (sirf teacher/admin ke liye)
+        if (canBeManaged) ...[
+          const VerticalDivider(),
+          IconButton(
+            icon: const Icon(Icons.edit),
+            color: AppColors.primary,
+            tooltip: AppStrings.manageUserButton,
+            onPressed: () => _onManagePressed(context, user),
+          ),
+        ]
+      ],
+    );
+  }
+
+  // --- 5. MOBILE LAYOUT: PopupMenuButton ---
+  Widget _buildMobileActions(
+      BuildContext context, WidgetRef ref, UserModel user) {
+    final bool canBeManaged =
+        user.role == UserRoles.teacher || user.role == UserRoles.admin;
+
+    return PopupMenuButton<String>(
+      onSelected: (value) {
+        if (value == 'approve') {
+          _onApprovePressed(context, ref, user);
+        } else if (value == 'reject') {
+          _onRejectPressed(context, ref, user);
+        } else if (value == 'deactivate') {
+          _onDeactivatePressed(context, ref, user, !user.isActive);
+        } else if (value == 'manage') {
+          _onManagePressed(context, user);
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        // Role/Status ko non-clickable display ke liye
+        PopupMenuItem(
+          enabled: false,
+          child: Wrap(
+            spacing: 8,
+            children: [
+              _buildRoleChip(user.role),
+              _buildStatusChip(user.status, user.isActive),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+
+        // Conditional actions
+        if (user.status == UserStatus.pending) ...[
+          PopupMenuItem<String>(
+            value: 'approve',
+            child: const ListTile(
+              leading: Icon(Icons.check, color: AppColors.success),
+              title: Text(AppStrings.approveButton),
+            ),
+          ),
+          PopupMenuItem<String>(
+            value: 'reject',
+            child: const ListTile(
+              leading: Icon(Icons.close, color: AppColors.error),
+              title: Text(AppStrings.rejectButton),
+            ),
+          ),
+        ] else if (user.role != UserRoles.superAdmin) ...[
+          PopupMenuItem<String>(
+            value: 'deactivate',
+            child: ListTile(
+              leading: Icon(
+                user.isActive ? Icons.block : Icons.check_circle_outline,
+                color: user.isActive ? AppColors.error : AppColors.success,
+              ),
+              title: Text(user.isActive
+                  ? AppStrings.deactivateUserButton
+                  : AppStrings.reactivateUserButton),
+            ),
+          ),
+        ],
+        if (canBeManaged) ...[
+          PopupMenuItem<String>(
+            value: 'manage',
+            child: const ListTile(
+              leading: Icon(Icons.edit, color: AppColors.primary),
+              title: Text(AppStrings.manageUserButton),
+            ),
+          ),
+        ]
+      ],
+    );
+  }
+
+  // --- 6. Refactored logic ---
+  void _onApprovePressed(BuildContext context, WidgetRef ref, UserModel user) {
+    final currentAdminUid = ref.read(userDataProvider).value?.uid;
+    if (currentAdminUid == null) return;
+    _showConfirmationDialog(
+      context: context,
+      title: AppStrings.approveConfirm,
+      confirmActionText: AppStrings.approveButton,
+      onConfirm: () {
+        ref.read(adminRepositoryProvider).approveUser(
+          uid: user.uid,
+          approvedByUid: currentAdminUid,
+        );
+      },
+    );
+  }
+
+  void _onRejectPressed(BuildContext context, WidgetRef ref, UserModel user) {
+    _showConfirmationDialog(
+      context: context,
+      title: AppStrings.rejectConfirm,
+      confirmActionText: AppStrings.rejectButton,
+      onConfirm: () {
+        ref.read(adminRepositoryProvider).rejectUser(uid: user.uid);
+      },
+    );
+  }
+
+  void _onDeactivatePressed(
+      BuildContext context, WidgetRef ref, UserModel user, bool newActiveState) {
+    final bool isDeactivating = !newActiveState;
+    _showConfirmationDialog(
+      context: context,
+      title: isDeactivating
+          ? AppStrings.deactivateConfirm
+          : AppStrings.reactivateConfirm,
+      confirmActionText: isDeactivating
+          ? AppStrings.deactivateUserButton
+          : AppStrings.reactivateUserButton,
+      onConfirm: () {
+        ref
+            .read(adminRepositoryProvider)
+            .updateUserActiveStatus(uid: user.uid, isActive: newActiveState);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isDeactivating
+                ? AppStrings.userDeactivated
+                : AppStrings.userReactivated),
+            backgroundColor:
+            isDeactivating ? AppColors.error : AppColors.success,
+          ),
+        );
+      },
+    );
+  }
+
+  void _onManagePressed(BuildContext context, UserModel user) {
+    context.pushNamed(
+      AppRouteNames.editUser,
+      pathParameters: {'userId': user.uid},
+      extra: user,
+    );
+  }
+
+  // Helper widget
   Widget _buildRoleChip(String role) {
     Color color;
     IconData icon;
@@ -722,30 +420,27 @@ class _AllUsersList extends ConsumerWidget {
     );
   }
 
-  // --- Helper widget to show a colored chip for Status ---
+  // Helper widget
   Widget _buildStatusChip(String status, bool isActive) {
-    // 1. Check isActive first. This is the most important status.
     if (!isActive) {
-      return Chip(
-        label: const Text(AppStrings.statusInactive,
-            style: const TextStyle(color: Colors.white)),
+      return const Chip(
+        label: Text(AppStrings.statusInactive,
+            style: TextStyle(color: Colors.white)),
         backgroundColor: AppColors.textTertiary,
       );
     }
-
-    // 2. If user is active, THEN check their approval status.
     Color color;
     String label;
     switch (status) {
       case UserStatus.approved:
         color = AppColors.success;
-        label = AppStrings.statusActive; // Use 'Active' string
+        label = AppStrings.statusActive;
         break;
       case UserStatus.pending:
         color = AppColors.warning;
-        label = UserStatus.pending; // Use 'pending_approval' string
+        label = UserStatus.pending;
         break;
-      default: // rejected
+      default:
         color = AppColors.error;
         label = UserStatus.rejected;
     }
@@ -757,7 +452,7 @@ class _AllUsersList extends ConsumerWidget {
 }
 
 // -----------------------------------------------------------------
-// This is the same function from your original _PendingTeacherList
+// HELPER DIALOG (Global)
 // -----------------------------------------------------------------
 void _showConfirmationDialog({
   required BuildContext context,
@@ -774,20 +469,21 @@ void _showConfirmationDialog({
           TextButton(
             child: const Text(AppStrings.cancelButton),
             onPressed: () {
-              Navigator.of(dialogContext).pop(); // Close dialog
+              Navigator.of(dialogContext).pop();
             },
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: confirmActionText == AppStrings.rejectButton
-                  ? Colors.red
-                  : Colors.green,
+              backgroundColor: confirmActionText == AppStrings.rejectButton ||
+                  confirmActionText == AppStrings.deactivateUserButton
+                  ? AppColors.error
+                  : AppColors.success,
             ),
             child: Text(confirmActionText,
                 style: const TextStyle(color: Colors.white)),
             onPressed: () {
-              onConfirm(); // Run the approve/reject function
-              Navigator.of(dialogContext).pop(); // Close dialog
+              onConfirm();
+              Navigator.of(dialogContext).pop();
             },
           ),
         ],

@@ -13,6 +13,7 @@ import 'package:quiz_panel/repositories/quiz_repository.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/utils/constants.dart';
+import 'package:quiz_panel/utils/responsive.dart'; // <-- 1. IMPORT
 import 'package:quiz_panel/widgets/buttons/app_button.dart';
 import 'package:quiz_panel/widgets/inputs/app_text_field.dart';
 
@@ -100,6 +101,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             ),
           ],
           bottom: const TabBar(
+            isScrollable: true, // <-- 2. Mobile par scrollable
             indicatorColor: Colors.white,
             tabs: [
               Tab(
@@ -141,7 +143,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                       style: AppTextStyles.displaySmall,
                     ),
                     const SizedBox(height: 16),
-                    _buildSubjectsList(context, ref),
+                    _buildSubjectsList(context, ref), // <-- 3. Refactor
                   ],
                 ),
               ),
@@ -154,6 +156,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
 
   // --- Widgets for "My Content" Tab (TeacherDashboard se copy kiye gaye) ---
   Widget _buildCreateSubjectForm(BuildContext context) {
+    // --- 4. FORM KO RESPONSIVE BANAYA ---
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -167,16 +170,28 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               style: AppTextStyles.titleLarge,
             ),
             const SizedBox(height: 24),
-            AppTextField(
-              controller: _nameController,
-              label: AppStrings.subjectNameLabel,
-              prefixIcon: Icons.title,
-            ),
-            const SizedBox(height: 16),
-            AppTextField(
-              controller: _descController,
-              label: AppStrings.subjectDescLabel,
-              prefixIcon: Icons.description,
+            // Yeh Wrap widget chote screens par fields ko stack kar dega
+            Wrap(
+              runSpacing: 16,
+              spacing: 16,
+              children: [
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 250),
+                  child: AppTextField(
+                    controller: _nameController,
+                    label: AppStrings.subjectNameLabel,
+                    prefixIcon: Icons.title,
+                  ),
+                ),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 250),
+                  child: AppTextField(
+                    controller: _descController,
+                    label: AppStrings.subjectDescLabel,
+                    prefixIcon: Icons.description,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             AppButton(
@@ -191,6 +206,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     );
   }
 
+  // --- 5. GRIDVIEW KO RESPONSIVE BANAYA ---
   Widget _buildSubjectsList(BuildContext context, WidgetRef ref) {
     final subjectsAsync = ref.watch(subjectsProvider);
 
@@ -217,8 +233,10 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             ),
           );
         }
+        // Responsive Grid ke liye LayoutBuilder ka istemaal
         return LayoutBuilder(
           builder: (context, constraints) {
+            // Dynamic column count
             int crossAxisCount = 1;
             if (constraints.maxWidth > 1200) {
               crossAxisCount = 4;
@@ -234,7 +252,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
-                childAspectRatio: 2.0,
+                childAspectRatio: 2.0, // Card ka aspect ratio
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
@@ -342,8 +360,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
 }
 
 // -----------------------------------------------------------------
-// WIDGET 1: PENDING TEACHER LIST
-// (SuperAdminDashboard se copy kiya gaya)
+// WIDGET 1: PENDING TEACHER LIST (Unchanged)
 // -----------------------------------------------------------------
 class _PendingTeacherList extends ConsumerWidget {
   const _PendingTeacherList();
@@ -433,20 +450,18 @@ class _PendingTeacherList extends ConsumerWidget {
 }
 
 // -----------------------------------------------------------------
-// WIDGET 2: MANAGED USER LIST (Naya Widget)
+// WIDGET 2: MANAGED USER LIST (RESPONSIVE TRAILING)
 // -----------------------------------------------------------------
 class _ManagedUserList extends ConsumerWidget {
   const _ManagedUserList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Naya provider watch karein
     final managedUsers = ref.watch(adminManagedUsersProvider);
 
     return managedUsers.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, s) {
-        // --- ZAROORI: Index Error yahaan dikhega ---
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -472,54 +487,10 @@ class _ManagedUserList extends ConsumerWidget {
               child: ListTile(
                 title: Text(user.displayName),
                 subtitle: Text(user.email),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildRoleChip(user.role),
-                    const SizedBox(width: 8),
-                    _buildStatusChip(user.status, user.isActive),
-                    const SizedBox(width: 8),
-                    // Deactivate/Reactivate Button
-                    IconButton(
-                      icon: Icon(user.isActive
-                          ? Icons.block
-                          : Icons.check_circle_outline),
-                      color: user.isActive ? AppColors.error : AppColors.success,
-                      tooltip: user.isActive
-                          ? AppStrings.deactivateUserButton
-                          : AppStrings.reactivateUserButton,
-                      onPressed: () {
-                        _showConfirmationDialog(
-                          context: context,
-                          title: user.isActive
-                              ? AppStrings.deactivateConfirm
-                              : AppStrings.reactivateConfirm,
-                          confirmActionText: user.isActive
-                              ? AppStrings.deactivateUserButton
-                              : AppStrings.reactivateUserButton,
-                          onConfirm: () {
-                            ref
-                                .read(adminRepositoryProvider)
-                                .updateUserActiveStatus(
-                              uid: user.uid,
-                              isActive: !user.isActive, // Toggle status
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(user.isActive
-                                    ? AppStrings.userDeactivated
-                                    : AppStrings.userReactivated),
-                                backgroundColor: user.isActive
-                                    ? AppColors.error
-                                    : AppColors.success,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                // --- 6. RESPONSIVE TRAILING ACTIONS ---
+                trailing: Responsive.isMobile(context)
+                    ? _buildMobileActions(context, ref, user)
+                    : _buildDesktopActions(context, ref, user),
               ),
             );
           },
@@ -528,7 +499,100 @@ class _ManagedUserList extends ConsumerWidget {
     );
   }
 
-  // Helper widget (SuperAdminDashboard se copy kiya gaya)
+  // --- 7. DESKTOP/TABLET LAYOUT: Buttons in a Row ---
+  Widget _buildDesktopActions(
+      BuildContext context, WidgetRef ref, UserModel user) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildRoleChip(user.role),
+        const SizedBox(width: 8),
+        _buildStatusChip(user.status, user.isActive),
+        const SizedBox(width: 8),
+        // Deactivate/Reactivate Button
+        IconButton(
+          icon: Icon(
+              user.isActive ? Icons.block : Icons.check_circle_outline),
+          color: user.isActive ? AppColors.error : AppColors.success,
+          tooltip: user.isActive
+              ? AppStrings.deactivateUserButton
+              : AppStrings.reactivateUserButton,
+          onPressed: () =>
+              _onDeactivatePressed(context, ref, user, !user.isActive),
+        ),
+      ],
+    );
+  }
+
+  // --- 8. MOBILE LAYOUT: PopupMenuButton ---
+  Widget _buildMobileActions(
+      BuildContext context, WidgetRef ref, UserModel user) {
+    return PopupMenuButton<String>(
+      onSelected: (value) {
+        if (value == 'deactivate') {
+          _onDeactivatePressed(context, ref, user, !user.isActive);
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        // Role/Status ko non-clickable display ke liye
+        PopupMenuItem(
+          enabled: false,
+          child: Wrap(
+            spacing: 8,
+            children: [
+              _buildRoleChip(user.role),
+              _buildStatusChip(user.status, user.isActive),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        // Actionable button
+        PopupMenuItem<String>(
+          value: 'deactivate',
+          child: ListTile(
+            leading: Icon(
+              user.isActive ? Icons.block : Icons.check_circle_outline,
+              color: user.isActive ? AppColors.error : AppColors.success,
+            ),
+            title: Text(user.isActive
+                ? AppStrings.deactivateUserButton
+                : AppStrings.reactivateUserButton),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- 9. Refactored logic for Deactivate/Reactivate ---
+  void _onDeactivatePressed(
+      BuildContext context, WidgetRef ref, UserModel user, bool newActiveState) {
+    final bool isDeactivating = !newActiveState;
+    _showConfirmationDialog(
+      context: context,
+      title: isDeactivating
+          ? AppStrings.deactivateConfirm
+          : AppStrings.reactivateConfirm,
+      confirmActionText: isDeactivating
+          ? AppStrings.deactivateUserButton
+          : AppStrings.reactivateUserButton,
+      onConfirm: () {
+        ref
+            .read(adminRepositoryProvider)
+            .updateUserActiveStatus(uid: user.uid, isActive: newActiveState);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isDeactivating
+                ? AppStrings.userDeactivated
+                : AppStrings.userReactivated),
+            backgroundColor:
+            isDeactivating ? AppColors.error : AppColors.success,
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper widget
   Widget _buildRoleChip(String role) {
     Color color;
     IconData icon;
@@ -548,7 +612,7 @@ class _ManagedUserList extends ConsumerWidget {
     );
   }
 
-  // Helper widget (SuperAdminDashboard se copy kiya gaya)
+  // Helper widget
   Widget _buildStatusChip(String status, bool isActive) {
     if (!isActive) {
       return const Chip(
@@ -580,7 +644,7 @@ class _ManagedUserList extends ConsumerWidget {
 }
 
 // -----------------------------------------------------------------
-// HELPER DIALOG (SuperAdminDashboard se copy kiya gaya)
+// HELPER DIALOG (Global)
 // -----------------------------------------------------------------
 void _showConfirmationDialog({
   required BuildContext context,

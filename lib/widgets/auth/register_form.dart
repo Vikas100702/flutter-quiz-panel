@@ -8,6 +8,7 @@ import 'package:quiz_panel/widgets/inputs/app_text_field.dart';
 
 
 class RegisterForm extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final TextEditingController nameController;
@@ -19,6 +20,7 @@ class RegisterForm extends StatelessWidget {
 
   const RegisterForm({
     super.key,
+    required this.formKey,
     required this.emailController,
     required this.passwordController,
     required this.nameController,
@@ -29,66 +31,97 @@ class RegisterForm extends StatelessWidget {
     required this.onLogin,
   });
 
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required.';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters long.';
+    }
+    if (value.length > 4096) {
+      return 'Password cannot be longer than 4096 characters.';
+    }
+    if (!value.contains(RegExp(r'[A-Z]'))) {
+      return 'Password must contain at least one uppercase letter.';
+    }
+    if (!value.contains(RegExp(r'[a-z]'))) {
+      return 'Password must contain at least one lowercase letter.';
+    }
+    if (!value.contains(RegExp(r'[0-9]'))) {
+      return 'Password must contain at least one number.';
+    }
+    if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+      return 'Password must contain at least one special character.';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Header Section
-          _buildHeader(),
-          const SizedBox(height: 32),
+    return Form(
+      key: formKey,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header Section
+            _buildHeader(),
+            const SizedBox(height: 32),
 
-          // Form Fields
-          AppTextField(
-            controller: nameController,
-            label: AppStrings.nameLabel,
-            prefixIcon: Icons.person_rounded,
-            keyboardType: TextInputType.name,
-            onSubmitted: (_) => _handleSubmit(context),
-          ),
-          const SizedBox(height: 20),
+            // Form Fields
+            AppTextField(
+              controller: nameController,
+              label: AppStrings.nameLabel,
+              prefixIcon: Icons.person_rounded,
+              keyboardType: TextInputType.name,
+              validator: (value) => value!.isEmpty ? 'Name is required.' : null,
+              onSubmitted: (_) => _handleSubmit(context),
+            ),
+            const SizedBox(height: 20),
 
-          AppTextField(
-            controller: emailController,
-            label: AppStrings.emailLabel,
-            prefixIcon: Icons.email_rounded,
-            keyboardType: TextInputType.emailAddress,
-            onSubmitted: (_) => _handleSubmit(context),
-          ),
-          const SizedBox(height: 20),
+            AppTextField(
+              controller: emailController,
+              label: AppStrings.emailLabel,
+              prefixIcon: Icons.email_rounded,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) => value!.isEmpty ? 'Email is required.' : null,
+              onSubmitted: (_) => _handleSubmit(context),
+            ),
+            const SizedBox(height: 20),
 
-          AppTextField(
-            controller: passwordController,
-            label: AppStrings.passwordLabel,
-            prefixIcon: Icons.lock_rounded,
-            isPassword: true,
-            hint: AppStrings.passwordMinLength,
-            onSubmitted: (_) => _handleSubmit(context),
-          ),
-          const SizedBox(height: 24),
+            AppTextField(
+              controller: passwordController,
+              label: AppStrings.passwordLabel,
+              prefixIcon: Icons.lock_rounded,
+              isPassword: true,
+              hint: AppStrings.passwordMinLength,
+              validator: _validatePassword,
+              onSubmitted: (_) => _handleSubmit(context),
+            ),
+            const SizedBox(height: 24),
 
-          // Role Selector
-          RoleSelector(
-            selectedRole: selectedRole,
-            onRoleChanged: onRoleChanged,
-          ),
-          const SizedBox(height: 32),
+            // Role Selector
+            RoleSelector(
+              selectedRole: selectedRole,
+              onRoleChanged: onRoleChanged,
+            ),
+            const SizedBox(height: 32),
 
-          // Register Button
-          AppButton(
-            text: AppStrings.registerButton,
-            onPressed: isLoading ? null : onRegister,
-            isLoading: isLoading,
-            type: AppButtonType.primary,
-          ),
-          const SizedBox(height: 24),
+            // Register Button
+            AppButton(
+              text: AppStrings.registerButton,
+              onPressed: isLoading ? null : onRegister,
+              isLoading: isLoading,
+              type: AppButtonType.primary,
+            ),
+            const SizedBox(height: 24),
 
-          // Login Section
-          _buildLoginSection(context),
-        ],
+            // Login Section
+            _buildLoginSection(context),
+          ],
+        ),
       ),
     );
   }

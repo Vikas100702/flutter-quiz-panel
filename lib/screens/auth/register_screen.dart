@@ -1,9 +1,6 @@
 // lib/screens/auth/register_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// --- UPDATED ---
-// import 'package:flutter_riverpod/legacy.dart'; // legacy की अब आवश्यकता नहीं है
-// --- END UPDATED ---
 import 'package:go_router/go_router.dart';
 import 'package:quiz_panel/providers/auth_provider.dart';
 import 'package:quiz_panel/repositories/user_repository.dart';
@@ -21,6 +18,7 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Add form key
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
@@ -28,13 +26,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _isLoading = false;
   String _selectedRole = UserRoles.student;
 
-  // --- UPDATED ---
-  // StateNotifierProvider की अब यहाँ आवश्यकता नहीं है, हम इसे सरल रख सकते हैं
-  // --- END UPDATED ---
-
-
   void _registerUser(BuildContext context) async {
     FocusScope.of(context).unfocus();
+
+    if (!_formKey.currentState!.validate()) { // Validate the form
+      return;
+    }
 
     setState(() { _isLoading = true; });
 
@@ -94,6 +91,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       ),
       body: ResponsiveAuthLayout(
         child: RegisterForm(
+          formKey: _formKey, // Pass form key
           emailController: _emailController,
           passwordController: _passwordController,
           nameController: _nameController,
@@ -107,7 +105,3 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 }
-
-// --- UPDATED ---
-// State management classes को हटा दिया गया है क्योंकि वे अब उपयोग में नहीं थीं।
-// --- END UPDATED ---

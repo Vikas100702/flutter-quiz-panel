@@ -7,9 +7,8 @@ import 'package:quiz_panel/utils/app_strings.dart';
 
 class AuthRepository {
   final FirebaseAuth _firebaseAuth;
-  final GoogleSignIn _googleSignIn;
 
-  AuthRepository(this._firebaseAuth, this._googleSignIn);
+  AuthRepository(this._firebaseAuth);
 
   // --- 1. Get Authentication Status ---
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
@@ -72,35 +71,6 @@ class AuthRepository {
       }
     } catch (e) {
       throw AppStrings.genericError;
-    }
-  }
-
-  // --- 5. Sign In with Google (COMPLETELY REWRITTEN) ---
-  Future<UserCredential> signInWithGoogle() async {
-    try {
-      // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-
-      // User canceled the sign-in
-      if (googleUser == null) {
-        throw 'Google Sign-In was cancelled';
-      }
-
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      // Create a new credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // Once signed in, return the UserCredential
-      return await _firebaseAuth.signInWithCredential(credential);
-    } on FirebaseAuthException catch (e) {
-      throw e.message ?? AppStrings.googleSignInFailed;
-    } catch (e) {
-      throw AppStrings.googleSignInFailed;
     }
   }
 

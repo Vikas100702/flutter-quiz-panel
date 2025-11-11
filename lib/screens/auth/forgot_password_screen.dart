@@ -26,9 +26,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
   late Animation<double> _fadeAnimation;
 
   final TextEditingController _emailController = TextEditingController();
-  // --- Local state (isLoading, isSuccess) hata dein ---
-  // bool _isLoading = false;
-  // bool _isSuccess = false;
+
+  // --- 1. Create a variable to hold the notifier ---
+  late final PasswordResetNotifier _passwordResetNotifier;
 
   @override
   void initState() {
@@ -55,14 +55,21 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     ));
 
     _controller.forward();
+
+    // --- 2. Initialize the notifier variable in initState ---
+    // This is safe because 'ref' is valid here.
+    _passwordResetNotifier = ref.read(passwordResetProvider.notifier);
   }
 
   @override
   void dispose() {
     _controller.dispose();
     _emailController.dispose();
-    // Screen dispose hone par provider ko reset karein
-    Future.microtask(() => ref.read(passwordResetProvider.notifier).resetState());
+
+    // --- 3. Use the stored variable, not 'ref' or 'Future.microtask' ---
+    // This is now 100% safe.
+    _passwordResetNotifier.resetState();
+
     super.dispose();
   }
 
@@ -91,7 +98,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     }
 
     // --- Local state set karne ke bajaye notifier ko call karein ---
-    // setState(() { _isLoading = true; }); // Hata dein
     ref.read(passwordResetProvider.notifier).sendResetEmail(email);
   }
 
@@ -99,9 +105,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     final emailRegex = RegExp(r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
     return emailRegex.hasMatch(email);
   }
-
-  // --- Is function ki zaroorat nahi, provider error handle karega ---
-  // String _getErrorMessage(String error) { ... }
 
   void _handleBack() {
     // isLoading state ab provider se milegi

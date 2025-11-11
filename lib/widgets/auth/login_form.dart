@@ -13,7 +13,7 @@ class LoginForm extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onLogin;
   final VoidCallback onRegister;
-  // final VoidCallback onGoogleSignIn; // --- NEW ---
+  final VoidCallback onGoogleSignIn; // --- NEW ---
 
   const LoginForm({
     super.key,
@@ -22,7 +22,7 @@ class LoginForm extends StatelessWidget {
     required this.isLoading,
     required this.onLogin,
     required this.onRegister,
-    // required this.onGoogleSignIn, // --- NEW ---
+    required this.onGoogleSignIn, // --- NEW ---
   });
 
   @override
@@ -84,17 +84,17 @@ class LoginForm extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Divider
-        /*_buildDivider(),
-        const SizedBox(height: 24),*/
+        _buildDivider(),
+        const SizedBox(height: 24),
 
         // --- NEW: Google Sign-In Button ---
-        /*AppButton(
+        AppButton(
           text: AppStrings.loginWithGoogleButton,
           onPressed: isLoading ? null : onGoogleSignIn,
           isLoading: false, // Login isLoading se alag manage karein
           type: AppButtonType.outline,
           icon: Icons.g_mobiledata_rounded, // Simple Google icon
-        ),*/
+        ),
         const SizedBox(height: 24),
         // --- END NEW ---
 

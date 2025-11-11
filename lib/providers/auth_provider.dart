@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quiz_panel/repositories/auth_repository.dart';
 
 // -----------------------------------------------------------------
@@ -10,14 +11,19 @@ import 'package:quiz_panel/repositories/auth_repository.dart';
 final firebaseAuthProvider = Provider<FirebaseAuth>(
     (ref) => FirebaseAuth.instance,
 );
+// --- 2. GoogleSignIn ke liye naya provider ---
+final googleSignInProvider = Provider<GoogleSignIn>((ref) => GoogleSignIn());
 
-// This provider creates our AuthRepository
+/// This provider creates our AuthRepository
 // It depends on the provider above to get the FirebaseAuth instance.
 final authRepositoryProvider = Provider<AuthRepository>(
     (ref) {
       // 'ref.watch' gets the instance from firebaseAuthProvider
-      return AuthRepository(ref.watch(firebaseAuthProvider));
-    }
+  return AuthRepository(
+    ref.watch(firebaseAuthProvider),
+    ref.watch(googleSignInProvider),
+  );
+}
 );
 
 // -----------------------------------------------------------------

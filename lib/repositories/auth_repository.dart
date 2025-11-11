@@ -7,9 +7,9 @@ import 'package:quiz_panel/utils/app_strings.dart';
 
 class AuthRepository {
   final FirebaseAuth _firebaseAuth;
-  // final GoogleSignIn _googleSignIn;
+  final GoogleSignIn _googleSignIn;
 
-  AuthRepository(this._firebaseAuth);
+  AuthRepository(this._firebaseAuth, this._googleSignIn);
 
   // --- 1. Get Authentication Status ---
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
@@ -76,7 +76,7 @@ class AuthRepository {
   }
 
   // --- 5. Sign In with Google (COMPLETELY REWRITTEN) ---
-/*  Future<UserCredential> signInWithGoogle() async {
+  Future<UserCredential> signInWithGoogle() async {
     try {
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -102,7 +102,7 @@ class AuthRepository {
     } catch (e) {
       throw AppStrings.googleSignInFailed;
     }
-  }*/
+  }
 
   // --- 6. Send Email Verification ---
   Future<void> sendEmailVerification(User user) async {

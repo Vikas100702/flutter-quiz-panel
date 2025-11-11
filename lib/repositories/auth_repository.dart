@@ -143,9 +143,40 @@ class AuthRepository {
     }
   }
 
+  // --- 10. NEW: Change Password ---
+  Future<void> changePassword(String currentPassword,
+      String newPassword) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user == null) {
+        throw 'No user is currently signed in.';
+      }
+
+      // Get credentials
+      final cred = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+
+      // Re-authenticate the user
+      await user.reauthenticateWithCredential(cred);
+
+      // If re-authentication is successful, update the password
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (e) {
+      throw _handleFirebaseAuthException(e);
+    } catch (e) {
+      throw 'An unknown error occurred: ${e.toString()}';
+    }
+  }
+
   // --- Helper Function for Firebase Errors ---
   String _handleFirebaseAuthException(FirebaseAuthException e) {
     switch (e.code) {
+    // --- ADDED THIS ---
+      case 'wrong-password':
+        return 'Incorrect current password provided.';
+    // ---
       case 'invalid-phone-number':
         return 'The phone number provided is not valid.';
       case 'session-expired':

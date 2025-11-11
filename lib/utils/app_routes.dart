@@ -12,7 +12,9 @@ import 'package:quiz_panel/screens/auth/phone_login_screen.dart';
 import 'package:quiz_panel/screens/auth/phone_register_details_screen.dart';
 import 'package:quiz_panel/screens/auth/register_screen.dart';
 import 'package:quiz_panel/screens/auth/verify_email_screen.dart';
+import 'package:quiz_panel/screens/profile/change_password_screen.dart';
 import 'package:quiz_panel/screens/profile/manage_profile_screen.dart';
+import 'package:quiz_panel/screens/profile/my_account_screen.dart';
 import 'package:quiz_panel/screens/splash/splash_screen.dart';
 import 'package:quiz_panel/screens/student/quiz_attempt_screen.dart';
 import 'package:quiz_panel/screens/student/quiz_result_screen.dart';
@@ -37,6 +39,8 @@ class AppRoutePaths {
   static const String pendingApproval = '/pending-approval';
   static const String verifyEmail = '/verify-email';
   static const String profile = '/profile';
+  static const String myAccount = '/account'; // This is the new hub screen
+  static const String changePassword = '/account/change-password';
 
   // Teacher paths
   static const String teacherDashboard = '/teacher/dashboard';
@@ -69,6 +73,8 @@ class AppRouteNames {
   static const String pendingApproval = 'pendingApproval';
   static const String verifyEmail = 'verifyEmail';
   static const String profile = '/profile';
+  static const String myAccount = 'myAccount';
+  static const String changePassword = 'changePassword';
 
   // Teacher names
   static const String teacherDashboard = 'teacherDashboard';
@@ -150,6 +156,16 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.profile,
     name: AppRouteNames.profile,
     builder: (context, state) => const ManageProfileScreen(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.myAccount,
+    name: AppRouteNames.myAccount,
+    builder: (context, state) => const MyAccountScreen(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.changePassword,
+    name: AppRouteNames.changePassword,
+    builder: (context, state) => const ChangePasswordScreen(),
   ),
 
   // --- TEACHER ROUTES ---

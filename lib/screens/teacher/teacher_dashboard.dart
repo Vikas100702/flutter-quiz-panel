@@ -100,13 +100,6 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
               context.push(AppRoutePaths.myAccount);
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: AppStrings.logoutButton,
-            onPressed: () {
-              ref.read(authRepositoryProvider).signOut();
-            },
-          ),
         ],
       ),
       body: SingleChildScrollView(

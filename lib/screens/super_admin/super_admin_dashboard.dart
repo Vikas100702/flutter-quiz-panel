@@ -32,13 +32,6 @@ class SuperAdminDashboard extends ConsumerWidget {
                 context.push(AppRoutePaths.myAccount);
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              tooltip: AppStrings.logoutButton,
-              onPressed: () {
-                ref.read(authRepositoryProvider).signOut();
-              },
-            ),
           ],
           bottom: const TabBar(
             tabAlignment: TabAlignment.fill,

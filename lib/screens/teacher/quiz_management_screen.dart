@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/models/quiz_model.dart'; // QuizModel import
-import 'package:quiz_panel/utils/app_routes.dart';
-import 'package:quiz_panel/models/subject_model.dart';
 import 'package:quiz_panel/providers/quiz_provider.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/repositories/quiz_repository.dart';
+// NEW IMPORT
+import 'package:quiz_panel/repositories/question_provider.dart';
+import 'package:quiz_panel/utils/app_routes.dart';
+import 'package:quiz_panel/models/subject_model.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/utils/constants.dart';
 import 'package:quiz_panel/widgets/buttons/app_button.dart';
@@ -55,8 +57,9 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
       _showError('Please enter a valid duration.');
       return;
     }
-    if (totalQuestions == null || totalQuestions <= 0) {
-      _showError('Please enter a valid number of questions.');
+    // We check for >= 25 here for creation as a good default
+    if (totalQuestions == null || totalQuestions < 25) {
+      _showError('Please enter a valid number of questions (at least 25).');
       return;
     }
 
@@ -149,7 +152,6 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
               prefixIcon: Icons.title,
             ),
             const SizedBox(height: 16),
-            // --- 1. YEH ROW AB WRAP HAI ---
             Wrap(
               spacing: 16,
               runSpacing: 16,
@@ -168,7 +170,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                   constraints: const BoxConstraints(minWidth: 200),
                   child: AppTextField(
                     controller: _questionsController,
-                    label: AppStrings.totalQuestionsLabel,
+                    label: '${AppStrings.totalQuestionsLabel} (Min: 25)',
                     prefixIcon: Icons.question_mark,
                     keyboardType: TextInputType.number,
                   ),
@@ -231,53 +233,86 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
               child: ListTile(
                 title: Text(quiz.title, style: AppTextStyles.titleMedium),
                 subtitle: Text(
-                  '${quiz.totalQuestions} ${AppStrings.totalQuestionsLabel} | ${quiz.durationMin} ${AppStrings.minutesLabel}',
+                  'Target: ${quiz.totalQuestions} ${AppStrings.totalQuestionsLabel} | ${quiz.durationMin} ${AppStrings.minutesLabel}',
                   style: AppTextStyles.bodyMedium,
                 ),
-                // --- FIX: Using Wrap instead of Row ---
-                trailing: Wrap(
-                  spacing: 4.0, // horizontal space
-                  runSpacing: 4.0, // vertical space if it wraps
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Switch(
-                      value: isPublished,
-                      activeThumbColor: AppColors.success,
-                      onChanged: (newValue) {
-                        final newStatus = newValue
-                            ? ContentStatus.published
-                            : ContentStatus.draft;
+                // --- MODIFIED SECTION ---
+                trailing: Consumer(
+                  builder: (context, ref, child) {
+                    // Watch the questions for THIS quiz
+                    final questionsAsync = ref.watch(questionsProvider(quiz.quizId));
 
-                        ref
-                            .read(quizRepositoryProvider)
-                            .updateQuizStatus(
-                          quizId: quiz.quizId,
-                          newStatus: newStatus,
-                        );
+                    return Wrap(
+                      spacing: 4.0,
+                      runSpacing: 4.0,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        // Use .when to show loader/error/switch
+                        questionsAsync.when(
+                          loading: () => const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          error: (e, s) => Tooltip(
+                            message: e.toString(),
+                            child: const Icon(Icons.error, color: AppColors.error),
+                          ),
+                          data: (questions) {
+                            final int questionCount = questions.length;
+                            const int minQuestions = 25;
+                            final bool canPublish = questionCount >= minQuestions;
 
-                        _showError(
-                          newValue
-                              ? AppStrings.quizPublished
-                              : AppStrings.quizUnpublished,
-                          isError: false,
-                        );
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.arrow_forward_ios),
-                      tooltip: AppStrings.addQuestionsButton,
-                      color: AppColors.textTertiary,
-                      onPressed: () {
-                        context.pushNamed(
-                          AppRouteNames.questionManagement,
-                          pathParameters: {'quizId': quiz.quizId},
-                          extra: quiz,
-                        );
-                      },
-                    ),
-                  ],
+                            return Switch(
+                              value: isPublished,
+                              activeThumbColor: AppColors.success,
+                              onChanged: (newValue) {
+                                // Check constraint on publish (newValue == true)
+                                if (newValue == true && !canPublish) {
+                                  _showError(
+                                    'You must add at least $minQuestions questions to publish this quiz. You currently have $questionCount.',
+                                  );
+                                  return; // Don't allow turning it on
+                                }
+
+                                final newStatus = newValue
+                                    ? ContentStatus.published
+                                    : ContentStatus.draft;
+
+                                ref
+                                    .read(quizRepositoryProvider)
+                                    .updateQuizStatus(
+                                  quizId: quiz.quizId,
+                                  newStatus: newStatus,
+                                );
+
+                                _showError(
+                                  newValue
+                                      ? AppStrings.quizPublished
+                                      : AppStrings.quizUnpublished,
+                                  isError: false,
+                                );
+                              },
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_forward_ios),
+                          tooltip: AppStrings.addQuestionsButton,
+                          color: AppColors.textTertiary,
+                          onPressed: () {
+                            context.pushNamed(
+                              AppRouteNames.questionManagement,
+                              pathParameters: {'quizId': quiz.quizId},
+                              extra: quiz,
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                  },
                 ),
-                // --- END FIX ---
+                // --- END MODIFIED SECTION ---
               ),
             );
           },

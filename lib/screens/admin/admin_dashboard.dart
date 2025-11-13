@@ -10,6 +10,8 @@ import 'package:quiz_panel/providers/subject_provider.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/repositories/admin_repository.dart';
 import 'package:quiz_panel/repositories/quiz_repository.dart';
+// NEW IMPORT
+import 'package:quiz_panel/providers/quiz_provider.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/utils/constants.dart';
@@ -307,45 +309,80 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                         ),
                         const Spacer(),
                         const Divider(),
-                        SwitchListTile(
-                          title: Text(
-                            isPublished
-                                ? AppStrings.statusPublished
-                                : AppStrings.statusDraft,
-                            style: TextStyle(
-                              color: isPublished
-                                  ? AppColors.success
-                                  : AppColors.warning,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          subtitle: const Text(AppStrings.publishSubject),
-                          value: isPublished,
-                          activeThumbColor: AppColors.success,
-                          onChanged: (newValue) {
-                            final newStatus = newValue
-                                ? ContentStatus.published
-                                : ContentStatus.draft;
-                            ref
-                                .read(quizRepositoryProvider)
-                                .updateSubjectStatus(
-                              subjectId: subject.subjectId,
-                              newStatus: newStatus,
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  newValue
-                                      ? AppStrings.subjectPublished
-                                      : AppStrings.subjectUnpublished,
+                        // --- MODIFIED SECTION (Same as TeacherDashboard) ---
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final quizzesAsync = ref.watch(quizzesProvider(subject.subjectId));
+
+                            return quizzesAsync.when(
+                              loading: () => const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: CircularProgressIndicator(strokeWidth: 2),
                                 ),
-                                backgroundColor: newValue
-                                    ? AppColors.success
-                                    : AppColors.warning,
                               ),
+                              error: (e, s) => Tooltip(
+                                message: e.toString(),
+                                child: const ListTile(
+                                  title: Text('Error loading quizzes'),
+                                  leading: Icon(Icons.error, color: AppColors.error),
+                                ),
+                              ),
+                              data: (quizzes) {
+                                final int quizCount = quizzes.length;
+                                final bool canPublish = quizCount > 0;
+
+                                return SwitchListTile(
+                                  title: Text(
+                                    isPublished
+                                        ? AppStrings.statusPublished
+                                        : AppStrings.statusDraft,
+                                    style: TextStyle(
+                                      color: isPublished
+                                          ? AppColors.success
+                                          : AppColors.warning,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: const Text(AppStrings.publishSubject),
+                                  value: isPublished,
+                                  activeThumbColor: AppColors.success,
+                                  onChanged: (newValue) {
+                                    if (newValue == true && !canPublish) {
+                                      _showError(
+                                        'You must add at least 1 quiz to publish this subject.',
+                                      );
+                                      return;
+                                    }
+
+                                    final newStatus = newValue
+                                        ? ContentStatus.published
+                                        : ContentStatus.draft;
+                                    ref
+                                        .read(quizRepositoryProvider)
+                                        .updateSubjectStatus(
+                                      subjectId: subject.subjectId,
+                                      newStatus: newStatus,
+                                    );
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          newValue
+                                              ? AppStrings.subjectPublished
+                                              : AppStrings.subjectUnpublished,
+                                        ),
+                                        backgroundColor: newValue
+                                            ? AppColors.success
+                                            : AppColors.warning,
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
                             );
                           },
                         ),
+                        // --- END MODIFIED SECTION ---
                       ],
                     ),
                   ),

@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "823498154753",
+    "project_id": "online-quiz-892aa",
+    "storage_bucket": "online-quiz-892aa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:823498154753:android:eb255a8f5ce8af69d63100",
+        "android_client_info": {
+          "package_name": "com.example.quiz_panel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "823498154753-p67pcmo6tb7fjh7h90uiq3ac8gdu86em.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyjINf6ULf64Va9LJv0fu_oRKZZNxIXQ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "823498154753-p67pcmo6tb7fjh7h90uiq3ac8gdu86em.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "823498154753-02o3bifipmqp9ogc543jt0gcq8mmdsse.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.quizPanel"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:823498154753:android:655da3971ee48da3d63100",
+        "android_client_info": {
+          "package_name": "com.sainikinstitute.quiz_panel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "823498154753-p67pcmo6tb7fjh7h90uiq3ac8gdu86em.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyjINf6ULf64Va9LJv0fu_oRKZZNxIXQ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "823498154753-p67pcmo6tb7fjh7h90uiq3ac8gdu86em.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "823498154753-02o3bifipmqp9ogc543jt0gcq8mmdsse.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.quizPanel"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

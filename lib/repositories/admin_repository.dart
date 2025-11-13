@@ -32,11 +32,11 @@ class AdminRepository {
           .where('status', isEqualTo: UserStatus.pending)
           .snapshots() // 'snapshots()' returns a Stream, so our UI will update automatically when a new teacher registers.
           .map((snapshot) {
-            // We convert the list of documents into a list of UserModel objects
-            return snapshot.docs
-                .map((doc) => UserModel.fromFirestore(doc))
-                .toList();
-          });
+        // We convert the list of documents into a list of UserModel objects
+        return snapshot.docs
+            .map((doc) => UserModel.fromFirestore(doc))
+            .toList();
+      });
     } catch (e) {
       // If the stream fails, return an empty list
       return Stream.value([]);
@@ -87,15 +87,15 @@ class AdminRepository {
       return _db
           .collection('users')
           .orderBy(
-            'createdAt',
-            descending: true,
-          ) // Order by creation date, new users will be at top
+        'createdAt',
+        descending: true,
+      ) // Order by creation date, new users will be at top
           .snapshots()
           .map((snapshot) {
-            return snapshot.docs
-                .map((doc) => UserModel.fromFirestore(doc))
-                .toList();
-          });
+        return snapshot.docs
+            .map((doc) => UserModel.fromFirestore(doc))
+            .toList();
+      });
     } catch (e) {
       return Stream.value([]); // If the stream fails, return an empty list
     }
@@ -138,21 +138,42 @@ class AdminRepository {
     try {
       return _db
           .collection('users')
-          // Yeh query 'teacher' aur 'student' roles waale users ko laayegi
+      // Yeh query 'teacher' aur 'student' roles waale users ko laayegi
           .where('role', whereIn: [UserRoles.teacher, UserRoles.student])
           .orderBy('createdAt', descending: true)
           .snapshots()
           .map((snapshot) {
-            return snapshot.docs
-                .map((doc) => UserModel.fromFirestore(doc))
-                .toList();
-          });
+        return snapshot.docs
+            .map((doc) => UserModel.fromFirestore(doc))
+            .toList();
+      });
     } catch (e) {
       return Stream.value([]);
     }
   }
 
-  // --- 10. Get Role-Specific Profile Data ---
+  // --- 10. NEW FUNCTION: Get Users by a specific role ---
+  Stream<List<UserModel>> getUsersByRole(String role) {
+    try {
+      // This query requires a new Firestore index for each role
+      // (e.g., users: role ASC, displayName ASC)
+      return _db
+          .collection('users')
+          .where('role', isEqualTo: role)
+          .orderBy('displayName', descending: false)
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs
+            .map((doc) => UserModel.fromFirestore(doc))
+            .toList();
+      });
+    } catch (e) {
+      // Return a stream with an error to be caught by .when()
+      return Stream.error(e);
+    }
+  }
+
+  // --- 11. Get Role-Specific Profile Data ---
   Future<Map<String, dynamic>> getRoleProfileData(String uid,
       String role) async {
     String profileCollection;
@@ -177,8 +198,4 @@ class AdminRepository {
       return {};
     }
   }
-
-  // TODO: Hum yahaan future mein aur functions add karenge:
-// - Future<void> deleteUser({required String uid})
-// - Future<void> updateUserRole({required String uid, required String newRole})
 }

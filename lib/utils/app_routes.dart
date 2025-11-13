@@ -4,6 +4,7 @@ import 'package:quiz_panel/models/subject_model.dart';
 import 'package:quiz_panel/models/user_model.dart';
 import 'package:quiz_panel/screens/admin/admin_dashboard.dart';
 import 'package:quiz_panel/screens/admin/user_details_screen.dart';
+import 'package:quiz_panel/screens/admin/user_management_list_screen.dart';
 import 'package:quiz_panel/screens/auth/approval_pending_screen.dart';
 import 'package:quiz_panel/screens/auth/forgot_password_screen.dart';
 import 'package:quiz_panel/screens/auth/login_screen.dart';
@@ -59,6 +60,7 @@ class AppRoutePaths {
   static const String superAdminDashboard = '/superadmin/dashboard';
   static const String editUser = '/superadmin/users/:userId/edit';
   static const String userDetails = '/admin/users/:userId/details';
+  static const String adminUserList = '/admin/users/list/:filter';
 }
 
 // This class holds all our route 'names'
@@ -94,6 +96,7 @@ class AppRouteNames {
   static const String superAdminDashboard = 'superAdminDashboard';
   static const String editUser = 'editUser';
   static const String userDetails = 'userDetails';
+  static const String adminUserList = 'adminUserList';
 }
 
 // This is the single source of truth for all our routes.
@@ -289,6 +292,15 @@ final List<GoRoute> appRoutes = [
         return const LoginScreen();
       }
       return UserDetailsScreen(user: user);
+    },
+  ),
+  GoRoute(
+    path: AppRoutePaths.adminUserList,
+    name: AppRouteNames.adminUserList,
+    builder: (context, state) {
+      // Get the filter from the URL parameter
+      final filter = state.pathParameters['filter'] ?? 'pending';
+      return UserManagementListScreen(filter: filter);
     },
   ),
 

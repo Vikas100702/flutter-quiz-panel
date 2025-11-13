@@ -1,5 +1,3 @@
-// lib/providers/admin_provider.dart
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_panel/models/user_model.dart';
 import 'package:quiz_panel/repositories/admin_repository.dart';
@@ -8,11 +6,11 @@ import 'package:quiz_panel/repositories/admin_repository.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/utils/constants.dart';
 
-// --- 1. Stream Provider for Pending Teachers ---
+// --- 1. Stream Provider for Pending Teachers (Unchanged) ---
 
 final pendingTeachersProvider = StreamProvider.autoDispose<List<UserModel>>((
-  ref,
-) {
+    ref,
+    ) {
   //    Watch the *current* user's data
   final currentUserData = ref.watch(userDataProvider);
 
@@ -39,7 +37,54 @@ final pendingTeachersProvider = StreamProvider.autoDispose<List<UserModel>>((
   );
 });
 
-// --- 2. Stream Provider for All Users ---
+// --- 2. NEW: Provider for All Teachers ---
+final allTeachersProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
+  final currentUserData = ref.watch(userDataProvider);
+  return currentUserData.when(
+    data: (user) {
+      if (user != null && (user.role == UserRoles.admin || user.role == UserRoles.superAdmin)) {
+        return ref.watch(adminRepositoryProvider).getUsersByRole(UserRoles.teacher);
+      }
+      return Stream.value([]);
+    },
+    loading: () => Stream.value([]),
+    error: (e, s) => Stream.error(e,s), // Pass error along
+  );
+});
+
+// --- 3. NEW: Provider for All Students ---
+final allStudentsProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
+  final currentUserData = ref.watch(userDataProvider);
+  return currentUserData.when(
+    data: (user) {
+      if (user != null && (user.role == UserRoles.admin || user.role == UserRoles.superAdmin)) {
+        return ref.watch(adminRepositoryProvider).getUsersByRole(UserRoles.student);
+      }
+      return Stream.value([]);
+    },
+    loading: () => Stream.value([]),
+    error: (e, s) => Stream.error(e,s), // Pass error along
+  );
+});
+
+// --- 4. NEW: Provider for All Admins (Super Admin Only) ---
+final allAdminsProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
+  final currentUserData = ref.watch(userDataProvider);
+  return currentUserData.when(
+    data: (user) {
+      // This one is ONLY for Super Admin
+      if (user != null && user.role == UserRoles.superAdmin) {
+        return ref.watch(adminRepositoryProvider).getUsersByRole(UserRoles.admin);
+      }
+      return Stream.value([]);
+    },
+    loading: () => Stream.value([]),
+    error: (e, s) => Stream.error(e,s), // Pass error along
+  );
+});
+
+
+// --- 5. Stream Provider for All Users (DEPRECATED by dashboards, but kept for now) ---
 // This provider fetches all users for the Super Admin
 final allUsersProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
   // Watch the current user's data
@@ -65,7 +110,7 @@ final allUsersProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
   );
 });
 
-// --- 3. Stream Provider for Managed Users (Sirf Admin ke liye) ---
+// --- 6. Stream Provider for Managed Users (DEPRECATED by dashboards, but kept for now) ---
 final adminManagedUsersProvider =
 StreamProvider.autoDispose<List<UserModel>>((ref) {
   final currentUserData = ref.watch(userDataProvider);

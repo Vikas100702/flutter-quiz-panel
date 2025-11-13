@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // --- ZAROORI IMPORTS ---
 import 'package:go_router/go_router.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
-import 'package:quiz_panel/models/quiz_model.dart'; // QuizModel import kiya
 // -----------------------
 
 import 'package:quiz_panel/models/subject_model.dart';

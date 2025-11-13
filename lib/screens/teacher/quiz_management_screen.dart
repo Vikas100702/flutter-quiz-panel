@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quiz_panel/config/theme/app_theme.dart';
-import 'package:quiz_panel/models/quiz_model.dart'; // QuizModel import
 import 'package:quiz_panel/providers/quiz_provider.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/repositories/quiz_repository.dart';

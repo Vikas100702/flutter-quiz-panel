@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/models/user_model.dart';
 import 'package:quiz_panel/providers/admin_provider.dart';
-import 'package:quiz_panel/providers/auth_provider.dart';
 import 'package:quiz_panel/providers/subject_provider.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/repositories/admin_repository.dart';
@@ -15,7 +14,6 @@ import 'package:quiz_panel/providers/quiz_provider.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/utils/constants.dart';
-// import 'package:quiz_panel/utils/responsive.dart'; // Ab iski zaroorat nahi
 import 'package:quiz_panel/widgets/buttons/app_button.dart';
 import 'package:quiz_panel/widgets/inputs/app_text_field.dart';
 

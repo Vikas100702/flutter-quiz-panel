@@ -28,7 +28,7 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
-      title: 'QuizMaster Pro',
+      title: 'Pro Olympiad',
 
       // Connect the router
       // We tell MaterialApp to use GoRouter for all routing.

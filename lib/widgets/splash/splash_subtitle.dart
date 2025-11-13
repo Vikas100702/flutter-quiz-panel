@@ -11,7 +11,7 @@ class SplashSubtitle extends StatelessWidget {
       children: [
         // Main Title
         Text(
-          'QuizMaster Pro',
+          'Pro Olympiad',
           style: AppTextStyles.displayMedium.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w700,

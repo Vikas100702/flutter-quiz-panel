@@ -142,7 +142,7 @@ class RegisterForm extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Join QuizMaster Pro and start your learning journey',
+          'Join Pro Olympiad and start your learning journey',
           style: AppTextStyles.bodyLarge.copyWith(
             color: AppColors.textTertiary,
           ),

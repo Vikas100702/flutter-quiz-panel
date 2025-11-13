@@ -345,7 +345,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('QuizMaster Pro'),
+        title: const Text('Pro Olympiad'),
         centerTitle: true,
       ),
       body: ResponsiveAuthLayout(

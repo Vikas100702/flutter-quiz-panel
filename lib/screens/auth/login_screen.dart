@@ -38,9 +38,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Router baaki kaam karega
     } catch (e) {
       if (mounted) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString()),
+            // ignore: use_build_context_synchronously
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

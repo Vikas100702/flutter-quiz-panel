@@ -176,11 +176,23 @@ class _QuestionManagementScreenState
               label: AppStrings.questionLabel,
             ),
             const SizedBox(height: 16),
+            RadioGroup<int>(
+              groupValue: _correctAnswerIndex,
+              onChanged: (int? value) {
+                setState(() {
+                  _correctAnswerIndex = value;
+                });
+              },
+              child: Column(
+                children: [
+                  _buildOptionField(context, _option1Controller, AppStrings.option1Label, 0),
+                  _buildOptionField(context, _option2Controller, AppStrings.option2Label, 1),
+                  _buildOptionField(context, _option3Controller, AppStrings.option3Label, 2),
+                  _buildOptionField(context, _option4Controller, AppStrings.option4Label, 3),
+                ],
+              ),
+            ),
             // Options
-            _buildOptionField(context, _option1Controller, AppStrings.option1Label, 0),
-            _buildOptionField(context, _option2Controller, AppStrings.option2Label, 1),
-            _buildOptionField(context, _option3Controller, AppStrings.option3Label, 2),
-            _buildOptionField(context, _option4Controller, AppStrings.option4Label, 3),
 
             const SizedBox(height: 20),
             AppButton(
@@ -203,13 +215,7 @@ class _QuestionManagementScreenState
         children: [
           Radio<int>(
             value: index,
-            groupValue: _correctAnswerIndex,
             activeColor: AppColors.primary,
-            onChanged: (int? value) {
-              setState(() {
-                _correctAnswerIndex = value;
-              });
-            },
           ),
           Expanded(
             child: TextField(

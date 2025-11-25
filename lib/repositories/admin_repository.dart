@@ -194,7 +194,6 @@ class AdminRepository {
       return {};
     } catch (e) {
       // Error throw mat karein, bas empty data return karein
-      print('Error fetching profile data: $e');
       return {};
     }
   }

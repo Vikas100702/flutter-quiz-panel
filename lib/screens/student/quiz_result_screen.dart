@@ -25,7 +25,7 @@ class QuizResultScreen extends ConsumerWidget {
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: color.withOpacity(0.5), width: 1),
+        side: BorderSide(color: color.withValues(alpha: 0.5), width: 1),
       ),
       child: Container(
         padding: const EdgeInsets.all(16),

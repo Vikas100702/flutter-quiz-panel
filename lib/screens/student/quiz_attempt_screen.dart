@@ -177,7 +177,7 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
               return Card(
                 elevation: isSelected ? 4 : 1,
                 color: isSelected
-                    ? Colors.blue.withOpacity(0.1)
+                    ? Colors.blue.withValues(alpha: )(0.1)
                     : Theme.of(context).cardColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -214,7 +214,7 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
   // Widget: Question Navigation Grid (Sirf Desktop)
   Widget _buildQuestionGrid(QuizAttemptState state, QuizAttemptNotifier notifier) {
     return Container(
-      color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5),
+      color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: )(0.5),
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,7 +274,7 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
         color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: )(0.1),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
@@ -498,7 +498,7 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
               return Card(
                 elevation: isSelected ? 4 : 1,
                 color: isSelected
-                    ? Colors.blue.withOpacity(0.1)
+                    ? Colors.blue.withValues(alpha: 0.1)
                     : Theme.of(context).cardColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -535,7 +535,7 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
   // --- Widget: Question Navigation Grid (No change) ---
   Widget _buildQuestionGrid(QuizAttemptState state, QuizAttemptNotifier notifier) {
     return Container(
-      color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5),
+      color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -593,7 +593,7 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
         color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),

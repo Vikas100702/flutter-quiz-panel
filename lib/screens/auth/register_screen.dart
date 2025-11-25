@@ -62,14 +62,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
 
       if(mounted) {
+        // ignore: use_build_context_synchronously
         context.go(AppRoutePaths.splash);
       }
       // राउटर बाकी काम खुद करेगा (यूजर को /verify-email पर रीडायरेक्ट करेगा)
     } catch (e) {
       if (mounted) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString()),
+            // ignore: use_build_context_synchronously
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

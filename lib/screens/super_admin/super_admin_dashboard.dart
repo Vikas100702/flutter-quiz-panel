@@ -114,7 +114,7 @@ class SuperAdminDashboard extends ConsumerWidget {
           children: [
             CircleAvatar(
               radius: 30,
-              backgroundColor: color.withOpacity(0.1),
+              backgroundColor: color.withValues(alpha: 0.1),
               child: Icon(icon, size: 30, color: color),
             ),
             const SizedBox(height: 16),

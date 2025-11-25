@@ -109,7 +109,7 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
                     const SizedBox(height: 16),
                     // Dropdown menu
                     DropdownButtonFormField<String>(
-                      value: _selectedRole,
+                      initialValue: _selectedRole,
                       items: const [
                         // Sirf Teacher aur Admin ke beech switch karne ka option
                         DropdownMenuItem(

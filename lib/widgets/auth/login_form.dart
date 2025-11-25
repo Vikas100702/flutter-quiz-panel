@@ -132,7 +132,7 @@ class LoginForm extends StatelessWidget {
       children: [
         Expanded(
           child: Divider(
-            color: AppColors.outline.withOpacity(0.5),
+            color: AppColors.outline.withValues(alpha: 0.5),
           ),
         ),
         Padding(
@@ -146,7 +146,7 @@ class LoginForm extends StatelessWidget {
         ),
         Expanded(
           child: Divider(
-            color: AppColors.outline.withOpacity(0.5),
+            color: AppColors.outline.withValues(alpha: 0.5),
           ),
         ),
       ],

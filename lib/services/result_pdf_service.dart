@@ -1,3 +1,5 @@
+// lib/services/result_pdf_service.dart
+
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -12,10 +14,12 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:quiz_panel/models/quiz_attempt_state.dart';
 import 'package:quiz_panel/models/user_model.dart';
+import 'package:share_plus/share_plus.dart'; // Import zaroori hai
 import 'package:universal_html/html.dart' as html;
 
 class ResultPdfService {
-  // Main function to generate and download/save PDF
+
+  // --- 1. DOWNLOAD FUNCTION (For "Download Result" Button) ---
   static Future<void> generateAndDownloadResult({
     required QuizAttemptState resultState,
     required UserModel? user,
@@ -23,14 +27,86 @@ class ResultPdfService {
     required double maxScore,
     required double percentage,
   }) async {
+    final pdf = await _generatePdfDocument(resultState, user, totalScore, maxScore, percentage);
+    final Uint8List bytes = await pdf.save();
+
+    final String fileName =
+        'Result_${resultState.quiz.title.replaceAll(' ', '_')}.pdf';
+
+    if (kIsWeb) {
+      // --- WEB DOWNLOAD LOGIC ---
+      final blob = html.Blob([bytes], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement()
+        ..href = url
+        ..style.display = 'none'
+        ..download = fileName;
+      html.document.body?.children.add(anchor);
+      anchor.click();
+      html.document.body?.children.remove(anchor);
+      html.Url.revokeObjectUrl(url);
+    } else {
+      // --- MOBILE SAVE & OPEN LOGIC ---
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsBytes(bytes);
+
+      // Auto open the file after saving
+      await OpenFile.open(file.path);
+    }
+  }
+
+  // --- 2. SHARE FUNCTION (For "Challenge Friends" Button) ---
+  // Yeh function Web aur Mobile dono par XFile return karega bina crash hue.
+  static Future<XFile> generatePdfXFile({
+    required QuizAttemptState resultState,
+    required UserModel? user,
+    required double totalScore,
+    required double maxScore,
+    required double percentage,
+  }) async {
+    // PDF create karein
+    final pdf = await _generatePdfDocument(resultState, user, totalScore, maxScore, percentage);
+    final Uint8List bytes = await pdf.save();
+
+    final String fileName = 'Result_${resultState.quiz.title.replaceAll(' ', '_')}.pdf';
+
+    if (kIsWeb) {
+      // --- WEB FIX: Use XFile.fromData ---
+      // Web par file system nahi hota, isliye bytes se direct XFile banayenge.
+      return XFile.fromData(
+        bytes,
+        mimeType: 'application/pdf',
+        name: fileName,
+      );
+    } else {
+      // --- MOBILE LOGIC: Save to Temp Dir ---
+      // Mobile par share karne ke liye file path zaroori hai.
+      final directory = await getTemporaryDirectory();
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsBytes(bytes);
+
+      return XFile(file.path, mimeType: 'application/pdf');
+    }
+  }
+
+  // --- INTERNAL: PDF GENERATION LOGIC ---
+  static Future<pw.Document> _generatePdfDocument(
+      QuizAttemptState resultState,
+      UserModel? user,
+      double totalScore,
+      double maxScore,
+      double percentage,
+      ) async {
     final pdf = pw.Document();
 
-    // Load a font (optional, using standard here)
+    // Google Fonts se font load karein taaki text sundar dikhe
     final font = await PdfGoogleFonts.nunitoExtraLight();
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
+        theme: pw.ThemeData.withFont(base: font),
         build: (pw.Context context) {
           return [
             _buildHeader(resultState.quiz.title),
@@ -46,66 +122,43 @@ class ResultPdfService {
         },
       ),
     );
-
-    final Uint8List bytes = await pdf.save();
-    final String fileName =
-        'Result_${resultState.quiz.title.replaceAll(' ', '_')}.pdf';
-
-    if (kIsWeb) {
-      // --- WEB LOGIC ---
-      final blob = html.Blob([bytes], 'application/pdf');
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement()
-        ..href = url
-        ..style.display = 'none'
-        ..download = fileName;
-      html.document.body?.children.add(anchor);
-      anchor.click();
-      html.document.body?.children.remove(anchor);
-      html.Url.revokeObjectUrl(url);
-    } else {
-      // --- MOBILE (ANDROID/iOS) LOGIC ---
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/$fileName');
-      await file.writeAsBytes(bytes);
-
-      // Auto open the file after saving
-      await OpenFile.open(file.path);
-    }
+    return pdf;
   }
+
+  // --- PDF WIDGETS ---
 
   static pw.Widget _buildHeader(String quizTitle) {
     return pw.Header(
-      level: 0,
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.center,
-        children: [
-          pw.Text("QUIZ RESULT REPORT", style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-          pw.SizedBox(height: 5),
-          pw.Text(quizTitle, style: pw.TextStyle(fontSize: 18, color: PdfColors.grey700)),
-        ]
-      )
+        level: 0,
+        child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.Text("QUIZ RESULT REPORT", style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 5),
+              pw.Text(quizTitle, style: pw.TextStyle(fontSize: 18, color: PdfColors.grey700)),
+            ]
+        )
     );
   }
 
   static pw.Widget _buildUserInfo(UserModel? user, QuizAttemptState state) {
     final date = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
     return pw.Container(
-      decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey400), borderRadius: pw.BorderRadius.circular(8)),
-      padding: const pw.EdgeInsets.all(10),
-      child: pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-        children: [
-          pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-            pw.Text("Student Name: ${user?.displayName ?? 'Guest'}", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-            pw.Text("Email: ${user?.email ?? 'N/A'}"),
-          ]),
-          pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-            pw.Text("Date: $date"),
-            pw.Text("Total Questions: ${state.questions.length}"),
-          ]),
-        ]
-      )
+        decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey400), borderRadius: pw.BorderRadius.circular(8)),
+        padding: const pw.EdgeInsets.all(10),
+        child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+                pw.Text("Student Name: ${user?.displayName ?? 'Guest'}", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.Text("Email: ${user?.email ?? 'N/A'}"),
+              ]),
+              pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
+                pw.Text("Date: $date"),
+                pw.Text("Total Questions: ${state.questions.length}"),
+              ]),
+            ]
+        )
     );
   }
 
@@ -146,4 +199,3 @@ class ResultPdfService {
     );
   }
 }
-

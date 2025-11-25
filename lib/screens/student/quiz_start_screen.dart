@@ -95,7 +95,7 @@ class QuizStartScreen extends ConsumerWidget {
     required String title,
     required String value,
   }) {
-    final textTheme = Theme.of(context).textTheme;
+    // final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(

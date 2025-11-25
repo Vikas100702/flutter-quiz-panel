@@ -67,7 +67,7 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                           child: CircleAvatar(
                             radius: 50,
                             backgroundColor:
-                            AppColors.primaryLight.withOpacity(0.1),
+                            AppColors.primaryLight.withValues(alpha: 0.1),
                             backgroundImage:
                             (user.photoURL != null && user.photoURL!.isNotEmpty)
                                 ? NetworkImage(user.photoURL!)
@@ -430,7 +430,7 @@ class _AdminContent extends StatelessWidget {
 // String ko capitalize karne ke liye ek chota helper
 extension StringExtension on String {
   String capitalize() {
-    if (this.isEmpty) return "";
-    return "${this[0].toUpperCase()}${this.substring(1)}";
+    if (isEmpty) return "";
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }

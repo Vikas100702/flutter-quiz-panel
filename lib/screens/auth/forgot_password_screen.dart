@@ -138,6 +138,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
       if (next.isSuccess && previous?.isSuccess != next.isSuccess) {
         Future.delayed(const Duration(seconds: 3), () {
           if (mounted) {
+            // ignore: use_build_context_synchronously
             context.go(AppRoutePaths.login);
           }
         });
@@ -199,9 +200,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.05),
+              color: AppColors.primary.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
             ),
             child: Row(
               children: [
@@ -255,7 +256,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
           width: 100,
           height: 100,
           decoration: BoxDecoration(
-            color: AppColors.success.withOpacity(0.1),
+            color: AppColors.success.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -319,7 +320,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
             ),
@@ -338,7 +339,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),

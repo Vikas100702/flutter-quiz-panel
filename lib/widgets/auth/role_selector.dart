@@ -107,7 +107,7 @@ class RoleSelector extends StatelessWidget {
         decoration: BoxDecoration(
           // Jab selected ho toh background color badlein
           color: isSelected
-              ? AppColors.primary.withOpacity(0.1)
+              ? AppColors.primary.withValues(alpha: 0.1)
               : AppColors.background,
           // Border logic: select hone par primary, varna outline
           border: Border.all(

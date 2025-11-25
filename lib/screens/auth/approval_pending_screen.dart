@@ -176,7 +176,7 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
           width: 120,
           height: 120,
           decoration: BoxDecoration(
-            color: AppColors.warning.withOpacity(0.1),
+            color: AppColors.warning.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
         ),
@@ -190,7 +190,7 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppColors.warning.withOpacity(0.3),
+                color: AppColors.warning.withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
@@ -210,7 +210,7 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation(AppColors.warning),
             strokeWidth: 2,
-            backgroundColor: AppColors.warning.withOpacity(0.2),
+            backgroundColor: AppColors.warning.withValues(alpha: 0.2),
           ),
         ),
       ],
@@ -270,9 +270,9 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.05),
+            color: AppColors.primary.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

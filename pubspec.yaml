@@ -43,6 +43,13 @@ dependencies:
   google_sign_in: ^7.2.0
   intl_phone_field: ^3.2.0
   pinput: ^5.0.2
+  pdf: ^3.11.3
+  path_provider: ^2.1.5
+  open_file: ^3.5.10
+  universal_html: ^2.3.0
+  permission_handler: ^12.0.1
+  intl: ^0.20.2
+  printing: ^5.14.2
 
 dev_dependencies:
   flutter_test:

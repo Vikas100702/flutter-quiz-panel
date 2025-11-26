@@ -1,7 +1,8 @@
 // lib/screens/student/quiz_result_screen.dart
 
-import 'package:flutter/foundation.dart'; // kIsWeb ke liye
+import 'package:flutter/foundation.dart'; // kIsWeb
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Required for Clipboard
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
@@ -240,11 +241,11 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   onPressed: _isSharing
                       ? null
                       : () => _shareNative(
-                          resultState,
-                          maxScore.toDouble(),
-                          percentage,
-                          userAsync.value,
-                        ),
+                    resultState,
+                    maxScore.toDouble(),
+                    percentage,
+                    userAsync.value,
+                  ),
                 ),
 
                 const SizedBox(height: 40),
@@ -256,12 +257,20 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     );
   }
 
+  // --- Helper: Encode Query Parameters for Mailto ---
+  String _encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+        .map((MapEntry<String, String> e) =>
+    '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+  }
+
   // --- Social Share Row Widget (Web Only) ---
   Widget _buildSocialShareRow(
-    QuizAttemptState state,
-    double maxScore,
-    double percentage,
-  ) {
+      QuizAttemptState state,
+      double maxScore,
+      double percentage,
+      ) {
     final String shareText = _getShareText(state, maxScore, percentage);
 
     return Row(
@@ -294,15 +303,6 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
           tooltip: 'Share on X',
         ),
         const SizedBox(width: 20),
-        _buildSocialIconBtn(
-          icon: Icons.email_rounded,
-          color: const Color(0xFFEA4335),
-          onTap: () => _launchUrl(
-            'mailto:?subject=${Uri.encodeComponent("Pro Olympiad Quiz Challenge")}&body=${Uri.encodeComponent(shareText)}',
-          ),
-          tooltip: 'Share via Email',
-          isMaterial: true,
-        ),
       ],
     );
   }
@@ -334,13 +334,12 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     );
   }
 
-  // --- UPDATED: Generate Exciting Share Text ---
+  // --- Generate Exciting Share Text ---
   String _getShareText(
-    QuizAttemptState resultState,
-    double maxScore,
-    double percentage,
-  ) {
-    // Updated Link to your Play Store App
+      QuizAttemptState resultState,
+      double maxScore,
+      double percentage,
+      ) {
     const String appLink =
         "https://play.google.com/store/apps/details?id=com.sainikinstitute.quiz_panel&pcampaignid=web_share";
 
@@ -349,20 +348,19 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
     String message;
 
-    // Score-based Gamified Messages
     if (percentage >= 90) {
       message =
-          "🔥 I am UNSTOPPABLE! \n\n"
+      "🔥 I am UNSTOPPABLE! \n\n"
           "I just crushed the '$quizTitle' on Pro Olympiad with a perfect score of $myScore! 🚀\n\n"
           "Think you're smarter than me? Prove it! 👇";
     } else if (percentage >= 60) {
       message =
-          "🧠 Challenge Accepted! \n\n"
+      "🧠 Challenge Accepted! \n\n"
           "I scored $myScore in '$quizTitle'. It's tougher than it looks! 😎\n\n"
           "Can you beat my score? Take the quiz now! 👇";
     } else {
       message =
-          "📚 Learning in progress... \n\n"
+      "📚 Learning in progress... \n\n"
           "I took the '$quizTitle' challenge and scored $myScore. \n\n"
           "Come join me on Pro Olympiad and let's learn together! 👇";
     }
@@ -370,17 +368,13 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     return "$message\n\n📲 Play Now: $appLink\n\n#ProOlympiad #QuizChallenge #KnowledgeIsPower";
   }
 
-  // --- Native Share (Kept Dynamic) ---
-  // --- Native Share (Kept Dynamic) ---
-  // --- Native Share (Corrected) ---
+  // --- Native Share (Updated with Clipboard Logic) ---
   Future<void> _shareNative(
-    QuizAttemptState resultState,
-    double maxScore,
-    double percentage,
-    UserModel? user,
-  ) async {
-    // 1. FIX: Capture the RenderBox BEFORE the async gap (await).
-    // This ensures we have the position ready and don't access 'context' unsafely later.
+      QuizAttemptState resultState,
+      double maxScore,
+      double percentage,
+      UserModel? user,
+      ) async {
     final box = context.findRenderObject() as RenderBox?;
 
     setState(() {
@@ -388,10 +382,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     });
 
     try {
-      // 2. Generate Share Text
       final String shareText = _getShareText(resultState, maxScore, percentage);
 
-      // 3. Generate PDF (This is the long-running async task)
       final XFile pdfFile = await ResultPdfService.generatePdfXFile(
         resultState: resultState,
         user: user,
@@ -400,13 +392,25 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
         percentage: percentage,
       );
 
-      // 4. FIX: Check if the widget is still on screen.
-      // If the user went back, stop here to avoid crashes.
       if (!mounted) return;
 
-      // 5. Share
-      // Note: 'Share.shareXFiles' is the standard method for share_plus v7+.
-      // If your version insists on 'SharePlus', rename 'Share' to 'SharePlus' below.
+      // --- WHATSAPP CLIPBOARD FIX ---
+      await Clipboard.setData(ClipboardData(text: shareText));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Caption copied! Paste it in WhatsApp when sharing.',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.primary,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      // -----------------------------
+
       await SharePlus.instance.share(
         ShareParams(
           files: [pdfFile],
@@ -456,12 +460,12 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
   // --- Helper: PDF Download ---
   Future<void> _triggerAutoDownload(
-    QuizAttemptState result,
-    var user,
-    double maxScore,
-    double percentage, {
-    bool isRetry = false,
-  }) async {
+      QuizAttemptState result,
+      var user,
+      double maxScore,
+      double percentage, {
+        bool isRetry = false,
+      }) async {
     if (_hasDownloaded && !isRetry) return;
 
     try {

@@ -22,6 +22,7 @@ import 'package:quiz_panel/screens/student/quiz_result_screen.dart';
 import 'package:quiz_panel/screens/student/quiz_start_screen.dart';
 import 'package:quiz_panel/screens/student/student_home_screen.dart';
 import 'package:quiz_panel/screens/student/student_quiz_list_screen.dart';
+import 'package:quiz_panel/screens/student/youtube_learning_screen.dart';
 import 'package:quiz_panel/screens/super_admin/edit_user_screen.dart';
 import 'package:quiz_panel/screens/super_admin/super_admin_dashboard.dart';
 import 'package:quiz_panel/screens/teacher/question_management_screen.dart'; // New
@@ -54,6 +55,7 @@ class AppRoutePaths {
   static const String studentQuizStart = '/student/quiz/:quizId/start';
   static const String studentQuizAttempt = '/student/quiz/attempt/:quizId';
   static const String studentQuizResult = '/student/quizzes/:quizId/result';
+  static const String youtubeLearning = '/student/learning';
 
   // Admin paths
   static const String adminDashboard = '/admin/dashboard';
@@ -89,6 +91,7 @@ class AppRouteNames {
   static const String studentQuizStart = 'studentQuizStart';
   static const String studentQuizAttempt = 'studentQuizAttempt';
   static const String studentQuizResult = 'studentQuizResult';
+  static const String youtubeLearning = 'youtubeLearning';
 
 
   // Admin names
@@ -254,6 +257,14 @@ final List<GoRoute> appRoutes = [
         return const StudentHomeScreen();
       }
       return QuizResultScreen(quiz: quiz);
+    },
+  ),
+  GoRoute(
+    path: AppRoutePaths.youtubeLearning,
+    name: AppRouteNames.youtubeLearning,
+    builder: (context, state) {
+      final initialQuery = state.extra as String? ?? '';
+      return YoutubeLearningScreen(initialQuery: initialQuery);
     },
   ),
 

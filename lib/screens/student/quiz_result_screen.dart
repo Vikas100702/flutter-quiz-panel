@@ -249,6 +249,19 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                 ),
 
                 const SizedBox(height: 40),
+                AppButton(
+                  text: 'Watch Related Videos',
+                  icon: Icons.video_library_rounded,
+                  type: AppButtonType.secondary,
+                  onPressed: () {
+                    // Quiz ka title lekar learning screen par bhejein
+                    context.pushNamed(
+                      AppRouteNames.youtubeLearning,
+                      extra: '${widget.quiz.title} tutorial',
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
               ],
             ),
           ),

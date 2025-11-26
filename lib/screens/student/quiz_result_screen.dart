@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart'; // kIsWeb ke liye
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/models/quiz_attempt_state.dart';
@@ -10,13 +11,12 @@ import 'package:quiz_panel/models/quiz_model.dart';
 import 'package:quiz_panel/models/user_model.dart';
 import 'package:quiz_panel/providers/quiz_attempt_provider.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
+import 'package:quiz_panel/services/result_pdf_service.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/widgets/buttons/app_button.dart';
-import 'package:quiz_panel/services/result_pdf_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class QuizResultScreen extends ConsumerStatefulWidget {
   final QuizModel quiz;
@@ -62,7 +62,11 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     if (!_hasDownloaded && userAsync.value != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _triggerAutoDownload(
-            resultState, userAsync.value!, maxScore.toDouble(), percentage);
+          resultState,
+          userAsync.value!,
+          maxScore.toDouble(),
+          percentage,
+        );
       });
     }
 
@@ -104,8 +108,9 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Text(
                       "Result downloaded successfully!",
-                      style: AppTextStyles.bodyMedium
-                          .copyWith(color: AppColors.primary),
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.primary,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -119,8 +124,10 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                     padding: const EdgeInsets.all(32.0),
                     child: Column(
                       children: [
-                        Text(AppStrings.finalScore,
-                            style: AppTextStyles.titleLarge),
+                        Text(
+                          AppStrings.finalScore,
+                          style: AppTextStyles.titleLarge,
+                        ),
                         const SizedBox(height: 12),
                         Text(
                           '${resultState.score} / $maxScore',
@@ -129,8 +136,10 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        Text('${percentage.toStringAsFixed(1)}%',
-                            style: AppTextStyles.displaySmall),
+                        Text(
+                          '${percentage.toStringAsFixed(1)}%',
+                          style: AppTextStyles.displaySmall,
+                        ),
                       ],
                     ),
                   ),
@@ -138,8 +147,10 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                 const SizedBox(height: 32),
 
                 // Metrics
-                Text(AppStrings.scoreBreakdown,
-                    style: AppTextStyles.displaySmall),
+                Text(
+                  AppStrings.scoreBreakdown,
+                  style: AppTextStyles.displaySmall,
+                ),
                 const Divider(height: 20),
                 Center(
                   child: Wrap(
@@ -148,21 +159,25 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                     alignment: WrapAlignment.center,
                     children: [
                       _buildMetricCard(
-                          title: AppStrings.totalQuestions,
-                          value: resultState.questions.length,
-                          color: AppColors.textSecondary),
+                        title: AppStrings.totalQuestions,
+                        value: resultState.questions.length,
+                        color: AppColors.textSecondary,
+                      ),
                       _buildMetricCard(
-                          title: AppStrings.correctAnswers,
-                          value: resultState.totalCorrect,
-                          color: AppColors.success),
+                        title: AppStrings.correctAnswers,
+                        value: resultState.totalCorrect,
+                        color: AppColors.success,
+                      ),
                       _buildMetricCard(
-                          title: AppStrings.incorrectAnswers,
-                          value: resultState.totalIncorrect,
-                          color: AppColors.error),
+                        title: AppStrings.incorrectAnswers,
+                        value: resultState.totalIncorrect,
+                        color: AppColors.error,
+                      ),
                       _buildMetricCard(
-                          title: AppStrings.unansweredQuestions,
-                          value: resultState.totalUnanswered,
-                          color: AppColors.warning),
+                        title: AppStrings.unansweredQuestions,
+                        value: resultState.totalUnanswered,
+                        color: AppColors.warning,
+                      ),
                     ],
                   ),
                 ),
@@ -177,9 +192,13 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   type: AppButtonType.outline,
                   onPressed: () {
                     if (userAsync.value != null) {
-                      _triggerAutoDownload(resultState, userAsync.value!,
-                          maxScore.toDouble(), percentage,
-                          isRetry: true);
+                      _triggerAutoDownload(
+                        resultState,
+                        userAsync.value!,
+                        maxScore.toDouble(),
+                        percentage,
+                        isRetry: true,
+                      );
                     }
                   },
                 ),
@@ -205,7 +224,10 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   ),
                   const SizedBox(height: 24),
                   _buildSocialShareRow(
-                      resultState, maxScore.toDouble(), percentage),
+                    resultState,
+                    maxScore.toDouble(),
+                    percentage,
+                  ),
                   const SizedBox(height: 24),
                 ],
 
@@ -217,8 +239,12 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   isLoading: _isSharing,
                   onPressed: _isSharing
                       ? null
-                      : () => _shareNative(resultState, maxScore.toDouble(),
-                      percentage, userAsync.value),
+                      : () => _shareNative(
+                          resultState,
+                          maxScore.toDouble(),
+                          percentage,
+                          userAsync.value,
+                        ),
                 ),
 
                 const SizedBox(height: 40),
@@ -232,7 +258,10 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
   // --- Social Share Row Widget (Web Only) ---
   Widget _buildSocialShareRow(
-      QuizAttemptState state, double maxScore, double percentage) {
+    QuizAttemptState state,
+    double maxScore,
+    double percentage,
+  ) {
     final String shareText = _getShareText(state, maxScore, percentage);
 
     return Row(
@@ -242,7 +271,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
           icon: FontAwesomeIcons.whatsapp,
           color: const Color(0xFF25D366),
           onTap: () => _launchUrl(
-              'https://wa.me/?text=${Uri.encodeComponent(shareText)}'),
+            'https://wa.me/?text=${Uri.encodeComponent(shareText)}',
+          ),
           tooltip: 'Share on WhatsApp',
         ),
         const SizedBox(width: 20),
@@ -250,7 +280,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
           icon: FontAwesomeIcons.linkedinIn,
           color: const Color(0xFF0077B5),
           onTap: () => _launchUrl(
-              'https://www.linkedin.com/feed/?shareActive=true&text=${Uri.encodeComponent(shareText)}'),
+            'https://www.linkedin.com/feed/?shareActive=true&text=${Uri.encodeComponent(shareText)}',
+          ),
           tooltip: 'Share on LinkedIn',
         ),
         const SizedBox(width: 20),
@@ -258,7 +289,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
           icon: FontAwesomeIcons.xTwitter,
           color: const Color(0xFF000000),
           onTap: () => _launchUrl(
-              'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(shareText)}'),
+            'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(shareText)}',
+          ),
           tooltip: 'Share on X',
         ),
         const SizedBox(width: 20),
@@ -266,7 +298,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
           icon: Icons.email_rounded,
           color: const Color(0xFFEA4335),
           onTap: () => _launchUrl(
-              'mailto:?subject=${Uri.encodeComponent("Pro Olympiad Quiz Challenge")}&body=${Uri.encodeComponent(shareText)}'),
+            'mailto:?subject=${Uri.encodeComponent("Pro Olympiad Quiz Challenge")}&body=${Uri.encodeComponent(shareText)}',
+          ),
           tooltip: 'Share via Email',
           isMaterial: true,
         ),
@@ -303,10 +336,13 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
   // --- UPDATED: Generate Exciting Share Text ---
   String _getShareText(
-      QuizAttemptState resultState, double maxScore, double percentage) {
-
+    QuizAttemptState resultState,
+    double maxScore,
+    double percentage,
+  ) {
     // Updated Link to your Play Store App
-    const String appLink = "https://play.google.com/store/apps/details?id=com.sainikinstitute.quiz_panel&pcampaignid=web_share";
+    const String appLink =
+        "https://play.google.com/store/apps/details?id=com.sainikinstitute.quiz_panel&pcampaignid=web_share";
 
     final String quizTitle = widget.quiz.title;
     final String myScore = "${resultState.score.toInt()}/${maxScore.toInt()}";
@@ -315,15 +351,18 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
     // Score-based Gamified Messages
     if (percentage >= 90) {
-      message = "🔥 I am UNSTOPPABLE! \n\n"
+      message =
+          "🔥 I am UNSTOPPABLE! \n\n"
           "I just crushed the '$quizTitle' on Pro Olympiad with a perfect score of $myScore! 🚀\n\n"
           "Think you're smarter than me? Prove it! 👇";
     } else if (percentage >= 60) {
-      message = "🧠 Challenge Accepted! \n\n"
+      message =
+          "🧠 Challenge Accepted! \n\n"
           "I scored $myScore in '$quizTitle'. It's tougher than it looks! 😎\n\n"
           "Can you beat my score? Take the quiz now! 👇";
     } else {
-      message = "📚 Learning in progress... \n\n"
+      message =
+          "📚 Learning in progress... \n\n"
           "I took the '$quizTitle' challenge and scored $myScore. \n\n"
           "Come join me on Pro Olympiad and let's learn together! 👇";
     }
@@ -332,17 +371,27 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
   }
 
   // --- Native Share (Kept Dynamic) ---
-  Future<void> _shareNative(QuizAttemptState resultState, double maxScore,
-      double percentage, UserModel? user) async {
+  // --- Native Share (Kept Dynamic) ---
+  // --- Native Share (Corrected) ---
+  Future<void> _shareNative(
+    QuizAttemptState resultState,
+    double maxScore,
+    double percentage,
+    UserModel? user,
+  ) async {
+    // 1. FIX: Capture the RenderBox BEFORE the async gap (await).
+    // This ensures we have the position ready and don't access 'context' unsafely later.
+    final box = context.findRenderObject() as RenderBox?;
+
     setState(() {
       _isSharing = true;
     });
 
     try {
-      // 1. Exciting Text Generate karein
+      // 2. Generate Share Text
       final String shareText = _getShareText(resultState, maxScore, percentage);
 
-      // 2. PDF Generate karein (XFile)
+      // 3. Generate PDF (This is the long-running async task)
       final XFile pdfFile = await ResultPdfService.generatePdfXFile(
         resultState: resultState,
         user: user,
@@ -351,23 +400,30 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
         percentage: percentage,
       );
 
-      // 3. Share Text + PDF
-      final box = context.findRenderObject() as RenderBox?;
+      // 4. FIX: Check if the widget is still on screen.
+      // If the user went back, stop here to avoid crashes.
+      if (!mounted) return;
 
-      await Share.shareXFiles(
-        [pdfFile],
-        text: shareText,
-        subject: 'Challenge: Beat my score in ${widget.quiz.title}!',
-        sharePositionOrigin: box != null
-            ? box.localToGlobal(Offset.zero) & box.size
-            : null,
+      // 5. Share
+      // Note: 'Share.shareXFiles' is the standard method for share_plus v7+.
+      // If your version insists on 'SharePlus', rename 'Share' to 'SharePlus' below.
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [pdfFile],
+          text: shareText,
+          subject: 'Challenge: Beat my score in ${widget.quiz.title}!',
+          sharePositionOrigin: box != null
+              ? box.localToGlobal(Offset.zero) & box.size
+              : null,
+        ),
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Error sharing result: $e'),
-              backgroundColor: AppColors.error),
+            content: Text('Error sharing result: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } finally {
@@ -390,8 +446,9 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Could not launch application: $e'),
-              backgroundColor: AppColors.error),
+            content: Text('Could not launch application: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     }
@@ -399,8 +456,12 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
   // --- Helper: PDF Download ---
   Future<void> _triggerAutoDownload(
-      QuizAttemptState result, var user, double maxScore, double percentage,
-      {bool isRetry = false}) async {
+    QuizAttemptState result,
+    var user,
+    double maxScore,
+    double percentage, {
+    bool isRetry = false,
+  }) async {
     if (_hasDownloaded && !isRetry) return;
 
     try {
@@ -419,8 +480,9 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
         if (!isRetry) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text('Result Certificate Downloaded!'),
-                backgroundColor: AppColors.success),
+              content: Text('Result Certificate Downloaded!'),
+              backgroundColor: AppColors.success,
+            ),
           );
         }
       }
@@ -429,32 +491,43 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
       if (mounted && isRetry) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Failed to download result: $e'),
-              backgroundColor: AppColors.error),
+            content: Text('Failed to download result: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     }
   }
 
-  Widget _buildMetricCard(
-      {required String title, required int value, required Color color}) {
+  Widget _buildMetricCard({
+    required String title,
+    required int value,
+    required Color color,
+  }) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: color.withOpacity(0.5), width: 1)),
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: color.withValues(alpha: 0.5), width: 1),
+      ),
       child: Container(
         padding: const EdgeInsets.all(16),
         width: 150,
         child: Column(
           children: [
-            Text(title,
-                style: AppTextStyles.titleMedium.copyWith(fontSize: 14),
-                textAlign: TextAlign.center),
+            Text(
+              title,
+              style: AppTextStyles.titleMedium.copyWith(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
-            Text(value.toString(),
-                style: AppTextStyles.displaySmall
-                    .copyWith(color: color, fontWeight: FontWeight.bold)),
+            Text(
+              value.toString(),
+              style: AppTextStyles.displaySmall.copyWith(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),

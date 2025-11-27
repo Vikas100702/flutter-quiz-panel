@@ -1,7 +1,6 @@
 // lib/services/result_pdf_service.dart
 
 import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';

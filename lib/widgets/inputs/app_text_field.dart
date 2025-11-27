@@ -87,7 +87,7 @@ class _AppTextFieldState extends State<AppTextField> {
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.outline.withOpacity(0.5),
+                color: AppColors.outline.withValues(alpha: 0.5),
               ),
             ),
             contentPadding: const EdgeInsets.symmetric(

@@ -5,19 +5,35 @@ import 'package:quiz_panel/models/user_model.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/utils/constants.dart';
 
-// Provider for the Repository
-// This provider creates our UserRepository
+/// **What is this Provider? (userRepositoryProvider)**
+/// This provider creates and exposes the `UserRepository`.
+///
+/// **Why do we need it?**
+/// This allows any part of our app (like the Registration Screen or Profile Screen)
+/// to access the database functions without needing to create a new connection every time.
 final userRepositoryProvider = Provider<UserRepository>((ref) {
+  // Dependency Injection: We inject the Firestore instance.
   return UserRepository(FirebaseFirestore.instance);
 });
 
-// Repository class
+/// **Why we used this class (UserRepository):**
+/// This class handles all "Write" and "Read" operations related to User Profiles in the database.
+/// While `AuthRepository` handles *Login credentials*, this repository handles the
+/// *Actual Data* (Name, Role, Grade, etc.) stored in Firestore.
 class UserRepository {
   final FirebaseFirestore _db;
 
   UserRepository(this._db);
 
-  // Get user data from Firestore
+  // --- 1. Get User Data ---
+
+  /// **Logic: Fetch Profile**
+  /// Retrieves the full profile details of a logged-in user.
+  ///
+  /// **How it works:**
+  /// 1. It looks for a document in the `users` collection with the matching `uid`.
+  /// 2. If found, it converts the data into a `UserModel` object.
+  /// 3. If not found (rare, but possible if registration failed midway), it throws a specific error.
   Future<UserModel> getUserData(String uid) async {
     try {
       final docSnap = await _db.collection('users').doc(uid).get();
@@ -25,7 +41,8 @@ class UserRepository {
       if (docSnap.exists) {
         return UserModel.fromFirestore(docSnap);
       } else {
-        // Yeh error string router provider ke liye bahut zaroori hai
+        // Critical Error: User is logged in (Auth), but has no data (Firestore).
+        // The AppRouter catches this to redirect them to a fix-it screen.
         throw AppStrings.userDataNotFound;
       }
     } on FirebaseException catch (e) {
@@ -33,27 +50,37 @@ class UserRepository {
     }
   }
 
-  // Register user in firestore (For Email/Password)
+  // --- 2. Register User (Email/Password) ---
+
+  /// **Logic: Create New Account Profile**
+  /// Called immediately after a user successfully signs up with Email & Password.
+  ///
+  /// **What it does:**
+  /// 1. **Determines Status:** Automatically approves Students, but marks Teachers as 'pending'.
+  /// 2. **Creates User Doc:** Saves the main user info (Role, Email, Name) in the `users` collection.
+  /// 3. **Creates Role Profile:** Creates a separate document in `student_profiles` or `teacher_profiles`
+  ///    to store role-specific data (like Grade or Qualifications).
+  ///
+  /// **How it is helpful:**
+  /// It uses a **Batch Write**. This ensures that either *both* documents (User + Profile) are created,
+  /// or *neither* is. This prevents "half-created" accounts if the internet cuts out.
   Future<void> registerUserInFireStore({
     required UserCredential userCredential,
     required String name,
     required String role, // This will be 'student' or 'teacher'
   }) async {
     try {
-      // Determine the status based on the role
+      // Step 1: Set initial status based on role.
       String status;
       if (role == UserRoles.student) {
-        // Students are auto-approved (but will need email verification)
-        status = UserStatus.approved;
+        status = UserStatus.approved; // Students can enter immediately.
       } else if (role == UserRoles.teacher) {
-        // Teachers must be approved by an admin or super admin
-        status = UserStatus.pending;
+        status = UserStatus.pending; // Teachers need Admin approval.
       } else {
-        // Failsafe, should not happen from register screen
-        status = UserStatus.rejected;
+        status = UserStatus.rejected; // Failsafe.
       }
 
-      // Create the UserModel object
+      // Step 2: Prepare the main User Model.
       final newUser = UserModel(
         uid: userCredential.user!.uid,
         role: role,
@@ -62,46 +89,43 @@ class UserRepository {
         email: userCredential.user?.email ?? '',
         phoneNumber: userCredential.user?.phoneNumber,
         photoURL: userCredential.user?.photoURL,
-        authProviders: ['password'], // Specify auth provider
+        authProviders: ['password'],
         createdAt: Timestamp.now(),
-        approvedBy: null, // No one has approved yet
+        approvedBy: null,
         isActive: true,
       );
 
-      // Create a WriteBatch to save all data at once
+      // Step 3: Start a Batch (Atomic Operation).
       final batch = _db.batch();
 
-      // Set the main user document in 'users' collection
+      // Reference to the main user document.
       final userDocRef = _db.collection('users').doc(newUser.uid);
-
       batch.set(userDocRef, newUser.toMap());
 
-      // Create the profile documents
+      // Step 4: Create the secondary Role Profile document.
       if (role == UserRoles.student) {
-        // Create a document in 'student_profiles'
         final profileDocRef =
         _db.collection('student_profiles').doc(newUser.uid);
         batch.set(profileDocRef, {
           'studentId': newUser.uid,
           'name': name,
           'email': newUser.email,
-          'institution': null, // Can be filled out by user later
-          'grade': null, // Can be filled out by user later
+          'institution': null, // Placeholder for future data.
+          'grade': null,
         });
       } else if (role == UserRoles.teacher) {
-        // Create a document in 'teacher_profiles'
         final profileDocRef =
         _db.collection('teacher_profiles').doc(newUser.uid);
         batch.set(profileDocRef, {
           'teacherId': newUser.uid,
           'name': name,
           'email': newUser.email,
-          'qualification': null, // Can be filled out by user later
+          'qualification': null,
           'specialization': [],
         });
       }
 
-      // Commit (save) the batch
+      // Step 5: Save everything at once.
       await batch.commit();
     } on FirebaseException catch (e) {
       throw e.message ?? AppStrings.genericError;
@@ -110,7 +134,16 @@ class UserRepository {
     }
   }
 
-  // --- NEW FUNCTION (For Google Sign-In) ---
+  // --- 3. Register Google User ---
+
+  /// **Logic: Handle Google Sign-In**
+  /// Called when a user signs in with Google.
+  ///
+  /// **How it works:**
+  /// 1. **Check Existence:** It checks if this user already exists in our database.
+  /// 2. **Existing User:** If yes, it just updates their Photo URL (in case they changed it on Google).
+  /// 3. **New User:** If no, it creates a new account automatically.
+  ///    - Note: Google users are auto-approved and defaulted to the 'Student' role.
   Future<void> registerGoogleUserInFirestore({
     required UserCredential userCredential,
   }) async {
@@ -121,9 +154,8 @@ class UserRepository {
       final userDocRef = _db.collection('users').doc(user.uid);
       final docSnap = await userDocRef.get();
 
-      // 1. Check if user ALREADY exists in Firestore
+      // Scenario A: User is returning (Login).
       if (docSnap.exists) {
-        // User already exists, maybe update their photoURL or auth provider list
         await userDocRef.update({
           'photoURL': user.photoURL,
           'authProviders': FieldValue.arrayUnion(['google.com']),
@@ -131,29 +163,27 @@ class UserRepository {
         return;
       }
 
-      // 2. If user does NOT exist, create them
-      // Google users are auto-approved and default to 'student'
+      // Scenario B: User is new (Registration).
       final newUser = UserModel(
         uid: user.uid,
-        role: UserRoles.student,
-        status: UserStatus.approved,
+        role: UserRoles.student, // Default to Student.
+        status: UserStatus.approved, // Auto-approve.
         displayName: user.displayName ?? 'Google User',
         email: user.email ?? '',
         phoneNumber: user.phoneNumber,
         photoURL: user.photoURL,
-        authProviders: ['google.com'], // Auth provider is Google
+        authProviders: ['google.com'],
         createdAt: Timestamp.now(),
-        approvedBy: 'google_auth', // Auto-approved
+        approvedBy: 'google_auth',
         isActive: true,
       );
 
-      // Use a batch to create user and profile
       final batch = _db.batch();
 
-      // Set user document
+      // Create User Doc
       batch.set(userDocRef, newUser.toMap());
 
-      // Set student_profile document
+      // Create Student Profile Doc
       final profileDocRef = _db.collection('student_profiles').doc(newUser.uid);
       batch.set(profileDocRef, {
         'studentId': newUser.uid,
@@ -163,7 +193,6 @@ class UserRepository {
         'grade': null,
       });
 
-      // Commit the batch
       await batch.commit();
     } on FirebaseException catch (e) {
       throw e.message ?? AppStrings.genericError;
@@ -172,7 +201,14 @@ class UserRepository {
     }
   }
 
-  // --- NEW FUNCTION (For Phone Sign-Up) ---
+  // --- 4. Register Phone User ---
+
+  /// **Logic: Handle Phone Sign-Up**
+  /// Called after a user verifies their OTP for the first time.
+  ///
+  /// **Why is this special?**
+  /// Unlike Email or Google, Phone Auth doesn't give us a Name or Email.
+  /// We collect those in a separate screen (`PhoneRegisterDetailsScreen`) and then call this function.
   Future<void> registerPhoneUserInFirestore({
     required User user,
     required String name,
@@ -182,36 +218,35 @@ class UserRepository {
       final userDocRef = _db.collection('users').doc(user.uid);
       final docSnap = await userDocRef.get();
 
-      // Failsafe: Agar user pehle se exist karta hai, toh kuch na karein
+      // Safety check: Don't overwrite existing users.
       if (docSnap.exists) {
         return;
       }
 
-      // --- AAPKE REQUEST KE ANUSAAR: ---
-      // Sabhi naye phone users 'pending_approval' status se start karenge.
+      // **Policy:** All phone users start as 'pending'.
+      // This is because we can't easily verify their identity like we can with Google.
       const status = UserStatus.pending;
 
       final newUser = UserModel(
         uid: user.uid,
         role: role,
-        status: status, // Hamesha pending
+        status: status,
         displayName: name,
-        email: user.email ?? '', // Phone auth se email null ho sakta hai
+        email: user.email ?? '', // Might be null for phone users.
         phoneNumber: user.phoneNumber ?? '',
         photoURL: user.photoURL,
-        authProviders: ['phone'], // Auth provider is phone
+        authProviders: ['phone'],
         createdAt: Timestamp.now(),
-        approvedBy: null, // Pending hai
-        isActive: true, // Active hai, lekin pending
+        approvedBy: null,
+        isActive: true,
       );
 
-      // Use a batch to create user and profile
       final batch = _db.batch();
 
-      // Set user document
+      // Create User Doc
       batch.set(userDocRef, newUser.toMap());
 
-      // Profile documents banayein
+      // Create Role Profile Doc
       if (role == UserRoles.student) {
         final profileDocRef =
         _db.collection('student_profiles').doc(newUser.uid);
@@ -232,7 +267,6 @@ class UserRepository {
         });
       }
 
-      // Batch ko commit (save) karein
       await batch.commit();
     } on FirebaseException catch (e) {
       throw e.message ?? AppStrings.genericError;
@@ -241,6 +275,16 @@ class UserRepository {
     }
   }
 
+  // --- 5. Update User Profile ---
+
+  /// **Logic: Edit Profile**
+  /// Allows users to change their Name or Phone Number from the 'Manage Profile' screen.
+  ///
+  /// **How it works:**
+  /// 1. It prepares a map of only the changed fields.
+  /// 2. It updates the main `users` document.
+  /// 3. It intelligently finds the correct `_profiles` document (student or teacher)
+  ///    and updates that too, keeping data in sync.
   Future<void> updateUserData(
       String uid, {
         String? displayName,
@@ -258,12 +302,14 @@ class UserRepository {
       }
 
       if (dataToUpdate.isNotEmpty) {
+        // Update main user doc
         await userDocRef.update(dataToUpdate);
 
-        // Saath hi, role-specific profile ko bhi update karein
+        // Fetch user to know their role
         final userDoc = await userDocRef.get();
         final user = UserModel.fromFirestore(userDoc);
 
+        // Update the specific profile doc to match
         if (user.role == UserRoles.student) {
           final profileDocRef = _db.collection('student_profiles').doc(uid);
           await profileDocRef.update(dataToUpdate);

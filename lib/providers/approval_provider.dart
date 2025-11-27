@@ -1,4 +1,5 @@
 // lib/screens/auth/approval_pending_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_panel/providers/auth_provider.dart';
@@ -7,6 +8,15 @@ import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/widgets/buttons/app_button.dart';
 import 'package:quiz_panel/widgets/layout/responsive_layout.dart';
 
+/// **Why we used this screen (ApprovalPendingScreen):**
+/// This screen acts as a "Waiting Room". When a new Teacher registers, they cannot
+/// immediately access the dashboard. They must wait for an Admin to approve them.
+///
+/// **What it does:**
+/// 1. It informs the user that their registration was successful.
+/// 2. It shows a visual "timeline" of where they are in the process.
+/// 3. It prevents them from navigating to protected screens.
+/// 4. It provides a way to Log Out (in case they want to sign in with a different account).
 class ApprovalPendingScreen extends ConsumerStatefulWidget {
   const ApprovalPendingScreen({super.key});
 
@@ -17,21 +27,29 @@ class ApprovalPendingScreen extends ConsumerStatefulWidget {
 class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     with SingleTickerProviderStateMixin {
 
+  // **Animation Controllers:**
+  // These are used to make the screen elements "pop" and fade in smoothly
+  // instead of just appearing abruptly.
   late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation; // Makes the icon grow/shrink.
+  late Animation<double> _fadeAnimation;  // Makes the text fade in.
 
-  bool _isLoggingOut = false;
-  bool _isCheckingStatus = false;
+  // **State Variables:**
+  bool _isLoggingOut = false; // Shows a loader on the logout button.
+  bool _isCheckingStatus = false; // Shows a loader on the "Check Status" button.
 
   @override
   void initState() {
     super.initState();
+
+    // **Setup Animation:**
+    // The animation runs for 1.2 seconds.
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
 
+    // This creates a "bouncy" effect for the icon.
     _scaleAnimation = Tween<double>(
       begin: 0.8,
       end: 1.0,
@@ -40,6 +58,7 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
       curve: Curves.elasticOut,
     ));
 
+    // This makes the content fade in slowly after a short delay.
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -48,20 +67,26 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
       curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
     ));
 
+    // Start the animation as soon as the screen opens.
     _controller.forward();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller.dispose(); // Always clean up animations to free memory.
     super.dispose();
   }
 
+  /// **Logic: Sign Out**
+  /// If the user is tired of waiting or wants to switch accounts, they can log out.
+  /// This clears their session from Firebase Auth.
   Future<void> _handleSignOut() async {
     setState(() { _isLoggingOut = true; });
 
     try {
       await ref.read(authRepositoryProvider).signOut();
+      // Once signed out, the 'routerProvider' will automatically detect the change
+      // and redirect the user back to the Login Screen.
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -78,6 +103,10 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     }
   }
 
+  /// **Logic: Check Status**
+  /// In a real app, this would force-fetch the latest user data from Firestore
+  /// to see if the Admin has approved the account yet.
+  /// Currently, it simulates a check with a delay.
   Future<void> _checkStatus() async {
     setState(() { _isCheckingStatus = true; });
 
@@ -105,6 +134,7 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          // Logout button in the top right corner
           IconButton(
             icon: _isLoggingOut
                 ? const SizedBox(
@@ -121,11 +151,14 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
           ),
         ],
       ),
+      // We use ResponsiveAuthLayout to ensure the content is centered
+      // and looks good on both Mobile and Web.
       body: ResponsiveAuthLayout(
         showBackground: true,
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
+            // Apply the Fade and Scale animations defined in initState
             return Opacity(
               opacity: _fadeAnimation.value,
               child: Transform.scale(
@@ -137,19 +170,19 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Animated Icon
+              // 1. The big animated icon
               _buildStatusIcon(),
               const SizedBox(height: 32),
 
-              // Status Message
+              // 2. The "Pending" text message
               _buildStatusMessage(),
               const SizedBox(height: 24),
 
-              // Progress Indicator
+              // 3. The visual timeline (Registered -> Pending -> Approved)
               _buildProgressIndicator(),
               const SizedBox(height: 40),
 
-              // Action Buttons
+              // 4. Buttons to Check Status or Logout
               _buildActionButtons(),
             ],
           ),
@@ -158,11 +191,13 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     );
   }
 
+  /// **Helper: Status Icon**
+  /// Creates a pulsing, circular icon to visually indicate "Waiting".
   Widget _buildStatusIcon() {
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Pulsing background
+        // Pulsing background layer
         Container(
           width: 120,
           height: 120,
@@ -241,23 +276,25 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     );
   }
 
+  /// **Helper: Visual Progress Bar**
+  /// Shows a 3-step process so the user knows exactly where they stand.
   Widget _buildProgressIndicator() {
     return Column(
       children: [
-        // Step indicators
+        // Step indicators row
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildStep(1, 'Registered', true),
+            _buildStep(1, 'Registered', true), // Completed
             _buildStepDivider(),
-            _buildStep(2, 'Pending', true),
+            _buildStep(2, 'Pending', true), // Current Step
             _buildStepDivider(),
-            _buildStep(3, 'Approved', false),
+            _buildStep(3, 'Approved', false), // Future Step
           ],
         ),
         const SizedBox(height: 24),
 
-        // Estimated time
+        // Estimated wait time badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
@@ -288,6 +325,7 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     );
   }
 
+  // Helper to build a single step circle (1, 2, 3)
   Widget _buildStep(int stepNumber, String label, bool isCompleted) {
     return Column(
       children: [
@@ -330,6 +368,7 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     );
   }
 
+  // Helper to build the line between steps
   Widget _buildStepDivider() {
     return Container(
       width: 40,

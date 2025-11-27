@@ -1,3 +1,4 @@
+// lib/providers/youtube_provider.dart
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:quiz_panel/models/youtube_video_model.dart';
 import 'package:quiz_panel/repositories/youtube_repository.dart';
@@ -14,23 +15,22 @@ class YoutubeSearchState {
   });
 }
 
-// Notifier
 class YoutubeSearchNotifier extends StateNotifier<YoutubeSearchState> {
   final YoutubeRepository _repository;
 
   YoutubeSearchNotifier(this._repository) : super(YoutubeSearchState());
 
-  Future<void> search(String query) async {
-    if (query
-        .trim()
-        .isEmpty) {
+  // Added optional maxResults parameter
+  Future<void> search(String query, {int maxResults = 10}) async {
+    if (query.trim().isEmpty) {
       return;
     }
 
     state = YoutubeSearchState(isLoading: true);
 
     try {
-      final videos = await _repository.searchVideos(query);
+      // Pass maxResults to repo
+      final videos = await _repository.searchVideos(query, maxResults: maxResults);
       state = YoutubeSearchState(videos: videos, isLoading: false);
     } catch (e) {
       state = YoutubeSearchState(
@@ -42,7 +42,6 @@ class YoutubeSearchNotifier extends StateNotifier<YoutubeSearchState> {
   }
 }
 
-// Provider
 final youtubeSearchProvider = StateNotifierProvider.autoDispose<
     YoutubeSearchNotifier,
     YoutubeSearchState>((ref) {

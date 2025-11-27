@@ -37,16 +37,19 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     final resultState = ref.watch(quizAttemptProvider(widget.quiz));
     final userAsync = ref.watch(userDataProvider);
 
+    // Safety check: If quiz isn't finished, redirect
     if (resultState.status != QuizStatus.finished) {
       return Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Quiz abhi khatam nahi hua hai ya koi error hai.'),
-              TextButton(
+              const Text('Quiz result not available.'),
+              const SizedBox(height: 16),
+              AppButton(
+                text: 'Go to Dashboard',
                 onPressed: () => context.go(AppRoutePaths.studentDashboard),
-                child: const Text('Go to Dashboard'),
+                type: AppButtonType.primary,
               ),
             ],
           ),
@@ -59,7 +62,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     final percentage = (resultState.score / maxScore) * 100;
     final bool passed = percentage >= 40;
 
-    // Auto download logic
+    // Auto download logic (Web & Mobile)
     if (!_hasDownloaded && userAsync.value != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _triggerAutoDownload(
@@ -103,7 +106,6 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   textAlign: TextAlign.center,
                 ),
 
-                // Download Feedback
                 if (_hasDownloaded)
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
@@ -184,9 +186,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // --- Action Buttons ---
-
-                // 1. Download Button
+                // --- 1. Download Button (Visible on both) ---
                 AppButton(
                   text: 'Download Result Again',
                   icon: Icons.download_rounded,
@@ -205,7 +205,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // --- Social Share (WEB ONLY) ---
+                // --- 2. Social Share (WEB ONLY) ---
+                // Only show these direct link icons on Web
                 if (kIsWeb) ...[
                   Row(
                     children: [
@@ -232,7 +233,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   const SizedBox(height: 24),
                 ],
 
-                // --- Share Result / Challenge Friends (Native Share) ---
+                // --- 3. Native Share (Visible on both) ---
                 AppButton(
                   text: 'Challenge Friends & Share',
                   icon: Icons.share_rounded,
@@ -248,20 +249,23 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
+
+                // --- 4. YOUTUBE LEARNING BUTTON (Always Visible) ---
+                // We ensure this is NOT inside the kIsWeb block
                 AppButton(
                   text: 'Watch Related Videos',
                   icon: Icons.video_library_rounded,
-                  type: AppButtonType.secondary,
+                  type: AppButtonType.secondary, // Uses the secondary theme color
                   onPressed: () {
-                    // Quiz ka title lekar learning screen par bhejein
+                    // Navigate to the YouTube screen with a search query
                     context.pushNamed(
                       AppRouteNames.youtubeLearning,
                       extra: '${widget.quiz.title} tutorial',
                     );
                   },
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -270,251 +274,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     );
   }
 
-  // --- Helper: Encode Query Parameters for Mailto ---
-  String _encodeQueryParameters(Map<String, String> params) {
-    return params.entries
-        .map((MapEntry<String, String> e) =>
-    '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
-        .join('&');
-  }
-
-  // --- Social Share Row Widget (Web Only) ---
-  Widget _buildSocialShareRow(
-      QuizAttemptState state,
-      double maxScore,
-      double percentage,
-      ) {
-    final String shareText = _getShareText(state, maxScore, percentage);
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildSocialIconBtn(
-          icon: FontAwesomeIcons.whatsapp,
-          color: const Color(0xFF25D366),
-          onTap: () => _launchUrl(
-            'https://wa.me/?text=${Uri.encodeComponent(shareText)}',
-          ),
-          tooltip: 'Share on WhatsApp',
-        ),
-        const SizedBox(width: 20),
-        _buildSocialIconBtn(
-          icon: FontAwesomeIcons.linkedinIn,
-          color: const Color(0xFF0077B5),
-          onTap: () => _launchUrl(
-            'https://www.linkedin.com/feed/?shareActive=true&text=${Uri.encodeComponent(shareText)}',
-          ),
-          tooltip: 'Share on LinkedIn',
-        ),
-        const SizedBox(width: 20),
-        _buildSocialIconBtn(
-          icon: FontAwesomeIcons.xTwitter,
-          color: const Color(0xFF000000),
-          onTap: () => _launchUrl(
-            'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(shareText)}',
-          ),
-          tooltip: 'Share on X',
-        ),
-        const SizedBox(width: 20),
-      ],
-    );
-  }
-
-  Widget _buildSocialIconBtn({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-    required String tooltip,
-    bool isMaterial = false,
-  }) {
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(50),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color.withValues(alpha: 0.1),
-            border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
-          ),
-          child: isMaterial
-              ? Icon(icon, color: color, size: 28)
-              : FaIcon(icon, color: color, size: 28),
-        ),
-      ),
-    );
-  }
-
-  // --- Generate Exciting Share Text ---
-  String _getShareText(
-      QuizAttemptState resultState,
-      double maxScore,
-      double percentage,
-      ) {
-    const String appLink =
-        "https://play.google.com/store/apps/details?id=com.sainikinstitute.quiz_panel&pcampaignid=web_share";
-
-    final String quizTitle = widget.quiz.title;
-    final String myScore = "${resultState.score.toInt()}/${maxScore.toInt()}";
-
-    String message;
-
-    if (percentage >= 90) {
-      message =
-      "🔥 I am UNSTOPPABLE! \n\n"
-          "I just crushed the '$quizTitle' on Pro Olympiad with a perfect score of $myScore! 🚀\n\n"
-          "Think you're smarter than me? Prove it! 👇";
-    } else if (percentage >= 60) {
-      message =
-      "🧠 Challenge Accepted! \n\n"
-          "I scored $myScore in '$quizTitle'. It's tougher than it looks! 😎\n\n"
-          "Can you beat my score? Take the quiz now! 👇";
-    } else {
-      message =
-      "📚 Learning in progress... \n\n"
-          "I took the '$quizTitle' challenge and scored $myScore. \n\n"
-          "Come join me on Pro Olympiad and let's learn together! 👇";
-    }
-
-    return "$message\n\n📲 Play Now: $appLink\n\n#ProOlympiad #QuizChallenge #KnowledgeIsPower";
-  }
-
-  // --- Native Share (Updated with Clipboard Logic) ---
-  Future<void> _shareNative(
-      QuizAttemptState resultState,
-      double maxScore,
-      double percentage,
-      UserModel? user,
-      ) async {
-    final box = context.findRenderObject() as RenderBox?;
-
-    setState(() {
-      _isSharing = true;
-    });
-
-    try {
-      final String shareText = _getShareText(resultState, maxScore, percentage);
-
-      final XFile pdfFile = await ResultPdfService.generatePdfXFile(
-        resultState: resultState,
-        user: user,
-        totalScore: resultState.score.toDouble(),
-        maxScore: maxScore,
-        percentage: percentage,
-      );
-
-      if (!mounted) return;
-
-      // --- WHATSAPP CLIPBOARD FIX ---
-      await Clipboard.setData(ClipboardData(text: shareText));
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Caption copied! Paste it in WhatsApp when sharing.',
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: AppColors.primary,
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
-      // -----------------------------
-
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [pdfFile],
-          text: shareText,
-          subject: 'Challenge: Beat my score in ${widget.quiz.title}!',
-          sharePositionOrigin: box != null
-              ? box.localToGlobal(Offset.zero) & box.size
-              : null,
-        ),
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error sharing result: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSharing = false;
-        });
-      }
-    }
-  }
-
-  // --- Helper: Launch URL ---
-  Future<void> _launchUrl(String urlString) async {
-    final Uri url = Uri.parse(urlString);
-    try {
-      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-        throw Exception('Could not launch $url');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Could not launch application: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
-  // --- Helper: PDF Download ---
-  Future<void> _triggerAutoDownload(
-      QuizAttemptState result,
-      var user,
-      double maxScore,
-      double percentage, {
-        bool isRetry = false,
-      }) async {
-    if (_hasDownloaded && !isRetry) return;
-
-    try {
-      await ResultPdfService.generateAndDownloadResult(
-        resultState: result,
-        user: user,
-        totalScore: result.score.toDouble(),
-        maxScore: maxScore,
-        percentage: percentage,
-      );
-
-      if (mounted) {
-        setState(() {
-          _hasDownloaded = true;
-        });
-        if (!isRetry) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Result Certificate Downloaded!'),
-              backgroundColor: AppColors.success,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('PDF Error: $e');
-      if (mounted && isRetry) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to download result: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
+  // --- Helpers ---
 
   Widget _buildMetricCard({
     required String title,
@@ -547,6 +307,155 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _shareNative(
+      QuizAttemptState resultState,
+      double maxScore,
+      double percentage,
+      UserModel? user,
+      ) async {
+    final box = context.findRenderObject() as RenderBox?;
+    setState(() {
+      _isSharing = true;
+    });
+
+    try {
+      final String shareText =
+          "I scored ${resultState.score.toInt()}/${maxScore.toInt()} on ${widget.quiz.title}! Can you beat me? #ProOlympiad";
+
+      final XFile pdfFile = await ResultPdfService.generatePdfXFile(
+        resultState: resultState,
+        user: user,
+        totalScore: resultState.score.toDouble(),
+        maxScore: maxScore,
+        percentage: percentage,
+      );
+
+      if (!mounted) return;
+
+      // Copy text to clipboard for convenience
+      await Clipboard.setData(ClipboardData(text: shareText));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Caption copied! Paste it in WhatsApp when sharing.',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: AppColors.primary,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [pdfFile],
+          text: shareText,
+          subject: 'My Quiz Result',
+          sharePositionOrigin: box != null
+              ? box.localToGlobal(Offset.zero) & box.size
+              : null,
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSharing = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _triggerAutoDownload(
+      QuizAttemptState result,
+      UserModel user,
+      double maxScore,
+      double percentage, {
+        bool isRetry = false,
+      }) async {
+    if (_hasDownloaded && !isRetry) return;
+    try {
+      await ResultPdfService.generateAndDownloadResult(
+        resultState: result,
+        user: user,
+        totalScore: result.score.toDouble(),
+        maxScore: maxScore,
+        percentage: percentage,
+      );
+      if (mounted) {
+        setState(() {
+          _hasDownloaded = true;
+        });
+        if (!isRetry) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Certificate Downloaded!')));
+        }
+      }
+    } catch (e) {
+      if (mounted && isRetry) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Download failed: $e')));
+      }
+    }
+  }
+
+  Widget _buildSocialShareRow(
+      QuizAttemptState state, double maxScore, double percentage) {
+
+    // Construct the share text for web sharing links
+    final String shareText =
+        "I scored ${state.score.toInt()}/${maxScore.toInt()} on ${widget.quiz.title}! Can you beat me? #ProOlympiad";
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildSocialIconBtn(
+          icon: FontAwesomeIcons.whatsapp,
+          color: const Color(0xFF25D366),
+          onTap: () => launchUrl(Uri.parse('https://wa.me/?text=${Uri.encodeComponent(shareText)}')),
+        ),
+        const SizedBox(width: 20),
+        _buildSocialIconBtn(
+          icon: FontAwesomeIcons.linkedinIn,
+          color: const Color(0xFF0077B5),
+          onTap: () => launchUrl(Uri.parse('https://www.linkedin.com/feed/?shareActive=true&text=${Uri.encodeComponent(shareText)}')),
+        ),
+        const SizedBox(width: 20),
+        _buildSocialIconBtn(
+          icon: FontAwesomeIcons.xTwitter,
+          color: const Color(0xFF000000),
+          onTap: () => launchUrl(Uri.parse('https://twitter.com/intent/tweet?text=${Uri.encodeComponent(shareText)}')),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialIconBtn({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(50),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color.withValues(alpha: 0.1),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: FaIcon(icon, color: color, size: 24),
       ),
     );
   }

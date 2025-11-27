@@ -1,4 +1,5 @@
 // lib/screens/admin/user_details_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_panel/config/theme/app_theme.dart';
@@ -9,8 +10,17 @@ import 'package:quiz_panel/providers/subject_provider.dart';
 import 'package:quiz_panel/repositories/admin_repository.dart';
 import 'package:quiz_panel/utils/constants.dart';
 
+/// **Why we used this Widget (UserDetailsScreen):**
+/// This screen provides a complete "360-degree view" of a specific user for the Admin.
+/// Whether the user is a Student, Teacher, or another Admin, this screen displays:
+/// 1. **Core Identity:** Name, Email, Photo, Account Status.
+/// 2. **Extended Profile:** Extra data like 'Qualification' (for teachers) or 'Grade' (for students).
+/// 3. **Activity/Content:** What subjects a teacher has created, or (in future) what quizzes a student has attempted.
+///
+/// **How it helps:**
+/// It gives Admins full context before they take actions like Approving, Rejecting, or Banning a user.
 class UserDetailsScreen extends ConsumerStatefulWidget {
-  final UserModel user;
+  final UserModel user; // The user object passed from the previous list screen.
   const UserDetailsScreen({super.key, required this.user});
 
   @override
@@ -18,12 +28,19 @@ class UserDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
+  // **State Variable:**
+  // Holds the result of fetching the "Extra Profile Data" (like qualification or phone number)
+  // from the separate `teacher_profiles` or `student_profiles` collections.
   late Future<Map<String, dynamic>> _profileDataFuture;
 
   @override
   void initState() {
     super.initState();
-    // Screen load hote hi extra profile data fetch karein
+
+    // **Logic: Fetch Extended Data**
+    // As soon as the screen opens, we ask the repository to find any extra details
+    // associated with this user's UID and Role.
+    // We do this in initState so it only happens once, not every time the UI rebuilds.
     _profileDataFuture = ref
         .read(adminRepositoryProvider)
         .getRoleProfileData(widget.user.uid, widget.user.role);
@@ -36,7 +53,9 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(user.displayName),
-        // AppBar ka color user role ke hisaab se
+        // **Dynamic Styling:**
+        // We change the AppBar color based on the user's role to give immediate visual context.
+        // Red = Super Admin, Orange = Admin, Blue = Teacher/Student.
         backgroundColor: user.role == UserRoles.superAdmin
             ? AppColors.error
             : (user.role == UserRoles.admin
@@ -51,7 +70,8 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // --- Card 1: Main User Data (REVISED) ---
+                // --- SECTION 1: CORE USER DATA ---
+                // Displays the fundamental account info stored in the 'users' collection.
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
@@ -62,7 +82,8 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // --- NEW: Profile Picture ---
+                        // **Profile Picture:**
+                        // Shows the user's photo or a default icon if none exists.
                         Center(
                           child: CircleAvatar(
                             radius: 50,
@@ -83,7 +104,9 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // --- NEW: Name and Email (Centered) ---
+
+                        // **Name & Email:**
+                        // Prominently displayed at the top.
                         Text(
                           user.displayName,
                           style: AppTextStyles.displaySmall,
@@ -96,7 +119,9 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                           textAlign: TextAlign.center,
                         ),
                         const Divider(height: 24),
-                        // ---
+
+                        // **Technical Details:**
+                        // Useful for Admins to debug issues (e.g., checking UID or Auth Provider).
                         Text(
                           'Core User Data',
                           style: AppTextStyles.titleLarge,
@@ -113,14 +138,14 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                             'Approved By', user.approvedBy ?? 'N/A'),
                         _buildDetailRow(
                             'Auth Providers', user.authProviders.join(', ')),
-                        _buildDetailRow('Photo URL', user.photoURL ?? 'N/A'),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
 
-                // Card 2: Role-Specific Profile Data (Unchanged)
+                // --- SECTION 2: EXTENDED PROFILE DATA ---
+                // Only shown for Teachers and Students (Admins usually don't have extra profiles).
                 if (user.role == UserRoles.student ||
                     user.role == UserRoles.teacher)
                   Card(
@@ -138,7 +163,7 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                             style: AppTextStyles.titleLarge,
                           ),
                           const Divider(height: 20),
-                          // FutureBuilder profile data load karega
+                          // This widget handles the async loading of the profile map.
                           _buildProfileData(),
                         ],
                       ),
@@ -146,7 +171,10 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                   ),
                 const SizedBox(height: 20),
 
-                // --- NEW: Card 3: Role-Specific CONTENT ---
+                // --- SECTION 3: ROLE-SPECIFIC CONTENT ---
+                // This switch case decides what "Activity" to show based on the role.
+                // - Teachers: Show their Subjects.
+                // - Students: Show their Quiz History (Placeholder).
                 switch (user.role) {
                   UserRoles.teacher =>
                       _TeacherContent(teacherUid: user.uid),
@@ -163,7 +191,11 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
     );
   }
 
-  // Helper widget: Profile data ke liye FutureBuilder
+  /// **Helper Widget: Build Profile Data**
+  /// Uses a `FutureBuilder` to wait for the `getRoleProfileData` call to finish.
+  /// - **Loading:** Shows a spinner.
+  /// - **Error:** Shows an error message.
+  /// - **Data:** Iterates through the Map (Key-Value pairs) and displays them as rows.
   Widget _buildProfileData() {
     return FutureBuilder<Map<String, dynamic>>(
       future: _profileDataFuture,
@@ -181,11 +213,11 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
         }
 
         final profileData = snapshot.data!;
-        // Map mein jitni bhi entries hain, un sab ke liye rows banayein
+        // Loop through every piece of data in the profile and create a display row.
         return Column(
           children: profileData.entries.map((entry) {
             return _buildDetailRow(
-              entry.key.capitalize(), // e.g., 'studentId' -> 'Studentid'
+              entry.key.capitalize(), // Format key (e.g., 'studentId' -> 'Studentid')
               entry.value?.toString() ?? 'N/A',
             );
           }).toList(),
@@ -194,13 +226,13 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
     );
   }
 
-  // Helper widget: Ek detail row banane ke liye (UPDATED)
+  /// **Helper Widget: Detail Row**
+  /// A simple reusable row to display "Label: Value".
   Widget _buildDetailRow(String title, String value) {
-    // --- UPDATE: Hide fields handled by the new header ---
+    // Skip displaying fields that are already shown in the main header (Name, Email, Photo).
     if (title == 'Name' || title == 'Email' || title == 'Photo URL') {
       return const SizedBox.shrink();
     }
-    // --- END UPDATE ---
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -214,6 +246,7 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
           ),
           const SizedBox(width: 8),
           Expanded(
+            // Use SelectableText so admins can copy-paste IDs if needed.
             child: SelectableText(
               value,
               style: AppTextStyles.bodyLarge,
@@ -225,16 +258,20 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
   }
 }
 
-// --- NEW WIDGETS ---
+// -----------------------------------------------------------------------------
+// ROLE-SPECIFIC CONTENT WIDGETS
+// -----------------------------------------------------------------------------
 
-// --- 1. TEACHER CONTENT VIEW ---
+/// **1. Teacher Content View**
+/// **Why:** Allows Admins to see what educational content a specific Teacher has created.
+/// **How:** It uses `subjectsByTeacherProvider` which filters subjects by the Teacher's UID.
 class _TeacherContent extends ConsumerWidget {
   final String teacherUid;
   const _TeacherContent({required this.teacherUid});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the provider from subject_provider.dart
+    // Watch the specific provider that fetches subjects for THIS teacher.
     final subjectsAsync = ref.watch(subjectsByTeacherProvider(teacherUid));
 
     return Card(
@@ -260,13 +297,14 @@ class _TeacherContent extends ConsumerWidget {
                     child: Text('This teacher has not created any subjects yet.'),
                   );
                 }
+                // List all subjects created by this teacher.
                 return ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: subjects.length,
                   itemBuilder: (context, index) {
                     final subject = subjects[index];
-                    // Pass each subject to the quiz-fetching widget
+                    // Show quizzes inside this subject.
                     return _SubjectQuizzes(subject: subject);
                   },
                   separatorBuilder: (context, index) => const Divider(),
@@ -280,14 +318,16 @@ class _TeacherContent extends ConsumerWidget {
   }
 }
 
-// --- 2. WIDGET TO SHOW QUIZZES FOR A SUBJECT ---
+/// **2. Subject Quizzes List**
+/// **Why:** A helper widget to show the Quizzes inside a specific Subject.
+/// **How:** It watches `quizzesProvider(subjectId)` to fetch the quiz data.
 class _SubjectQuizzes extends ConsumerWidget {
   final SubjectModel subject;
   const _SubjectQuizzes({required this.subject});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the provider from quiz_provider.dart
+    // Fetch quizzes for this specific subject.
     final quizzesAsync = ref.watch(quizzesProvider(subject.subjectId));
 
     return Padding(
@@ -295,7 +335,7 @@ class _SubjectQuizzes extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Subject Info
+          // Subject Name and Status
           Text(
             subject.name,
             style:
@@ -312,7 +352,7 @@ class _SubjectQuizzes extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
 
-          // Quiz List
+          // List of Quizzes
           quizzesAsync.when(
             loading: () => const Padding(
               padding: EdgeInsets.only(left: 16.0),
@@ -334,6 +374,7 @@ class _SubjectQuizzes extends ConsumerWidget {
                   ),
                 );
               }
+              // Display quiz titles and statuses.
               return Padding(
                 padding: const EdgeInsets.only(left: 16.0),
                 child: Column(
@@ -354,7 +395,9 @@ class _SubjectQuizzes extends ConsumerWidget {
   }
 }
 
-// --- 3. STUDENT CONTENT PLACEHOLDER ---
+/// **3. Student Content Placeholder**
+/// **Why:** In the future, this will show a student's performance history.
+/// **Current Status:** Placeholder text until the `attempts` feature is fully connected for Admins.
 class _StudentContent extends StatelessWidget {
   final String studentUid;
   const _StudentContent({required this.studentUid});
@@ -390,7 +433,8 @@ class _StudentContent extends StatelessWidget {
   }
 }
 
-// --- 4. ADMIN CONTENT PLACEHOLDER ---
+/// **4. Admin Content Placeholder**
+/// **Why:** In the future, this will show an audit log of the Admin's actions.
 class _AdminContent extends StatelessWidget {
   final String adminUid;
   const _AdminContent({required this.adminUid});
@@ -426,8 +470,8 @@ class _AdminContent extends StatelessWidget {
   }
 }
 
-
-// String ko capitalize karne ke liye ek chota helper
+/// **Utility Extension:**
+/// Capitalizes the first letter of a string (e.g., "teacher" -> "Teacher").
 extension StringExtension on String {
   String capitalize() {
     if (isEmpty) return "";

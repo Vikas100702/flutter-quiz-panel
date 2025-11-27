@@ -102,33 +102,33 @@ class AppButton extends StatelessWidget {
     switch (type) {
       case AppButtonType.primary:
         return baseStyle.copyWith(
-          backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                (Set<MaterialState> states) {
+          backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                (Set<WidgetState> states) {
               if (!isEnabled) {
-                return AppColors.textTertiary.withOpacity(0.3);
+                return AppColors.textTertiary.withValues(alpha: 0.3);
               }
               return AppColors.primary;
             },
           ),
-          foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-          overlayColor: MaterialStateProperty.all<Color>(
-            Colors.white.withOpacity(0.1),
+          foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
+          overlayColor: WidgetStateProperty.all<Color>(
+            Colors.white.withValues(alpha: 0.1),
           ),
         );
 
       case AppButtonType.secondary:
         return baseStyle.copyWith(
-          backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                (Set<MaterialState> states) {
+          backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                (Set<WidgetState> states) {
               if (!isEnabled) {
-                return AppColors.textTertiary.withOpacity(0.3);
+                return AppColors.textTertiary.withValues(alpha: 0.3);
               }
               return AppColors.secondary;
             },
           ),
-          foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-          overlayColor: MaterialStateProperty.all<Color>(
-            Colors.white.withOpacity(0.1),
+          foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
+          overlayColor: WidgetStateProperty.all<Color>(
+            Colors.white.withValues(alpha: 0.1),
           ),
         );
 
@@ -139,17 +139,17 @@ class AppButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           side: BorderSide(
-            color: isEnabled ? AppColors.primary : AppColors.textTertiary.withOpacity(0.3),
+            color: isEnabled ? AppColors.primary : AppColors.textTertiary.withValues(alpha: 0.3),
             width: 1.5,
           ),
           backgroundColor: Colors.transparent,
-          foregroundColor: isEnabled ? AppColors.primary : AppColors.textTertiary.withOpacity(0.3),
+          foregroundColor: isEnabled ? AppColors.primary : AppColors.textTertiary.withValues(alpha: 0.3),
         );
 
       case AppButtonType.text:
         return TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          foregroundColor: isEnabled ? AppColors.primary : AppColors.textTertiary.withOpacity(0.3),
+          foregroundColor: isEnabled ? AppColors.primary : AppColors.textTertiary.withValues(alpha: 0.3),
         );
     }
   }
@@ -164,12 +164,12 @@ class AppButton extends StatelessWidget {
       case AppButtonType.primary:
       case AppButtonType.secondary:
         return baseStyle.copyWith(
-          color: isEnabled ? Colors.white : Colors.white.withOpacity(0.5),
+          color: isEnabled ? Colors.white : Colors.white.withValues(alpha: 0.5),
         );
       case AppButtonType.outline:
       case AppButtonType.text:
         return baseStyle.copyWith(
-          color: isEnabled ? AppColors.primary : AppColors.textTertiary.withOpacity(0.3),
+          color: isEnabled ? AppColors.primary : AppColors.textTertiary.withValues(alpha: 0.3),
         );
     }
   }
@@ -181,7 +181,7 @@ class AppButton extends StatelessWidget {
         return Colors.white;
       case AppButtonType.outline:
       case AppButtonType.text:
-        return isEnabled ? AppColors.primary : AppColors.textTertiary.withOpacity(0.3);
+        return isEnabled ? AppColors.primary : AppColors.textTertiary.withValues(alpha: 0.3);
     }
   }
 }

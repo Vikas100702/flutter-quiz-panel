@@ -24,7 +24,7 @@ class SplashSubtitle extends StatelessWidget {
         Text(
           'Elevate Your Learning Experience',
           style: AppTextStyles.bodyLarge.copyWith(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontWeight: FontWeight.w400,
           ),
         ),

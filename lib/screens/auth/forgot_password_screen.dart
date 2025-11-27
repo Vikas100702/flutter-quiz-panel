@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-// Password reset provider ko import karein
 import 'package:quiz_panel/providers/password_reset_provider.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
@@ -11,6 +10,13 @@ import 'package:quiz_panel/widgets/buttons/app_button.dart';
 import 'package:quiz_panel/widgets/inputs/app_text_field.dart';
 import 'package:quiz_panel/widgets/layout/responsive_layout.dart';
 
+/// **Why we used this Widget (ForgotPasswordScreen):**
+/// This screen allows a user to recover their account by requesting a password reset link.
+/// It integrates with Firebase Authentication's built-in email reset functionality.
+///
+/// **How it helps:**
+/// It provides a standardized, secure way for users to regain access to their account
+/// without intervention from a system administrator.
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -20,19 +26,27 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
+// **Why SingleTickerProviderStateMixin?**
+// This mixin is essential for enabling the entrance animations driven by `AnimationController`.
     with SingleTickerProviderStateMixin {
+
+  // **Animation Controllers:**
   late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation; // Controls the icon's size (0.9 -> 1.0).
+  late Animation<double> _fadeAnimation;  // Controls the content's visibility (0.0 -> 1.0).
 
   final TextEditingController _emailController = TextEditingController();
 
-  // --- 1. Create a variable to hold the notifier ---
+  // **Riverpod Notifier Reference:**
+  // We store a reference to the Notifier here so we can call its functions (`resetState`)
+  // safely within `dispose()`.
   late final PasswordResetNotifier _passwordResetNotifier;
 
   @override
   void initState() {
     super.initState();
+
+    // **Animation Setup:**
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -54,10 +68,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
       curve: const Interval(0.2, 1.0, curve: Curves.easeInOut),
     ));
 
+    // Start the entry animation.
     _controller.forward();
 
-    // --- 2. Initialize the notifier variable in initState ---
-    // This is safe because 'ref' is valid here.
+    // Initialize the notifier instance to use in dispose and submit logic.
     _passwordResetNotifier = ref.read(passwordResetProvider.notifier);
   }
 
@@ -66,13 +80,21 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     _controller.dispose();
     _emailController.dispose();
 
-    // --- 3. Use the stored variable, not 'ref' or 'Future.microtask' ---
-    // This is now 100% safe.
+    // **Cleanup:**
+    // Before the widget is destroyed, ensure the password reset state is cleared.
+    // This prevents stale success/error messages if the user returns later.
     _passwordResetNotifier.resetState();
 
     super.dispose();
   }
 
+  /// **Logic: Request Password Reset**
+  /// This function handles button press validation and triggers the Firebase reset process.
+  ///
+  /// **How it works:**
+  /// 1. Validates the input for empty and invalid email format.
+  /// 2. Calls `sendResetEmail` on the `PasswordResetNotifier`.
+  /// 3. The Notifier manages the asynchronous API call and updates the screen's state (loading/success/error).
   Future<void> _resetPassword() async {
     FocusScope.of(context).unfocus();
 
@@ -97,17 +119,21 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
       return;
     }
 
-    // --- Local state set karne ke bajaye notifier ko call karein ---
+    // Call the Riverpod Notifier to handle the heavy lifting (API call).
     ref.read(passwordResetProvider.notifier).sendResetEmail(email);
   }
 
+  /// **Helper: Email Validation**
+  /// Checks if the input string roughly matches an email pattern.
   bool _isValidEmail(String email) {
     final emailRegex = RegExp(r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
     return emailRegex.hasMatch(email);
   }
 
+  /// **Logic: Back Button Handler**
+  /// Navigates the user back to the login screen.
+  /// It prevents navigation if a network operation is currently running.
   void _handleBack() {
-    // isLoading state ab provider se milegi
     if (!ref.read(passwordResetProvider).isLoading) {
       context.go(AppRoutePaths.login);
     }
@@ -115,14 +141,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
   @override
   Widget build(BuildContext context) {
-    // --- Provider ki state ko watch karein ---
+    // **Watch Riverpod State:**
+    // We watch the Notifier's state to rebuild the UI when variables change (loading, success).
     final state = ref.watch(passwordResetProvider);
     final bool isLoading = state.isLoading;
     final bool isSuccess = state.isSuccess;
 
-    // --- Error aur Success ko listen karein ---
+    // **Listen for Side Effects (Snackbar/Navigation):**
+    // `ref.listen` is used for actions that shouldn't cause a UI rebuild, like showing a SnackBar
+    // or performing navigation *after* a success/failure event.
     ref.listen(passwordResetProvider, (previous, next) {
-      // Agar error ho toh SnackBar dikhayein
+      // 1. Error Handling: Show SnackBar if an error message is present.
       if (next.error != null && previous?.error != next.error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -130,15 +159,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
             backgroundColor: AppColors.error,
           ),
         );
-        // Error ko clear karein taake dubara na dikhe
+        // Clear the error immediately so the SnackBar doesn't re-appear on minor rebuilds.
         ref.read(passwordResetProvider.notifier).clearError();
       }
 
-      // Agar success ho toh login par navigate karein
+      // 2. Success Handling: Wait 3 seconds, then navigate to login screen.
       if (next.isSuccess && previous?.isSuccess != next.isSuccess) {
         Future.delayed(const Duration(seconds: 3), () {
           if (mounted) {
-            // ignore: use_build_context_synchronously
+            //ignore: use_build_context_synchronously
             context.go(AppRoutePaths.login);
           }
         });
@@ -149,16 +178,18 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: _handleBack,
+          onPressed: _handleBack, // Back button logic.
         ),
         title: const Text(AppStrings.forgotPasswordTitle),
         centerTitle: true,
       ),
+      // **Responsive Wrapper:** Ensures good presentation on web/desktop.
       body: ResponsiveAuthLayout(
         showBackground: true,
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
+            // Apply the entrance animations.
             return Opacity(
               opacity: _fadeAnimation.value,
               child: Transform.scale(
@@ -167,13 +198,16 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
               ),
             );
           },
-          // isSuccess ko provider se read karein
+          // **Conditional Rendering:**
+          // If successful, show the success state; otherwise, show the main form.
           child: isSuccess ? _buildSuccessState() : _buildResetForm(isLoading),
         ),
       ),
     );
   }
 
+  /// **Widget: Password Reset Form**
+  /// Displays the email input field and the "Send Reset Link" button.
   Widget _buildResetForm(bool isLoading) {
     return SingleChildScrollView(
       child: Column(
@@ -181,22 +215,22 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header Section
+          // Header section with icon and title.
           _buildHeader(),
           const SizedBox(height: 32),
 
-          // Email Field
+          // Email Input Field.
           AppTextField(
             controller: _emailController,
             label: AppStrings.emailLabel,
             prefixIcon: Icons.email_rounded,
             keyboardType: TextInputType.emailAddress,
             onSubmitted: (_) => _resetPassword(),
-            enabled: !isLoading, // isLoading provider se
+            enabled: !isLoading, // Disable during loading.
           ),
           const SizedBox(height: 24),
 
-          // Info Text
+          // Information box for instructions.
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -225,17 +259,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
           ),
           const SizedBox(height: 32),
 
-          // Reset Button
+          // Action Button.
           AppButton(
             text: AppStrings.resetPasswordButton,
             onPressed: isLoading ? null : _resetPassword,
-            isLoading: isLoading, // isLoading provider se
+            isLoading: isLoading,
             type: AppButtonType.primary,
             icon: Icons.send_rounded,
           ),
           const SizedBox(height: 20),
 
-          // Back to Login
+          // Secondary Button: Back to Login.
           AppButton(
             text: 'Back to Login',
             onPressed: isLoading ? null : _handleBack,
@@ -247,11 +281,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     );
   }
 
+  /// **Widget: Success State View**
+  /// Shown after the email has been successfully sent.
   Widget _buildSuccessState() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Success Icon
+        // Large Success Icon.
         Container(
           width: 100,
           height: 100,
@@ -267,7 +303,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
         ),
         const SizedBox(height: 32),
 
-        // Success Message
+        // Success Messages.
         Text(
           AppStrings.resetEmailSent,
           style: AppTextStyles.displaySmall.copyWith(
@@ -287,6 +323,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
         ),
         const SizedBox(height: 8),
 
+        // Redirecting hint and progress indicator.
         Text(
           'Redirecting to login...',
           style: AppTextStyles.bodyMedium.copyWith(
@@ -296,7 +333,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
         ),
         const SizedBox(height: 32),
 
-        // Loading indicator for redirect
         SizedBox(
           width: 40,
           height: 40,
@@ -309,10 +345,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     );
   }
 
+  /// **Widget: Form Header**
+  /// Builds the top section with the Reset Password icon and descriptive text.
   Widget _buildHeader() {
     return Column(
       children: [
-        // Animated Icon
+        // Animated Icon stack.
         Stack(
           alignment: Alignment.center,
           children: [
@@ -355,6 +393,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
         ),
         const SizedBox(height: 24),
 
+        // Title and Subtitle text.
         Text(
           AppStrings.forgotPasswordTitle,
           style: AppTextStyles.displaySmall.copyWith(

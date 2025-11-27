@@ -28,15 +28,15 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool _isEnabled = !isDisabled && !isLoading && onPressed != null;
-    final buttonStyle = _getButtonStyle(context, _isEnabled);
+    final bool isEnabled = !isDisabled && !isLoading && onPressed != null;
+    final buttonStyle = _getButtonStyle(context, isEnabled);
     final child = isLoading
         ? SizedBox(
       height: 24,
       width: 24,
       child: CircularProgressIndicator(
         strokeWidth: 2,
-        valueColor: AlwaysStoppedAnimation(_getLoaderColor(_isEnabled)),
+        valueColor: AlwaysStoppedAnimation(_getLoaderColor(isEnabled)),
       ),
     )
         : Row(
@@ -49,7 +49,7 @@ class AppButton extends StatelessWidget {
         ],
         Text(
           text,
-          style: _getTextStyle(_isEnabled),
+          style: _getTextStyle(isEnabled),
         ),
       ],
     );
@@ -57,7 +57,7 @@ class AppButton extends StatelessWidget {
     return SizedBox(
       width: width,
       height: height ?? 48,
-      child: _buildButtonByType(buttonStyle, child, _isEnabled),
+      child: _buildButtonByType(buttonStyle, child, isEnabled),
     );
   }
 

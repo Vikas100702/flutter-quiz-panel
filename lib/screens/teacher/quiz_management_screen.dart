@@ -7,7 +7,7 @@ import 'package:quiz_panel/providers/quiz_provider.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/repositories/quiz_repository.dart';
 // NEW IMPORT
-import 'package:quiz_panel/repositories/question_provider.dart';
+import 'package:quiz_panel/providers/question_provider.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/models/subject_model.dart';
 import 'package:quiz_panel/utils/app_strings.dart';

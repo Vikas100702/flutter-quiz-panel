@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/models/question_model.dart';
 import 'package:quiz_panel/models/quiz_model.dart';
-import 'package:quiz_panel/repositories/question_provider.dart';
+import 'package:quiz_panel/providers/question_provider.dart';
 import 'package:quiz_panel/repositories/quiz_repository.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
 import 'package:quiz_panel/widgets/buttons/app_button.dart';

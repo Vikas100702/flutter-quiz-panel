@@ -1,3 +1,5 @@
+// lib/screens/admin/admin_dashboard.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +14,16 @@ import 'package:quiz_panel/utils/constants.dart';
 import 'package:quiz_panel/widgets/buttons/app_button.dart';
 import 'package:quiz_panel/widgets/inputs/app_text_field.dart';
 
+/// **Why we used this Widget (AdminDashboard):**
+/// This is the main control center for the 'Admin' role.
+/// Unlike the 'Super Admin' (who manages the entire system), the 'Admin' role has specific duties:
+/// 1. **User Approval:** Reviewing and approving new Teacher registrations.
+/// 2. **User Management:** Overseeing Student and Teacher accounts.
+/// 3. **Content Creation:** Like a Teacher, an Admin can also create educational content (Subjects/Quizzes).
+///
+/// **How it helps:**
+/// It provides a unified interface to switch between administrative tasks (approvals) and
+/// creative tasks (making quizzes), saving the user from needing two separate accounts.
 class AdminDashboard extends ConsumerStatefulWidget {
   const AdminDashboard({super.key});
 
@@ -20,45 +32,76 @@ class AdminDashboard extends ConsumerStatefulWidget {
 }
 
 class _AdminDashboardState extends ConsumerState<AdminDashboard> {
-  // --- State for "My Content" Tab (TeacherDashboard se copy kiya gaya) ---
+  // **State Variables:**
+  // These controllers capture the text typed by the Admin for a new Subject.
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
+
+  // This boolean tracks the "loading" state.
+  // When true, we disable buttons and show a spinner to prevent double-clicks.
   bool _isCreating = false;
 
   @override
   void dispose() {
+    // **Cleanup:**
+    // We must always dispose of controllers when the screen is closed
+    // to prevent memory leaks (computer memory not being freed).
     _nameController.dispose();
     _descController.dispose();
     super.dispose();
   }
 
-  // --- Logic for "My Content" Tab ---
+  // --- Logic: Create a New Subject ---
+
+  /// **What is this function doing?**
+  /// It handles the entire process of adding a new Subject to the database.
+  ///
+  /// **How it works:**
+  /// 1. **Identify User:** It gets the current Admin's UID (User ID) to mark them as the creator.
+  /// 2. **Validate Input:** It checks if the user actually typed a name. If not, it stops.
+  /// 3. **Start Loading:** It updates the UI to show a loading spinner.
+  /// 4. **Save to Database:** It calls the `QuizRepository` to send the data to Firestore.
+  /// 5. **Finish:** It clears the text fields and hides the keyboard on success.
   Future<void> _createSubject() async {
     final teacherUid = ref.read(userDataProvider).value?.uid;
+
+    // Safety Check: Ensure the user is logged in and we have their ID.
     if (teacherUid == null || teacherUid.isEmpty) {
       _showError(AppStrings.genericError);
       return;
     }
+
+    // Validation: We cannot create a subject without a name.
     if (_nameController.text.isEmpty) {
       _showError('Subject Name cannot be empty.');
       return;
     }
+
+    // Step 1: Update state to 'loading'.
     setState(() {
       _isCreating = true;
     });
+
     try {
+      // Step 2: Perform the database operation via the Repository.
       await ref.read(quizRepositoryProvider).createSubject(
         name: _nameController.text.trim(),
         description: _descController.text.trim(),
         teacherUid: teacherUid,
       );
+
+      // Step 3: Success! Show feedback and reset form.
       _showError(AppStrings.subjectCreatedSuccess, isError: false);
       _nameController.clear();
       _descController.clear();
+
+      // Hide the keyboard.
       if (mounted) FocusScope.of(context).unfocus();
     } catch (e) {
+      // Handle errors (like no internet).
       _showError(e.toString());
     } finally {
+      // Step 4: Stop loading (whether successful or failed).
       if (mounted) {
         setState(() {
           _isCreating = false;
@@ -67,12 +110,17 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     }
   }
 
-  // Helper to show SnackBar
+  // --- Helper Function ---
+
+  /// **Why we used this:**
+  /// This is a utility function to show a "SnackBar" (a small pop-up message at the bottom).
+  /// It reduces code duplication since we show messages in multiple places.
   void _showError(String message, {bool isError = true}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
+        // Red for errors, Green for success.
         backgroundColor: isError ? AppColors.error : AppColors.success,
       ),
     );
@@ -80,13 +128,15 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    // List of categories for Admin
+    // **Dashboard Configuration:**
+    // We define the list of administrative actions available on this screen.
+    // Each item has a title, an icon, a color, and a 'filter' key used for navigation.
     final List<Map<String, dynamic>> categories = [
       {
         'title': 'Pending Approvals',
         'icon': Icons.pending_actions,
         'color': AppColors.warning,
-        'filter': 'pending'
+        'filter': 'pending' // Used by the User List screen to know what to show.
       },
       {
         'title': 'Manage Teachers',
@@ -105,8 +155,9 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.adminDashboardTitle),
-        backgroundColor: AppColors.warning, // Admin color
+        backgroundColor: AppColors.warning, // Use the Admin-specific theme color.
         actions: [
+          // Profile Button: Navigates to the account settings screen.
           IconButton(
             icon: const Icon(Icons.person_outline),
             tooltip: 'My Account',
@@ -115,37 +166,41 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             },
           ),
         ],
-        // No more TabBar
       ),
-      // No more TabBarView
+      // **Why SingleChildScrollView?**
+      // This ensures that if the screen is small (like on a phone) or in landscape mode,
+      // the user can scroll down to see all content instead of getting an overflow error.
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- 1. User Management Section ---
+            // --- Section 1: User Management ---
             Text(
               'User Management',
               style: AppTextStyles.displaySmall,
             ),
             const SizedBox(height: 16),
+
+            // **Why LayoutBuilder?**
+            // It gives us the exact width of the screen. We use this to make the grid responsive:
+            // - 2 columns on mobile.
+            // - 3 columns on tablets/desktops.
             LayoutBuilder(
               builder: (context, constraints) {
-                // Dynamic column count
-                int crossAxisCount = 2; // Default for mobile
+                int crossAxisCount = 2; // Mobile default.
                 if (constraints.maxWidth > 1000) {
-                  crossAxisCount = 3;
+                  crossAxisCount = 3; // Wide screens.
                 } else if (constraints.maxWidth > 600) {
-                  crossAxisCount = 3;
+                  crossAxisCount = 3; // Tablets.
                 }
 
                 return GridView.builder(
-                  shrinkWrap: true, // Important in SingleChildScrollView
-                  physics:
-                  const NeverScrollableScrollPhysics(), // Important
+                  shrinkWrap: true, // Vital: Tells GridView to only take needed space, not infinite height.
+                  physics: const NeverScrollableScrollPhysics(), // Disable Grid's own scrolling (parent handles it).
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
-                    childAspectRatio: 1.2, // Square-ish cards
+                    childAspectRatio: 1.2, // Makes cards slightly wider than tall.
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),
@@ -158,7 +213,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                       icon: category['icon'],
                       color: category['color'],
                       onTap: () {
-                        // Navigate to the new list screen with the filter
+                        // Navigate to the list screen, passing the 'filter' (e.g., 'pending').
                         context.pushNamed(
                           AppRouteNames.adminUserList,
                           pathParameters: {'filter': category['filter']},
@@ -170,7 +225,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               },
             ),
 
-            // --- 2. "My Content" Section ---
+            // --- Section 2: Content Management ("My Content") ---
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 24),
@@ -179,13 +234,18 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               style: AppTextStyles.displaySmall,
             ),
             const SizedBox(height: 16),
+
+            // Input form to create a new subject.
             _buildCreateSubjectForm(context),
+
             const SizedBox(height: 24),
             Text(
               AppStrings.mySubjectsTitle,
               style: AppTextStyles.titleLarge,
             ),
             const SizedBox(height: 16),
+
+            // List of subjects created by this Admin.
             _buildSubjectsList(context, ref),
           ],
         ),
@@ -193,7 +253,13 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     );
   }
 
-  // Helper widget to build a category card
+  // --- Widget: Category Card ---
+
+  /// **What is this Widget?**
+  /// It builds a clickable card for the User Management grid.
+  ///
+  /// **How it helps:**
+  /// It keeps the main `build` method clean by isolating the UI code for a single card.
   Widget _buildCategoryCard({
     required BuildContext context,
     required String title,
@@ -210,6 +276,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // A colored circle background for the icon.
             CircleAvatar(
               radius: 30,
               backgroundColor: color.withValues(alpha: 0.1),
@@ -228,7 +295,15 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     );
   }
 
-  // --- Widgets for "My Content" Tab (TeacherDashboard se copy kiye gaye) ---
+  // --- Widget: Create Subject Form ---
+
+  /// **What is this Widget?**
+  /// It displays the input form (Name & Description fields) for creating a Subject.
+  ///
+  /// **Key Feature: Responsive Wrap**
+  /// We use a `Wrap` widget instead of a `Row` or `Column`.
+  /// - On wide screens, the fields sit side-by-side.
+  /// - On narrow screens, the second field automatically drops to the next line.
   Widget _buildCreateSubjectForm(BuildContext context) {
     return Card(
       elevation: 4,
@@ -243,6 +318,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               style: AppTextStyles.titleLarge,
             ),
             const SizedBox(height: 24),
+
+            // Responsive layout for inputs.
             Wrap(
               runSpacing: 16,
               spacing: 16,
@@ -266,6 +343,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               ],
             ),
             const SizedBox(height: 20),
+
+            // The "Create" Button.
             AppButton(
               text: AppStrings.createSubjectButton,
               onPressed: _isCreating ? null : _createSubject,
@@ -278,11 +357,25 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     );
   }
 
+  // --- Widget: Subjects List ---
+
+  /// **Why we used this Widget:**
+  /// It fetches and displays the list of Subjects that *this specific Admin* has created.
+  ///
+  /// **How it works:**
+  /// 1. **Riverpod Provider:** It watches `subjectsProvider`. This establishes a live connection to Firestore.
+  /// 2. **Handling States:** It uses `.when()` to gracefully handle:
+  ///    - **Loading:** Shows a spinner.
+  ///    - **Error:** Shows the error message (e.g., missing permissions).
+  ///    - **Data:** Shows the list of cards.
   Widget _buildSubjectsList(BuildContext context, WidgetRef ref) {
     final subjectsAsync = ref.watch(subjectsProvider);
 
     return subjectsAsync.when(
+      // 1. Show loader while fetching.
       loading: () => const Center(child: CircularProgressIndicator()),
+
+      // 2. Show error if fetch fails.
       error: (error, stackTrace) {
         return Center(
           child: Padding(
@@ -295,6 +388,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
           ),
         );
       },
+
+      // 3. Show the data when it arrives.
       data: (subjects) {
         if (subjects.isEmpty) {
           return const Center(
@@ -304,6 +399,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             ),
           );
         }
+
+        // Use LayoutBuilder for a responsive grid similar to the categories.
         return LayoutBuilder(
           builder: (context, constraints) {
             int crossAxisCount = 1;
@@ -321,14 +418,13 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
-                childAspectRatio: 2.0, // Card ka aspect ratio
+                childAspectRatio: 2.0, // Card shape.
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
               itemBuilder: (context, index) {
                 final subject = subjects[index];
-                final bool isPublished =
-                    subject.status == ContentStatus.published;
+                final bool isPublished = subject.status == ContentStatus.published;
 
                 return Card(
                   elevation: 2,
@@ -341,6 +437,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // Navigate to Quiz Management when tapped.
                         InkWell(
                           onTap: () {
                             context.pushNamed(
@@ -376,6 +473,10 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                         ),
                         const Spacer(),
                         const Divider(),
+
+                        // **Nested Provider Call:**
+                        // We need to check if the subject has quizzes before we allow publishing.
+                        // So we watch the 'quizzesProvider' specifically for this subject ID.
                         Consumer(
                           builder: (context, ref, child) {
                             final quizzesAsync =
@@ -401,6 +502,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                                 final int quizCount = quizzes.length;
                                 final bool canPublish = quizCount > 0;
 
+                                // The "Publish" Toggle Switch.
                                 return SwitchListTile(
                                   title: Text(
                                     isPublished
@@ -418,6 +520,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                                   value: isPublished,
                                   activeThumbColor: AppColors.success,
                                   onChanged: (newValue) {
+                                    // Rule: Cannot publish an empty subject.
                                     if (newValue == true && !canPublish) {
                                       _showError(
                                         'You must add at least 1 quiz to publish this subject.',
@@ -425,6 +528,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                                       return;
                                     }
 
+                                    // Update the status in Firestore.
                                     final newStatus = newValue
                                         ? ContentStatus.published
                                         : ContentStatus.draft;
@@ -434,6 +538,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                                       subjectId: subject.subjectId,
                                       newStatus: newStatus,
                                     );
+
+                                    // Show feedback.
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(

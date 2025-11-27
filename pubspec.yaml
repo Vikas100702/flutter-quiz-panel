@@ -57,6 +57,7 @@ dependencies:
   http: ^1.6.0
   flutter_dotenv: ^6.0.0
   dio: ^5.9.0
+  profanity_filter: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -87,6 +88,7 @@ flutter:
   uses-material-design: true
   assets:
     - .env
+    - assets/secrets/blocked_keywords.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -50,3 +50,9 @@ app.*.map.json
 .firebase/
 
 .env
+
+# Sensitive Data / Secrets
+assets/secrets/
+
+# Security & Config Files
+lib/config/blocked_keywords.dart

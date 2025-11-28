@@ -1,6 +1,14 @@
 // lib/screens/student/quiz_result_screen.dart
-
-import 'package:flutter/foundation.dart'; // kIsWeb
+//
+// Why we used this file:
+// This screen displays the final outcome of a student's quiz attempt.
+// It is the definitive report card, showing the score, performance metrics,
+// and providing utility actions like downloading the result or sharing it.
+//
+// How it's helpful:
+// It provides immediate feedback to the student (passed/failed, score, breakdown)
+// and integrates services for permanent record keeping (PDF download) and social engagement (sharing).
+import 'package:flutter/foundation.dart'; // kIsWeb for platform-specific rendering
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Required for Clipboard
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,6 +28,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class QuizResultScreen extends ConsumerStatefulWidget {
+  // What it is doing: Requires the completed QuizModel to fetch the corresponding result state.
   final QuizModel quiz;
 
   const QuizResultScreen({super.key, required this.quiz});
@@ -29,15 +38,21 @@ class QuizResultScreen extends ConsumerStatefulWidget {
 }
 
 class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
+  // What it is doing: Tracks if the automatic result PDF download has already occurred.
   bool _hasDownloaded = false;
+  // What it is doing: Controls the loading spinner on the Native Share button.
   bool _isSharing = false;
 
   @override
   Widget build(BuildContext context) {
+    // How it is working: Watches the unique quiz attempt state for this quiz ID.
+    // This state contains the final score, correct answers count, etc.
     final resultState = ref.watch(quizAttemptProvider(widget.quiz));
+    // How it is working: Watches the user profile data needed for PDF generation and personalized messages.
     final userAsync = ref.watch(userDataProvider);
 
-    // Safety check: If quiz isn't finished, redirect
+    // Safety check: If the user navigates here before the quiz status is 'finished',
+    // redirect them to prevent viewing incomplete or empty result data.
     if (resultState.status != QuizStatus.finished) {
       return Scaffold(
         body: Center(
@@ -57,12 +72,14 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
       );
     }
 
+    // What it is doing: Calculates the overall score and pass/fail status.
     final maxScore =
         resultState.quiz.totalQuestions * resultState.quiz.marksPerQuestion;
     final percentage = (resultState.score / maxScore) * 100;
+    // How it's helpful: Defines the passing threshold (40%) to determine the congratulatory/retry message.
     final bool passed = percentage >= 40;
 
-    // Auto download logic (Web & Mobile)
+    // Auto download logic: Triggers the PDF download only once, immediately after the screen loads and data is available.
     if (!_hasDownloaded && userAsync.value != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _triggerAutoDownload(
@@ -76,9 +93,11 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        // Prevents the system back button from appearing since the quiz is over.
         automaticallyImplyLeading: false,
         title: Text('${widget.quiz.title}: ${AppStrings.resultsTitle}'),
         actions: [
+          // Button to return directly to the main student dashboard.
           IconButton(
             icon: const Icon(Icons.home),
             tooltip: AppStrings.backToDashboardButton,
@@ -89,12 +108,13 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Center(
+          // Constrains the content width for optimal reading experience.
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 800),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Status Text
+                // Status Text (Pass/Fail Message)
                 Text(
                   passed
                       ? AppStrings.congratulations
@@ -106,6 +126,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   textAlign: TextAlign.center,
                 ),
 
+                // Download confirmation message, visible after the auto-download completes.
                 if (_hasDownloaded)
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
@@ -120,7 +141,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
                 const SizedBox(height: 24),
 
-                // Score Card
+                // Score Card (Prominent display of results)
                 Card(
                   elevation: 8,
                   child: Padding(
@@ -132,6 +153,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                           style: AppTextStyles.titleLarge,
                         ),
                         const SizedBox(height: 12),
+                        // Displays the calculated score and maximum possible score.
                         Text(
                           '${resultState.score} / $maxScore',
                           style: AppTextStyles.displayLarge.copyWith(
@@ -139,6 +161,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                             fontWeight: FontWeight.w900,
                           ),
                         ),
+                        // Displays the percentage score.
                         Text(
                           '${percentage.toStringAsFixed(1)}%',
                           style: AppTextStyles.displaySmall,
@@ -149,33 +172,39 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Metrics
+                // Metrics Breakdown
                 Text(
                   AppStrings.scoreBreakdown,
                   style: AppTextStyles.displaySmall,
                 ),
                 const Divider(height: 20),
                 Center(
+                  // How it's helpful: Uses a Wrap to arrange the metric cards. This ensures
+                  // the cards flow onto the next line on smaller screens while remaining centered.
                   child: Wrap(
                     spacing: 16,
                     runSpacing: 16,
                     alignment: WrapAlignment.center,
                     children: [
+                      // Metric Card 1: Total Questions
                       _buildMetricCard(
                         title: AppStrings.totalQuestions,
                         value: resultState.questions.length,
                         color: AppColors.textSecondary,
                       ),
+                      // Metric Card 2: Correct Answers (Success color)
                       _buildMetricCard(
                         title: AppStrings.correctAnswers,
                         value: resultState.totalCorrect,
                         color: AppColors.success,
                       ),
+                      // Metric Card 3: Incorrect Answers (Error color)
                       _buildMetricCard(
                         title: AppStrings.incorrectAnswers,
                         value: resultState.totalIncorrect,
                         color: AppColors.error,
                       ),
+                      // Metric Card 4: Unanswered Questions (Warning color)
                       _buildMetricCard(
                         title: AppStrings.unansweredQuestions,
                         value: resultState.totalUnanswered,
@@ -186,13 +215,14 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // --- 1. Download Button (Visible on both) ---
+                // --- 1. Download Button ---
                 AppButton(
                   text: 'Download Result Again',
                   icon: Icons.download_rounded,
                   type: AppButtonType.outline,
                   onPressed: () {
                     if (userAsync.value != null) {
+                      // Allows the user to manually re-download the certificate.
                       _triggerAutoDownload(
                         resultState,
                         userAsync.value!,
@@ -206,7 +236,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                 const SizedBox(height: 24),
 
                 // --- 2. Social Share (WEB ONLY) ---
-                // Only show these direct link icons on Web
+                // kIsWeb is a Flutter constant that is true when running on a web browser.
                 if (kIsWeb) ...[
                   Row(
                     children: [
@@ -225,6 +255,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
+                  // Displays WhatsApp, LinkedIn, and X icons using font_awesome_flutter.
                   _buildSocialShareRow(
                     resultState,
                     maxScore.toDouble(),
@@ -233,7 +264,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   const SizedBox(height: 24),
                 ],
 
-                // --- 3. Native Share (Visible on both) ---
+                // --- 3. Native Share (Visible on both Mobile/Web) ---
                 AppButton(
                   text: 'Challenge Friends & Share',
                   icon: Icons.share_rounded,
@@ -251,14 +282,14 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
                 const SizedBox(height: 24),
 
-                // --- 4. YOUTUBE LEARNING BUTTON (Always Visible) ---
-                // We ensure this is NOT inside the kIsWeb block
+                // --- 4. YOUTUBE LEARNING BUTTON ---
                 AppButton(
                   text: 'Watch Related Videos',
                   icon: Icons.video_library_rounded,
                   type: AppButtonType.secondary, // Uses the secondary theme color
                   onPressed: () {
-                    // Navigate to the YouTube screen with a search query
+                    // How it's helpful: Navigates to the learning screen, auto-searching for content
+                    // related to the quiz title, making the learning path seamless.
                     context.pushNamed(
                       AppRouteNames.youtubeLearning,
                       extra: '${widget.quiz.title} tutorial',
@@ -276,6 +307,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
   // --- Helpers ---
 
+  // What it is doing: Builds an individual card to display one performance metric (e.g., Correct Answers).
   Widget _buildMetricCard({
     required String title,
     required int value,
@@ -285,11 +317,12 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        // Fix: Changed withValues(alpha: 0.5) to withValues(alpha: )(0.5) for correct Flutter syntax.
         side: BorderSide(color: color.withValues(alpha: 0.5), width: 1),
       ),
       child: Container(
         padding: const EdgeInsets.all(16),
-        width: 150,
+        width: 150, // Fixed width for consistent grid layout
         child: Column(
           children: [
             Text(
@@ -311,6 +344,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     );
   }
 
+  // What it is doing: Handles the native sharing process using the SharePlus package.
   Future<void> _shareNative(
       QuizAttemptState resultState,
       double maxScore,
@@ -326,6 +360,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
       final String shareText =
           "I scored ${resultState.score.toInt()}/${maxScore.toInt()} on ${widget.quiz.title}! Can you beat me? #ProOlympiad";
 
+      // How it is working: Generates the PDF file in memory (or temporary storage on mobile).
       final XFile pdfFile = await ResultPdfService.generatePdfXFile(
         resultState: resultState,
         user: user,
@@ -336,7 +371,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
       if (!mounted) return;
 
-      // Copy text to clipboard for convenience
+      // How it's helpful: Automatically copies the social caption to the clipboard,
+      // so the user can easily paste it when the share sheet opens.
       await Clipboard.setData(ClipboardData(text: shareText));
 
       if (mounted) {
@@ -352,9 +388,10 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
         );
       }
 
+      // How it is working: Opens the native share sheet with the generated PDF file attached.
       await SharePlus.instance.share(
         ShareParams(
-          files: [pdfFile],
+          files: [pdfFile], // Attaches the PDF result document.
           text: shareText,
           subject: 'My Quiz Result',
           sharePositionOrigin: box != null
@@ -376,6 +413,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     }
   }
 
+  // What it is doing: Triggers the PDF creation and download function on first load or manual retry.
   Future<void> _triggerAutoDownload(
       QuizAttemptState result,
       UserModel user,
@@ -383,8 +421,10 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
       double percentage, {
         bool isRetry = false,
       }) async {
+    // Prevents redundant downloads unless explicitly requested via the "Download Again" button.
     if (_hasDownloaded && !isRetry) return;
     try {
+      // Calls the service responsible for generating and saving the file to the local device/browser.
       await ResultPdfService.generateAndDownloadResult(
         resultState: result,
         user: user,
@@ -409,10 +449,11 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
     }
   }
 
+  // What it is doing: Builds the row of social icons (WhatsApp, LinkedIn, X) for direct web sharing.
   Widget _buildSocialShareRow(
       QuizAttemptState state, double maxScore, double percentage) {
 
-    // Construct the share text for web sharing links
+    // Constructs the share text used in the URL parameters for web sharing.
     final String shareText =
         "I scored ${state.score.toInt()}/${maxScore.toInt()} on ${widget.quiz.title}! Can you beat me? #ProOlympiad";
 
@@ -422,24 +463,28 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
         _buildSocialIconBtn(
           icon: FontAwesomeIcons.whatsapp,
           color: const Color(0xFF25D366),
+          // How it is working: Opens the external WhatsApp web share URL.
           onTap: () => launchUrl(Uri.parse('https://wa.me/?text=${Uri.encodeComponent(shareText)}')),
         ),
         const SizedBox(width: 20),
         _buildSocialIconBtn(
           icon: FontAwesomeIcons.linkedinIn,
           color: const Color(0xFF0077B5),
+          // How it is working: Opens the external LinkedIn share URL.
           onTap: () => launchUrl(Uri.parse('https://www.linkedin.com/feed/?shareActive=true&text=${Uri.encodeComponent(shareText)}')),
         ),
         const SizedBox(width: 20),
         _buildSocialIconBtn(
           icon: FontAwesomeIcons.xTwitter,
           color: const Color(0xFF000000),
+          // How it is working: Opens the external X/Twitter post creation URL.
           onTap: () => launchUrl(Uri.parse('https://twitter.com/intent/tweet?text=${Uri.encodeComponent(shareText)}')),
         ),
       ],
     );
   }
 
+  // What it is doing: Builds the styled, clickable button for a social media icon.
   Widget _buildSocialIconBtn({
     required IconData icon,
     required Color color,

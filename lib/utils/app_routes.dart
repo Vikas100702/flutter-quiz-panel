@@ -1,3 +1,23 @@
+// lib/utils/app_routes.dart
+
+/*
+/// Why we used this file (app_routes.dart):
+/// This file serves as the **Single Source of Truth** for all navigation paths and logic across the entire application.
+/// It uses the `go_router` package to define a declarative routing map, enabling deep linking and predictable navigation.
+
+/// What it is doing:
+/// 1. **Path Constants:** Defines all URL paths (`/login`, `/teacher/dashboard`, etc.) as static constants (`AppRoutePaths`).
+/// 2. **Name Constants:** Defines human-readable names for routes (`AppRouteNames`) for safe, type-checked navigation.
+/// 3. **Route Configuration:** Creates the final `appRoutes` list, mapping paths to their corresponding screen widgets and handling runtime parameter/extra extraction.
+
+/// How it is working:
+/// It registers the routes using `GoRoute` objects. In cases where the destination screen requires data (like a `SubjectModel` or `QuizModel`),
+/// the `builder` function extracts this data from `state.extra` or `state.pathParameters` and implements immediate fallback logic (e.g., redirecting to the dashboard) if the data is missing.
+
+/// How it's helpful:
+/// It centralizes the navigation structure, making the application easy to scale and maintain. By defining all paths and names here,
+/// we ensure consistency and allow the `AppRouterProvider` to apply global authentication and authorization rules efficiently.
+*/
 import 'package:go_router/go_router.dart';
 import 'package:quiz_panel/models/quiz_model.dart';
 import 'package:quiz_panel/models/subject_model.dart';
@@ -29,8 +49,9 @@ import 'package:quiz_panel/screens/teacher/question_management_screen.dart'; // 
 import 'package:quiz_panel/screens/teacher/quiz_management_screen.dart';
 import 'package:quiz_panel/screens/teacher/teacher_dashboard.dart';
 
-// This class holds all our route 'paths'
+/// Why we used this class: It provides static constants for all URL path segments, making paths easy to reference and rename globally.
 class AppRoutePaths {
+  // --- Public & Utility Paths ---
   static const String splash = '/';
   static const String login = '/login';
   static const String phoneLogin = '/login/phone';
@@ -41,15 +62,16 @@ class AppRoutePaths {
   static const String pendingApproval = '/pending-approval';
   static const String verifyEmail = '/verify-email';
   static const String profile = '/profile';
-  static const String myAccount = '/account'; // This is the new hub screen
+  static const String myAccount = '/account'; // Central hub for profile settings
   static const String changePassword = '/account/change-password';
 
-  // Teacher paths
+  // --- Teacher Paths (Dynamic Segments) ---
+  // How it is working: Uses ':subjectId' as a dynamic segment in the URL to pass data.
   static const String teacherDashboard = '/teacher/dashboard';
   static const String quizManagement = '/teacher/subjects/:subjectId';
   static const String questionManagement = '/teacher/quizzes/:quizId/questions';
 
-  // Student paths
+  // --- Student Paths (Dynamic Segments) ---
   static const String studentDashboard = '/student/dashboard';
   static const String studentQuizList = '/student/subjects/:subjectId';
   static const String studentQuizStart = '/student/quiz/:quizId/start';
@@ -57,15 +79,17 @@ class AppRoutePaths {
   static const String studentQuizResult = '/student/quizzes/:quizId/result';
   static const String youtubeLearning = '/student/learning';
 
-  // Admin paths
+  // --- Admin Paths (Dynamic Segments) ---
   static const String adminDashboard = '/admin/dashboard';
   static const String superAdminDashboard = '/superadmin/dashboard';
   static const String editUser = '/superadmin/users/:userId/edit';
   static const String userDetails = '/admin/users/:userId/details';
+  // How it is working: Uses ':filter' to pass the user list type (e.g., 'pending', 'teachers') as a parameter.
   static const String adminUserList = '/admin/users/list/:filter';
 }
 
-// This class holds all our route 'names'
+/// Why we used this class: Provides unique, semantic names for each route, allowing navigation using `context.pushNamed(AppRouteNames.someRoute)`
+/// instead of hardcoding URL strings, which is safer and less error-prone.
 class AppRouteNames {
   static const String splash = 'splash';
   static const String login = 'login';
@@ -76,7 +100,7 @@ class AppRouteNames {
   static const String register = 'register';
   static const String pendingApproval = 'pendingApproval';
   static const String verifyEmail = 'verifyEmail';
-  static const String profile = '/profile';
+  static const String profile = 'profile';
   static const String myAccount = 'myAccount';
   static const String changePassword = 'changePassword';
 
@@ -102,8 +126,8 @@ class AppRouteNames {
   static const String adminUserList = 'adminUserList';
 }
 
-// This is the single source of truth for all our routes.
-// We create the list of routes here and our routerProvider will use it.
+/// What it is doing: The main list of all application routes, mapping path patterns to screen builders.
+/// How it's helpful: This list is passed to the `GoRouter` constructor in `app_router_provider.dart`.
 final List<GoRoute> appRoutes = [
   // --- PUBLIC ROUTES ---
   GoRoute(
@@ -135,10 +159,11 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.otpVerify,
     name: AppRouteNames.otpVerify,
     builder: (context, state) {
-      // OTP screen ko verificationId pass karein
+      // How it is working: Extracts the `verificationId` passed from the Phone Login screen via `extra`.
       final verificationId = state.extra as String?;
       if (verificationId == null) {
-        return const PhoneLoginScreen(); // Agar ID nahi hai toh wapas bhejein
+        // How it's helpful: Implements a safety fallback, forcing the user back to the first step if the critical ID is missing.
+        return const PhoneLoginScreen();
       }
       return OtpVerifyScreen(verificationId: verificationId);
     },
@@ -184,10 +209,10 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.quizManagement,
     name: AppRouteNames.quizManagement,
     builder: (context, state) {
-      // Get the SubjectModel object passed during navigation
+      // What it is doing: Extracts the required `SubjectModel` object passed during navigation via `extra`.
       final SubjectModel? subject = state.extra as SubjectModel?;
       if (subject == null) {
-        // If we land here with no data, go back to safety
+        // How it's helpful: Ensures the screen has the necessary data; falls back to the Teacher Dashboard.
         return const TeacherDashboard();
       }
       return QuizManagementScreen(subject: subject);
@@ -197,12 +222,10 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.questionManagement,
     name: AppRouteNames.questionManagement,
     builder: (context, state) {
-      // Get the QuizModel object passed during navigation
+      // What it is doing: Extracts the required `QuizModel` object passed during navigation via `extra`.
       final QuizModel? quiz = state.extra as QuizModel?;
       if (quiz == null) {
-        // If we land here with no data, go back to safety
-        // (Ideally, we'd go back to the *previous* screen,
-        // but TeacherDashboard is safer for now)
+        // How it's helpful: Ensures data integrity; falls back to the Teacher Dashboard.
         return const TeacherDashboard();
       }
       return QuestionManagementScreen(quiz: quiz);
@@ -219,6 +242,7 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.studentQuizList,
     name: AppRouteNames.studentQuizList,
     builder: (context, state) {
+      // What it is doing: Extracts the `SubjectModel` object needed to display the correct quizzes list.
       final SubjectModel? subject = state.extra as SubjectModel?;
       if (subject == null) {
         return const StudentHomeScreen();
@@ -230,10 +254,12 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.studentQuizStart,
     name: AppRouteNames.studentQuizStart,
     builder: (context, state) {
+      // What it is doing: Extracts the target `QuizModel` object.
       final QuizModel? quiz = state.extra as QuizModel?;
       if (quiz == null) {
         return const StudentHomeScreen();
       }
+      // How it's helpful: Navigates to the instruction screen before starting the timed attempt.
       return QuizStartScreen(quiz: quiz);
     },
   ),
@@ -241,6 +267,7 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.studentQuizAttempt,
     name: AppRouteNames.studentQuizAttempt,
     builder: (context, state) {
+      // What it is doing: Extracts the `QuizModel` required by the live attempt screen.
       final QuizModel? quiz = state.extra as QuizModel?;
       if (quiz == null) {
         return const StudentHomeScreen(); // safety fallback
@@ -252,6 +279,7 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.studentQuizResult,
     name: AppRouteNames.studentQuizResult,
     builder: (context, state) {
+      // What it is doing: Extracts the `QuizModel` required by the result screen.
       final QuizModel? quiz = state.extra as QuizModel?;
       if (quiz == null) {
         return const StudentHomeScreen();
@@ -263,6 +291,7 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.youtubeLearning,
     name: AppRouteNames.youtubeLearning,
     builder: (context, state) {
+      // What it is doing: Extracts an optional `initialQuery` string for the search bar.
       final initialQuery = state.extra as String? ?? '';
       return YoutubeLearningScreen(initialQuery: initialQuery);
     },
@@ -283,10 +312,10 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.editUser,
     name: AppRouteNames.editUser,
     builder: (context, state) {
-      // Get the UserModel object passed during navigation
+      // What it is doing: Extracts the `UserModel` for the user to be edited.
       final UserModel? user = state.extra as UserModel?;
       if (user == null) {
-        // Agar data nahi hai, toh Super Admin dashboard par waapas bhejein
+        // How it's helpful: Ensures the screen has target data; falls back to the Super Admin dashboard.
         return const SuperAdminDashboard();
       }
       return EditUserScreen(user: user);
@@ -296,10 +325,10 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.userDetails,
     name: AppRouteNames.userDetails,
     builder: (context, state) {
-      // Get the UserModel object passed during navigation
+      // What it is doing: Extracts the `UserModel` for the user whose details are to be displayed.
       final UserModel? user = state.extra as UserModel?;
       if (user == null) {
-        // Agar data nahi hai, toh fallback
+        // How it's helpful: Fallback if user data is missing during navigation.
         return const LoginScreen();
       }
       return UserDetailsScreen(user: user);
@@ -309,11 +338,9 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.adminUserList,
     name: AppRouteNames.adminUserList,
     builder: (context, state) {
-      // Get the filter from the URL parameter
+      // How it is working: Extracts the dynamic segment (parameter) from the URL path, which determines the list content.
       final filter = state.pathParameters['filter'] ?? 'pending';
       return UserManagementListScreen(filter: filter);
     },
   ),
-
 ];
-

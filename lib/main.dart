@@ -35,13 +35,24 @@ void main() async {
   // This line ensures that the binding is initialized so we can call native code (like Firebase).
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (WebViewPlatform.instance == null) {
-    /* * Note: The youtube_player_iframe package uses webview_flutter internally.
+
+
+
+
+
+  /*if (WebViewPlatform.instance == null) {
+    *//* * Note: The youtube_player_iframe package uses webview_flutter internally.
       * We explicitly set the platform implementation to ensure it works correctly
       * on Android devices that might have issues with the default SurfaceAndroidWebView.
-      */
+      *//*
     AndroidWebViewPlatform.registerWith(); // Try this if the below line fails in newer versions
-  }
+  }*/
+
+
+
+
+
+
   // **Step 2: Firebase Initialization**
   // We connect our app to the specific Firebase project configured in `firebase_options.dart`.
   // This enables Auth, Firestore, and other backend services.

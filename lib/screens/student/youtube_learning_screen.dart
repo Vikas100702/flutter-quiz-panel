@@ -85,8 +85,8 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
         params: const YoutubePlayerParams(
           showControls: true,
           showFullscreenButton: true,
-          strictRelatedVideos: true,
-          playsInline: true,
+          // strictRelatedVideos: true,
+          // playsInline: true,
         ),
       );
     }

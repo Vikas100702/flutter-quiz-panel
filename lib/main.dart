@@ -18,10 +18,12 @@
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_panel/firebase_options.dart';
 import 'package:quiz_panel/providers/app_router_provider.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 import 'config/theme/app_theme.dart';
 
@@ -33,6 +35,13 @@ void main() async {
   // This line ensures that the binding is initialized so we can call native code (like Firebase).
   WidgetsFlutterBinding.ensureInitialized();
 
+  if (WebViewPlatform.instance == null) {
+    /* * Note: The youtube_player_iframe package uses webview_flutter internally.
+      * We explicitly set the platform implementation to ensure it works correctly
+      * on Android devices that might have issues with the default SurfaceAndroidWebView.
+      */
+    AndroidWebViewPlatform.registerWith(); // Try this if the below line fails in newer versions
+  }
   // **Step 2: Firebase Initialization**
   // We connect our app to the specific Firebase project configured in `firebase_options.dart`.
   // This enables Auth, Firestore, and other backend services.

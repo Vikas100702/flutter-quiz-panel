@@ -872,14 +872,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.14.2"
-  profanity_filter:
-    dependency: "direct main"
-    description:
-      name: profanity_filter
-      sha256: afe466d42a2763a5b86849192bee3337de45a9566d5915a0fe4aa5f9cd2e8ac4
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
   pub_semver:
     dependency: transitive
     description:
@@ -1206,7 +1198,7 @@ packages:
     source: hosted
     version: "1.2.1"
   webview_flutter:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: webview_flutter
       sha256: c3e4fe614b1c814950ad07186007eff2f2e5dd2935eba7b9a9a1af8e5885f1ba
@@ -1214,7 +1206,7 @@ packages:
     source: hosted
     version: "4.13.0"
   webview_flutter_android:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: webview_flutter_android
       sha256: "3fcca88ee2ae568807ebd42deed235bb8dd8e62b3e4d5caff67daa6bce062cca"

@@ -14,12 +14,15 @@ class SubjectModel {
   // **Data Fields:**
   // These variables hold the specific details for one single subject.
 
-  final String subjectId; // The unique ID given by Firebase to identify this subject document.
+  final String
+  subjectId; // The unique ID given by Firebase to identify this subject document.
   final String name; // The visible name of the subject (e.g., "History").
   final String? description; // Optional details about what this subject covers.
   final String? imageUrl; // Optional link to an image for the subject card.
-  final String createdBy; // The User ID (UID) of the teacher who created this subject.
-  final Timestamp createdAt; // The exact time when this subject was created (useful for sorting).
+  final String
+  createdBy; // The User ID (UID) of the teacher who created this subject.
+  final Timestamp
+  createdAt; // The exact time when this subject was created (useful for sorting).
 
   // The status of the subject (e.g., 'draft' or 'published').
   // This controls whether students can see the subject or not.
@@ -56,7 +59,8 @@ class SubjectModel {
       subjectId: doc.id,
 
       name: data['name'] ?? '',
-      description: data['description'], // Can be null, so no default value needed.
+      description:
+          data['description'], // Can be null, so no default value needed.
       imageUrl: data['imageUrl'],
       createdBy: data['createdBy'] ?? '',
 

@@ -99,11 +99,11 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
     try {
       final Uri url = Uri.parse('https://www.youtube.com/watch?v=$videoId');
       // mode: LaunchMode.externalApplication this ensures to play video in youtube app if it is installed.
-      if(!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
         throw 'Could not launch video';
       }
-    } catch(e) {
-      if(mounted) {
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not open video externally.')),
         );
@@ -125,9 +125,7 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
   Widget build(BuildContext context) {
     // Watch the state from our provider
     final state = ref.watch(youtubeVideoProvider);
-    final size = MediaQuery
-        .of(context)
-        .size;
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       appBar: AppBar(
@@ -174,27 +172,27 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
           // 2. Video Grid
           Expanded(
             child: state.isLoading
-            // How it's helpful: Provides immediate visual feedback that a request is in progress.
+                // How it's helpful: Provides immediate visual feedback that a request is in progress.
                 ? const Center(child: CircularProgressIndicator())
                 : state.error != null
                 ? _buildErrorView(state.error!)
                 : state.videos.isEmpty
                 ? const Center(
-              // What it is doing: Shows a friendly prompt when there are no search results or before the first search.
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.video_library_outlined,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(height: 16),
-                  Text("No videos found for this topic."),
-                ],
-              ),
-            )
-            // Use _buildGridView for both, but configure columns differently.
+                    // What it is doing: Shows a friendly prompt when there are no search results or before the first search.
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.video_library_outlined,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(height: 16),
+                        Text("No videos found for this topic."),
+                      ],
+                    ),
+                  )
+                // Use _buildGridView for both, but configure columns differently.
                 : _buildVideoGrid(state.videos),
           ),
         ],
@@ -261,10 +259,7 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         // Responsive columns: 1 on phone, 2 on tablet, 3-4 on web
         crossAxisCount: kIsWeb
-            ? (MediaQuery
-            .of(context)
-            .size
-            .width > 800 ? 4 : 3)
+            ? (MediaQuery.of(context).size.width > 800 ? 4 : 3)
             : 2,
         childAspectRatio: 0.85, // Adjust card height
         crossAxisSpacing: 12,
@@ -287,7 +282,7 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
       child: InkWell(
         // play videos internally inside the app for web and externally on youtube app or browser for mobile devices.
         onTap: () {
-          if(kIsWeb) {
+          if (kIsWeb) {
             _playVideo(video.id);
           } else {
             _launchExternalVideo(video.id);
@@ -308,10 +303,9 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
                     Image.network(
                       video.thumbnailUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) =>
-                          Container(
-                            color: Colors.grey,
-                          ), // c: context, e: error, s: stackTrace
+                      errorBuilder: (c, e, s) => Container(
+                        color: Colors.grey,
+                      ), // c: context, e: error, s: stackTrace
                     ),
                     const Center(
                       child: Icon(

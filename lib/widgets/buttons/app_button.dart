@@ -72,28 +72,25 @@ class AppButton extends StatelessWidget {
     // If loading, show a spinner. Otherwise, show the Row (Icon + Text).
     final child = isLoading
         ? SizedBox(
-      height: 24,
-      width: 24,
-      child: CircularProgressIndicator(
-        strokeWidth: 2,
-        // The spinner color adapts based on the button type (white for solid, primary for outline).
-        valueColor: AlwaysStoppedAnimation(_getLoaderColor(isEnabled)),
-      ),
-    )
+            height: 24,
+            width: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              // The spinner color adapts based on the button type (white for solid, primary for outline).
+              valueColor: AlwaysStoppedAnimation(_getLoaderColor(isEnabled)),
+            ),
+          )
         : Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (icon != null) ...[
-          Icon(icon, size: 20),
-          const SizedBox(width: 8),
-        ],
-        Text(
-          text,
-          style: _getTextStyle(isEnabled),
-        ),
-      ],
-    );
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 20),
+                const SizedBox(width: 8),
+              ],
+              Text(text, style: _getTextStyle(isEnabled)),
+            ],
+          );
 
     // Wrap in SizedBox to enforce dimensions.
     return SizedBox(
@@ -105,7 +102,11 @@ class AppButton extends StatelessWidget {
 
   /// **Helper: Widget Builder**
   /// Returns the correct Flutter widget based on the `type` enum.
-  Widget _buildButtonByType(ButtonStyle buttonStyle, Widget child, bool isEnabled) {
+  Widget _buildButtonByType(
+    ButtonStyle buttonStyle,
+    Widget child,
+    bool isEnabled,
+  ) {
     switch (type) {
       case AppButtonType.primary:
         return ElevatedButton(
@@ -139,9 +140,7 @@ class AppButton extends StatelessWidget {
   ButtonStyle _getButtonStyle(BuildContext context, bool isEnabled) {
     final baseStyle = ElevatedButton.styleFrom(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 0, // Flat look is generally preferred.
     );
 
@@ -150,15 +149,15 @@ class AppButton extends StatelessWidget {
         return baseStyle.copyWith(
           // **Dynamic Background Color:**
           // Uses `resolveWith` to handle disabled state coloring automatically.
-          backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                (Set<WidgetState> states) {
-              if (!isEnabled) {
-                // Dimmed color for disabled state.
-                return AppColors.textTertiary.withValues(alpha: 0.3);
-              }
-              return AppColors.primary;
-            },
-          ),
+          backgroundColor: WidgetStateProperty.resolveWith<Color>((
+            Set<WidgetState> states,
+          ) {
+            if (!isEnabled) {
+              // Dimmed color for disabled state.
+              return AppColors.textTertiary.withValues(alpha: 0.3);
+            }
+            return AppColors.primary;
+          }),
           foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
           overlayColor: WidgetStateProperty.all<Color>(
             Colors.white.withValues(alpha: 0.1), // Subtle white splash on tap.
@@ -167,14 +166,14 @@ class AppButton extends StatelessWidget {
 
       case AppButtonType.secondary:
         return baseStyle.copyWith(
-          backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                (Set<WidgetState> states) {
-              if (!isEnabled) {
-                return AppColors.textTertiary.withValues(alpha: 0.3);
-              }
-              return AppColors.secondary;
-            },
-          ),
+          backgroundColor: WidgetStateProperty.resolveWith<Color>((
+            Set<WidgetState> states,
+          ) {
+            if (!isEnabled) {
+              return AppColors.textTertiary.withValues(alpha: 0.3);
+            }
+            return AppColors.secondary;
+          }),
           foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
           overlayColor: WidgetStateProperty.all<Color>(
             Colors.white.withValues(alpha: 0.1),
@@ -189,17 +188,23 @@ class AppButton extends StatelessWidget {
           ),
           // Border color logic.
           side: BorderSide(
-            color: isEnabled ? AppColors.primary : AppColors.textTertiary.withValues(alpha: 0.3),
+            color: isEnabled
+                ? AppColors.primary
+                : AppColors.textTertiary.withValues(alpha: 0.3),
             width: 1.5,
           ),
           backgroundColor: Colors.transparent,
-          foregroundColor: isEnabled ? AppColors.primary : AppColors.textTertiary.withValues(alpha: 0.3),
+          foregroundColor: isEnabled
+              ? AppColors.primary
+              : AppColors.textTertiary.withValues(alpha: 0.3),
         );
 
       case AppButtonType.text:
         return TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          foregroundColor: isEnabled ? AppColors.primary : AppColors.textTertiary.withValues(alpha: 0.3),
+          foregroundColor: isEnabled
+              ? AppColors.primary
+              : AppColors.textTertiary.withValues(alpha: 0.3),
         );
     }
   }
@@ -207,10 +212,7 @@ class AppButton extends StatelessWidget {
   /// **Helper: Text Style Factory**
   /// Ensures the text color matches the button type (White for solid buttons, Primary color for outline/text).
   TextStyle _getTextStyle(bool isEnabled) {
-    const baseStyle = TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-    );
+    const baseStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
 
     switch (type) {
       case AppButtonType.primary:
@@ -221,7 +223,9 @@ class AppButton extends StatelessWidget {
       case AppButtonType.outline:
       case AppButtonType.text:
         return baseStyle.copyWith(
-          color: isEnabled ? AppColors.primary : AppColors.textTertiary.withValues(alpha: 0.3),
+          color: isEnabled
+              ? AppColors.primary
+              : AppColors.textTertiary.withValues(alpha: 0.3),
         );
     }
   }
@@ -235,7 +239,11 @@ class AppButton extends StatelessWidget {
         return Colors.white; // White spinner on solid backgrounds.
       case AppButtonType.outline:
       case AppButtonType.text:
-        return isEnabled ? AppColors.primary : AppColors.textTertiary.withValues(alpha: 0.3); // Primary spinner on transparent backgrounds.
+        return isEnabled
+            ? AppColors.primary
+            : AppColors.textTertiary.withValues(
+                alpha: 0.3,
+              ); // Primary spinner on transparent backgrounds.
     }
   }
 }

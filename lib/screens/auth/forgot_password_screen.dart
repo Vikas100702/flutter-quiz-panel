@@ -27,14 +27,16 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
-// **Why SingleTickerProviderStateMixin?**
-// This mixin is essential for enabling the entrance animations driven by `AnimationController`.
-    with SingleTickerProviderStateMixin {
-
+        // **Why SingleTickerProviderStateMixin?**
+        // This mixin is essential for enabling the entrance animations driven by `AnimationController`.
+        with
+        SingleTickerProviderStateMixin {
   // **Animation Controllers:**
   late AnimationController _controller;
-  late Animation<double> _scaleAnimation; // Controls the icon's size (0.9 -> 1.0).
-  late Animation<double> _fadeAnimation;  // Controls the content's visibility (0.0 -> 1.0).
+  late Animation<double>
+  _scaleAnimation; // Controls the icon's size (0.9 -> 1.0).
+  late Animation<double>
+  _fadeAnimation; // Controls the content's visibility (0.0 -> 1.0).
 
   final TextEditingController _emailController = TextEditingController();
 
@@ -56,18 +58,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     _scaleAnimation = Tween<double>(
       begin: 0.9,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.2, 1.0, curve: Curves.easeInOut),
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.2, 1.0, curve: Curves.easeInOut),
+      ),
+    );
 
     // Start the entry animation.
     _controller.forward();
@@ -237,7 +235,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.1),
+              ),
             ),
             child: Row(
               children: [
@@ -370,10 +370,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.primary,
-                    AppColors.primaryDark,
-                  ],
+                  colors: [AppColors.primary, AppColors.primaryDark],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [

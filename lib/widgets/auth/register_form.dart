@@ -36,12 +36,15 @@ class RegisterForm extends StatelessWidget {
   final TextEditingController nameController;
 
   // **State Inputs:**
-  final bool isLoading; // If true, we disable buttons to prevent double-clicking.
-  final String selectedRole; // The currently selected role (Student or Teacher).
+  final bool
+  isLoading; // If true, we disable buttons to prevent double-clicking.
+  final String
+  selectedRole; // The currently selected role (Student or Teacher).
 
   // **Callback Functions:**
   // These are functions passed from the parent. We call them when the user does something.
-  final ValueChanged<String> onRoleChanged; // Called when user taps a role card.
+  final ValueChanged<String>
+  onRoleChanged; // Called when user taps a role card.
   final VoidCallback onRegister; // Called when user taps "Register".
   final VoidCallback onLogin; // Called when user taps "Login Now".
 
@@ -132,7 +135,8 @@ class RegisterForm extends StatelessWidget {
               label: AppStrings.emailLabel,
               prefixIcon: Icons.email_rounded,
               keyboardType: TextInputType.emailAddress,
-              validator: (value) => value!.isEmpty ? 'Email is required.' : null,
+              validator: (value) =>
+                  value!.isEmpty ? 'Email is required.' : null,
               onSubmitted: (_) => _handleSubmit(context),
             ),
             const SizedBox(height: 20),
@@ -163,7 +167,8 @@ class RegisterForm extends StatelessWidget {
             AppButton(
               text: AppStrings.registerButton,
               onPressed: isLoading ? null : onRegister,
-              isLoading: isLoading, // Shows a spinner inside the button if true.
+              isLoading:
+                  isLoading, // Shows a spinner inside the button if true.
               type: AppButtonType.primary,
             ),
             const SizedBox(height: 24),
@@ -181,11 +186,7 @@ class RegisterForm extends StatelessWidget {
   Widget _buildHeader() {
     return Column(
       children: [
-        Icon(
-          Icons.person_add_rounded,
-          size: 64,
-          color: AppColors.primary,
-        ),
+        Icon(Icons.person_add_rounded, size: 64, color: AppColors.primary),
         const SizedBox(height: 16),
         Text(
           'Create Account',

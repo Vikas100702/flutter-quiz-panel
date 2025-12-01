@@ -84,11 +84,13 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
 
     try {
       // Step 2: Perform the database operation via the Repository.
-      await ref.read(quizRepositoryProvider).createSubject(
-        name: _nameController.text.trim(),
-        description: _descController.text.trim(),
-        teacherUid: teacherUid,
-      );
+      await ref
+          .read(quizRepositoryProvider)
+          .createSubject(
+            name: _nameController.text.trim(),
+            description: _descController.text.trim(),
+            teacherUid: teacherUid,
+          );
 
       // Step 3: Success! Show feedback and reset form.
       _showError(AppStrings.subjectCreatedSuccess, isError: false);
@@ -136,26 +138,28 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
         'title': 'Pending Approvals',
         'icon': Icons.pending_actions,
         'color': AppColors.warning,
-        'filter': 'pending' // Used by the User List screen to know what to show.
+        'filter':
+            'pending', // Used by the User List screen to know what to show.
       },
       {
         'title': 'Manage Teachers',
         'icon': Icons.school,
         'color': AppColors.primary,
-        'filter': 'teachers'
+        'filter': 'teachers',
       },
       {
         'title': 'Manage Students',
         'icon': Icons.person,
         'color': AppColors.success,
-        'filter': 'students'
+        'filter': 'students',
       },
     ];
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.adminDashboardTitle),
-        backgroundColor: AppColors.warning, // Use the Admin-specific theme color.
+        backgroundColor:
+            AppColors.warning, // Use the Admin-specific theme color.
         actions: [
           // Profile Button: Navigates to the account settings screen.
           IconButton(
@@ -176,10 +180,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // --- Section 1: User Management ---
-            Text(
-              'User Management',
-              style: AppTextStyles.displaySmall,
-            ),
+            Text('User Management', style: AppTextStyles.displaySmall),
             const SizedBox(height: 16),
 
             // **Why LayoutBuilder?**
@@ -196,11 +197,14 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                 }
 
                 return GridView.builder(
-                  shrinkWrap: true, // Vital: Tells GridView to only take needed space, not infinite height.
-                  physics: const NeverScrollableScrollPhysics(), // Disable Grid's own scrolling (parent handles it).
+                  shrinkWrap:
+                      true, // Vital: Tells GridView to only take needed space, not infinite height.
+                  physics:
+                      const NeverScrollableScrollPhysics(), // Disable Grid's own scrolling (parent handles it).
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
-                    childAspectRatio: 1.2, // Makes cards slightly wider than tall.
+                    childAspectRatio:
+                        1.2, // Makes cards slightly wider than tall.
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),
@@ -229,20 +233,14 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 24),
-            Text(
-              AppStrings.myContentTitle,
-              style: AppTextStyles.displaySmall,
-            ),
+            Text(AppStrings.myContentTitle, style: AppTextStyles.displaySmall),
             const SizedBox(height: 16),
 
             // Input form to create a new subject.
             _buildCreateSubjectForm(context),
 
             const SizedBox(height: 24),
-            Text(
-              AppStrings.mySubjectsTitle,
-              style: AppTextStyles.titleLarge,
-            ),
+            Text(AppStrings.mySubjectsTitle, style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
 
             // List of subjects created by this Admin.
@@ -285,8 +283,9 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             const SizedBox(height: 16),
             Text(
               title,
-              style: AppTextStyles.titleMedium
-                  .copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.titleMedium.copyWith(
+                color: AppColors.textPrimary,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -424,7 +423,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               ),
               itemBuilder: (context, index) {
                 final subject = subjects[index];
-                final bool isPublished = subject.status == ContentStatus.published;
+                final bool isPublished =
+                    subject.status == ContentStatus.published;
 
                 return Card(
                   elevation: 2,
@@ -479,23 +479,27 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                         // So we watch the 'quizzesProvider' specifically for this subject ID.
                         Consumer(
                           builder: (context, ref, child) {
-                            final quizzesAsync =
-                            ref.watch(quizzesProvider(subject.subjectId));
+                            final quizzesAsync = ref.watch(
+                              quizzesProvider(subject.subjectId),
+                            );
 
                             return quizzesAsync.when(
                               loading: () => const Center(
                                 child: Padding(
                                   padding: EdgeInsets.all(8.0),
-                                  child:
-                                  CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 ),
                               ),
                               error: (e, s) => Tooltip(
                                 message: e.toString(),
                                 child: const ListTile(
                                   title: Text('Error loading quizzes'),
-                                  leading:
-                                  Icon(Icons.error, color: AppColors.error),
+                                  leading: Icon(
+                                    Icons.error,
+                                    color: AppColors.error,
+                                  ),
                                 ),
                               ),
                               data: (quizzes) {
@@ -515,8 +519,9 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  subtitle:
-                                  const Text(AppStrings.publishSubject),
+                                  subtitle: const Text(
+                                    AppStrings.publishSubject,
+                                  ),
                                   value: isPublished,
                                   activeThumbColor: AppColors.success,
                                   onChanged: (newValue) {
@@ -535,9 +540,9 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                                     ref
                                         .read(quizRepositoryProvider)
                                         .updateSubjectStatus(
-                                      subjectId: subject.subjectId,
-                                      newStatus: newStatus,
-                                    );
+                                          subjectId: subject.subjectId,
+                                          newStatus: newStatus,
+                                        );
 
                                     // Show feedback.
                                     ScaffoldMessenger.of(context).showSnackBar(

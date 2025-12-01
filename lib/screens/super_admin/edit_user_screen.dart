@@ -62,10 +62,9 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
 
     try {
       // How it is working: Reads the AdminRepository (the database interface) and calls the function to update the user's role in Firestore.
-      await ref.read(adminRepositoryProvider).updateUserRole(
-        uid: widget.user.uid,
-        newRole: _selectedRole,
-      );
+      await ref
+          .read(adminRepositoryProvider)
+          .updateUserRole(uid: widget.user.uid, newRole: _selectedRole);
 
       if (mounted) {
         // How it's helpful: Shows a success notification to the Super Admin.
@@ -138,10 +137,7 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen> {
                     const Divider(height: 32),
 
                     // Role selection section
-                    Text(
-                      'User Role',
-                      style: AppTextStyles.titleLarge,
-                    ),
+                    Text('User Role', style: AppTextStyles.titleLarge),
                     const SizedBox(height: 16),
                     // Dropdown menu for role change
                     DropdownButtonFormField<String>(

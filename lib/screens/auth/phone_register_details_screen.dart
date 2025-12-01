@@ -66,7 +66,9 @@ class _PhoneRegisterDetailsScreenState
     // Safety Check: If the user somehow signed out, redirect them.
     if (authUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Authentication error. Please login again.')),
+        const SnackBar(
+          content: Text('Authentication error. Please login again.'),
+        ),
       );
       context.go(AppRoutePaths.login);
       return;
@@ -78,11 +80,13 @@ class _PhoneRegisterDetailsScreenState
 
     try {
       // Save the Name and Role to Firestore for the currently logged-in user.
-      await ref.read(userRepositoryProvider).registerPhoneUserInFirestore(
-        user: authUser,
-        name: _nameController.text.trim(),
-        role: _selectedRole,
-      );
+      await ref
+          .read(userRepositoryProvider)
+          .registerPhoneUserInFirestore(
+            user: authUser,
+            name: _nameController.text.trim(),
+            role: _selectedRole,
+          );
 
       // Registration successful! Trigger the router to determine the final screen.
       if (mounted) {
@@ -95,10 +99,7 @@ class _PhoneRegisterDetailsScreenState
       });
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: AppColors.error,
-        ),
+        SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
       );
     }
   }

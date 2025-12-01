@@ -21,32 +21,45 @@
 // User Roles
 /// What it is doing: Defines the four distinct user authorization levels in the application.
 class UserRoles {
-  static const String superAdmin = 'super_admin'; // Highest authority, controls all users including other Admins.
-  static const String admin = 'admin';         // Manages Teachers, Students, and the approval queue.
-  static const String teacher = 'teacher';     // Creates and manages Subjects and Quizzes.
-  static const String student = 'student';     // Primary end-user role, takes quizzes.
+  static const String superAdmin =
+      'super_admin'; // Highest authority, controls all users including other Admins.
+  static const String admin =
+      'admin'; // Manages Teachers, Students, and the approval queue.
+  static const String teacher =
+      'teacher'; // Creates and manages Subjects and Quizzes.
+  static const String student =
+      'student'; // Primary end-user role, takes quizzes.
 }
 
 // User Statuses
 /// What it is doing: Defines the lifecycle states for a user account, particularly important for the Teacher/Admin approval workflow.
 class UserStatus {
-  static const String approved = 'approved';      // User is fully authorized and can access their dashboard.
-  static const String pending = 'pending_approval'; // User has registered but is waiting for an Admin to review and grant access.
-  static const String rejected = 'rejected';      // User's request for access was denied by an Admin.
+  static const String approved =
+      'approved'; // User is fully authorized and can access their dashboard.
+  static const String pending =
+      'pending_approval'; // User has registered but is waiting for an Admin to review and grant access.
+  static const String rejected =
+      'rejected'; // User's request for access was denied by an Admin.
 }
 
 // Content Statuses (for Subjects and Quizzes)
 /// What it is doing: Defines the visibility states for educational content (Subjects and Quizzes).
 class ContentStatus {
-  static const String published = 'published'; // Content is active and visible to Students.
-  static const String draft = 'draft';         // Content is incomplete or under review; only visible to the creator (Teacher/Admin).
-  static const String archived = 'archived';   // Placeholder for future logic (e.g., hiding old content).
+  static const String published =
+      'published'; // Content is active and visible to Students.
+  static const String draft =
+      'draft'; // Content is incomplete or under review; only visible to the creator (Teacher/Admin).
+  static const String archived =
+      'archived'; // Placeholder for future logic (e.g., hiding old content).
 }
 
 // Default Values
 /// What it is doing: Provides safe, initial values used during the user registration process or when data is unexpectedly missing.
 class DefaultValues {
-  static const String defaultRole = UserRoles.student; // The default role assigned during registration if not specified.
-  static const String defaultStatus = UserStatus.pending; // The safe default status for new users, forcing them through approval checks.
-  static const String defaultDisplayName = 'New User'; // Fallback name if the user profile is incomplete.
+  static const String defaultRole = UserRoles
+      .student; // The default role assigned during registration if not specified.
+  static const String defaultStatus = UserStatus
+      .pending; // The safe default status for new users, forcing them through approval checks.
+  static const String defaultDisplayName =
+      'New User'; // Fallback name if the user profile is incomplete.
 }

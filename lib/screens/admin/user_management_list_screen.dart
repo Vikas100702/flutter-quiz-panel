@@ -59,7 +59,7 @@ class UserManagementListScreen extends ConsumerWidget {
       case 'admins':
         return ref.watch(allAdminsProvider);
       default:
-      // Fallback safety: default to pending list if an unknown filter is passed.
+        // Fallback safety: default to pending list if an unknown filter is passed.
         return ref.watch(pendingTeachersProvider);
     }
   }
@@ -70,9 +70,7 @@ class UserManagementListScreen extends ConsumerWidget {
     final title = _getTitle();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
+      appBar: AppBar(title: Text(title)),
       // **State Handling:**
       // We use .when() to cleanly separate the UI for Loading, Error, and Success.
       body: usersAsync.when(
@@ -127,7 +125,8 @@ class UserManagementListScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(12.0),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
-                  childAspectRatio: 1.5, // Width is 1.5x Height (Rectangular cards).
+                  childAspectRatio:
+                      1.5, // Width is 1.5x Height (Rectangular cards).
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                 ),
@@ -160,15 +159,13 @@ class UserManagementListScreen extends ConsumerWidget {
     return Card(
       margin: const EdgeInsets.all(0), // Margins handled by GridView spacing.
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment:
-          MainAxisAlignment.spaceBetween, // Pushes content to top and chips to bottom.
+          mainAxisAlignment: MainAxisAlignment
+              .spaceBetween, // Pushes content to top and chips to bottom.
           children: [
             // Top Section: Info & Actions
             Column(
@@ -195,8 +192,9 @@ class UserManagementListScreen extends ConsumerWidget {
                 // Row 2: Email Address
                 Text(
                   user.email,
-                  style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.textTertiary),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -215,7 +213,7 @@ class UserManagementListScreen extends ConsumerWidget {
                     _buildRoleChip(user.role),
                     _buildStatusChip(user.status, user.isActive),
                   ],
-                )
+                ),
               ],
             ),
           ],
@@ -232,11 +230,15 @@ class UserManagementListScreen extends ConsumerWidget {
   /// 2. The target user's role.
   /// 3. The logged-in admin's permissions.
   Widget _buildActionIcons(
-      BuildContext context, WidgetRef ref, UserModel user, String currentUserRole) {
-
+    BuildContext context,
+    WidgetRef ref,
+    UserModel user,
+    String currentUserRole,
+  ) {
     // **Security Rule:**
     // Only a Super Admin can modify (edit role) a Teacher or another Admin.
-    final bool canBeManaged = (currentUserRole == UserRoles.superAdmin) &&
+    final bool canBeManaged =
+        (currentUserRole == UserRoles.superAdmin) &&
         (user.role == UserRoles.teacher || user.role == UserRoles.admin);
 
     return Row(
@@ -264,7 +266,8 @@ class UserManagementListScreen extends ConsumerWidget {
           IconButton(
             // Toggle icon based on active status.
             icon: Icon(
-                user.isActive ? Icons.block : Icons.check_circle_outline),
+              user.isActive ? Icons.block : Icons.check_circle_outline,
+            ),
             // Toggle color (Red for Ban, Green for Unban).
             color: user.isActive ? AppColors.error : AppColors.success,
             tooltip: user.isActive
@@ -319,10 +322,9 @@ class UserManagementListScreen extends ConsumerWidget {
       title: AppStrings.approveConfirm,
       confirmActionText: AppStrings.approveButton,
       onConfirm: () {
-        ref.read(adminRepositoryProvider).approveUser(
-          uid: user.uid,
-          approvedByUid: currentAdminUid,
-        );
+        ref
+            .read(adminRepositoryProvider)
+            .approveUser(uid: user.uid, approvedByUid: currentAdminUid);
       },
     );
   }
@@ -341,7 +343,11 @@ class UserManagementListScreen extends ConsumerWidget {
 
   /// Toggles the 'isActive' flag in Firestore to temporarily ban/unban a user.
   void _onDeactivatePressed(
-      BuildContext context, WidgetRef ref, UserModel user, bool newActiveState) {
+    BuildContext context,
+    WidgetRef ref,
+    UserModel user,
+    bool newActiveState,
+  ) {
     final bool isDeactivating = !newActiveState;
 
     _showConfirmationDialog(
@@ -359,11 +365,14 @@ class UserManagementListScreen extends ConsumerWidget {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isDeactivating
-                ? AppStrings.userDeactivated
-                : AppStrings.userReactivated),
-            backgroundColor:
-            isDeactivating ? AppColors.error : AppColors.success,
+            content: Text(
+              isDeactivating
+                  ? AppStrings.userDeactivated
+                  : AppStrings.userReactivated,
+            ),
+            backgroundColor: isDeactivating
+                ? AppColors.error
+                : AppColors.success,
           ),
         );
       },
@@ -417,8 +426,10 @@ class UserManagementListScreen extends ConsumerWidget {
     if (!isActive) {
       return Chip(
         avatar: const Icon(Icons.block, color: Colors.white, size: 16),
-        label: const Text(AppStrings.statusInactive,
-            style: TextStyle(color: Colors.white)),
+        label: const Text(
+          AppStrings.statusInactive,
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: AppColors.textTertiary,
         labelPadding: const EdgeInsets.symmetric(horizontal: 4.0),
         padding: const EdgeInsets.all(4.0),
@@ -479,13 +490,16 @@ void _showConfirmationDialog({
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               // Use Red for destructive actions, Green for positive ones.
-              backgroundColor: confirmActionText == AppStrings.rejectButton ||
-                  confirmActionText == AppStrings.deactivateUserButton
+              backgroundColor:
+                  confirmActionText == AppStrings.rejectButton ||
+                      confirmActionText == AppStrings.deactivateUserButton
                   ? AppColors.error
                   : AppColors.success,
             ),
-            child: Text(confirmActionText,
-                style: const TextStyle(color: Colors.white)),
+            child: Text(
+              confirmActionText,
+              style: const TextStyle(color: Colors.white),
+            ),
             onPressed: () {
               onConfirm();
               Navigator.of(dialogContext).pop();

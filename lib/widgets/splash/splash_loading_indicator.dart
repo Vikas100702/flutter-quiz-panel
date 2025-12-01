@@ -30,10 +30,10 @@ class SplashLoadingIndicator extends StatefulWidget {
 
 class _SplashLoadingIndicatorState extends State<SplashLoadingIndicator>
     with SingleTickerProviderStateMixin {
-
   // **Animation Controllers:**
   late AnimationController _controller; // Manages the timing of the pulse.
-  late Animation<double> _animation; // Defines the value change (opacity) over time.
+  late Animation<double>
+  _animation; // Defines the value change (opacity) over time.
 
   @override
   void initState() {
@@ -47,13 +47,12 @@ class _SplashLoadingIndicatorState extends State<SplashLoadingIndicator>
 
     // **Define Range:**
     // The opacity will fluctuate between 0.5 and 1.0.
-    _animation = Tween<double>(
-      begin: 0.5,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut, // Smooth acceleration/deceleration.
-    ));
+    _animation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut, // Smooth acceleration/deceleration.
+      ),
+    );
   }
 
   @override

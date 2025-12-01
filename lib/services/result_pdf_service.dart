@@ -34,7 +34,6 @@ import 'package:universal_html/html.dart' as html;
 
 /// Why we used this class: It isolates and manages the entire complexity of PDF generation and file system interactions.
 class ResultPdfService {
-
   // --- 1. DOWNLOAD FUNCTION (For "Download Result" Button) ---
   /// What it is doing: Generates the PDF, saves it to the local device/browser, and opens the file automatically.
   static Future<void> generateAndDownloadResult({
@@ -45,7 +44,13 @@ class ResultPdfService {
     required double percentage,
   }) async {
     // What it is doing: Calls the internal method to build the PDF structure.
-    final pdf = await _generatePdfDocument(resultState, user, totalScore, maxScore, percentage);
+    final pdf = await _generatePdfDocument(
+      resultState,
+      user,
+      totalScore,
+      maxScore,
+      percentage,
+    );
     // How it is working: Saves the in-memory PDF document as raw binary data (`Uint8List`).
     final Uint8List bytes = await pdf.save();
 
@@ -67,7 +72,9 @@ class ResultPdfService {
       // How it is working: Programmatically clicks the anchor element to trigger the download.
       anchor.click();
       html.document.body?.children.remove(anchor);
-      html.Url.revokeObjectUrl(url); // How it's helpful: Cleans up the temporary URL resource.
+      html.Url.revokeObjectUrl(
+        url,
+      ); // How it's helpful: Cleans up the temporary URL resource.
     } else {
       // --- MOBILE SAVE & OPEN LOGIC ---
       // How it is working: Gets the application-specific directory (e.g., Downloads/Documents on mobile).
@@ -93,25 +100,30 @@ class ResultPdfService {
     required double percentage,
   }) async {
     // What it is doing: Generates the PDF document object.
-    final pdf = await _generatePdfDocument(resultState, user, totalScore, maxScore, percentage);
+    final pdf = await _generatePdfDocument(
+      resultState,
+      user,
+      totalScore,
+      maxScore,
+      percentage,
+    );
     final Uint8List bytes = await pdf.save();
 
-    final String fileName = 'Result_${resultState.quiz.title.replaceAll(' ', '_')}.pdf';
+    final String fileName =
+        'Result_${resultState.quiz.title.replaceAll(' ', '_')}.pdf';
 
     if (kIsWeb) {
       // --- WEB FIX: Use XFile.fromData ---
       // How it is working: On the web, we cannot use file paths, so we directly create the XFile from the binary data in memory.
-      return XFile.fromData(
-        bytes,
-        mimeType: 'application/pdf',
-        name: fileName,
-      );
+      return XFile.fromData(bytes, mimeType: 'application/pdf', name: fileName);
     } else {
       // --- MOBILE LOGIC: Save to Temp Dir ---
       // How it is working: For mobile sharing, a temporary path is required by `share_plus`.
       final directory = await getTemporaryDirectory();
       final file = File('${directory.path}/$fileName');
-      await file.writeAsBytes(bytes); // What it is doing: Saves the PDF to a temporary location.
+      await file.writeAsBytes(
+        bytes,
+      ); // What it is doing: Saves the PDF to a temporary location.
 
       // What it is doing: Returns an XFile object referencing the temporary path.
       return XFile(file.path, mimeType: 'application/pdf');
@@ -121,12 +133,12 @@ class ResultPdfService {
   // --- INTERNAL: PDF GENERATION LOGIC ---
   /// What it is doing: Constructs the core printable document structure using the `pdf` package's widgets.
   static Future<pw.Document> _generatePdfDocument(
-      QuizAttemptState resultState,
-      UserModel? user,
-      double totalScore,
-      double maxScore,
-      double percentage,
-      ) async {
+    QuizAttemptState resultState,
+    UserModel? user,
+    double totalScore,
+    double maxScore,
+    double percentage,
+  ) async {
     final pdf = pw.Document();
 
     // How it is working: Asynchronously loads a free Google Font (`Nunito`) for high-quality text rendering in the PDF.
@@ -161,15 +173,21 @@ class ResultPdfService {
   /// What it is doing: Builds the main title and quiz title for the top of the report.
   static pw.Widget _buildHeader(String quizTitle) {
     return pw.Header(
-        level: 0,
-        child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.center,
-            children: [
-              pw.Text("QUIZ RESULT REPORT", style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 5),
-              pw.Text(quizTitle, style: pw.TextStyle(fontSize: 18, color: PdfColors.grey700)),
-            ]
-        )
+      level: 0,
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Text(
+            "QUIZ RESULT REPORT",
+            style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.SizedBox(height: 5),
+          pw.Text(
+            quizTitle,
+            style: pw.TextStyle(fontSize: 18, color: PdfColors.grey700),
+          ),
+        ],
+      ),
     );
   }
 
@@ -178,26 +196,42 @@ class ResultPdfService {
     // How it is working: Formats the current time using the `intl` package for a professional look.
     final date = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
     return pw.Container(
-        decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey400), borderRadius: pw.BorderRadius.circular(8)),
-        padding: const pw.EdgeInsets.all(10),
-        child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey400),
+        borderRadius: pw.BorderRadius.circular(8),
+      ),
+      padding: const pw.EdgeInsets.all(10),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-                pw.Text("Student Name: ${user?.displayName ?? 'Guest'}", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                pw.Text("Email: ${user?.email ?? 'N/A'}"),
-              ]),
-              pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-                pw.Text("Date: $date"),
-                pw.Text("Total Questions: ${state.questions.length}"),
-              ]),
-            ]
-        )
+              pw.Text(
+                "Student Name: ${user?.displayName ?? 'Guest'}",
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              ),
+              pw.Text("Email: ${user?.email ?? 'N/A'}"),
+            ],
+          ),
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.end,
+            children: [
+              pw.Text("Date: $date"),
+              pw.Text("Total Questions: ${state.questions.length}"),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   /// What it is doing: Highlights the final score, maximum possible score, and percentage.
-  static pw.Widget _buildScoreSection(double score, double maxScore, double percentage) {
+  static pw.Widget _buildScoreSection(
+    double score,
+    double maxScore,
+    double percentage,
+  ) {
     // What it is doing: Determines if the result is a Pass (>= 40%) or Fail.
     final bool isPass = percentage >= 40;
     // How it's helpful: Uses color to indicate pass/fail status (green/red background and text).
@@ -206,9 +240,19 @@ class ResultPdfService {
       color: isPass ? PdfColors.green50 : PdfColors.red50,
       child: pw.Column(
         children: [
-          pw.Text(isPass ? "CONGRATULATIONS!" : "BETTER LUCK NEXT TIME", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: isPass ? PdfColors.green800 : PdfColors.red800)),
+          pw.Text(
+            isPass ? "CONGRATULATIONS!" : "BETTER LUCK NEXT TIME",
+            style: pw.TextStyle(
+              fontSize: 18,
+              fontWeight: pw.FontWeight.bold,
+              color: isPass ? PdfColors.green800 : PdfColors.red800,
+            ),
+          ),
           pw.SizedBox(height: 10),
-          pw.Text("${score.toStringAsFixed(1)} / ${maxScore.toStringAsFixed(1)}", style: pw.TextStyle(fontSize: 30, fontWeight: pw.FontWeight.bold)),
+          pw.Text(
+            "${score.toStringAsFixed(1)} / ${maxScore.toStringAsFixed(1)}",
+            style: pw.TextStyle(fontSize: 30, fontWeight: pw.FontWeight.bold),
+          ),
           pw.Text("Percentage: ${percentage.toStringAsFixed(2)}%"),
         ],
       ),
@@ -225,7 +269,10 @@ class ResultPdfService {
         ['Incorrect Answers', '${state.totalIncorrect}', 'Needs Improvement'],
         ['Unanswered', '${state.totalUnanswered}', '-'],
       ],
-      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      headerStyle: pw.TextStyle(
+        fontWeight: pw.FontWeight.bold,
+        color: PdfColors.white,
+      ),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.blue600),
       cellAlignment: pw.Alignment.centerLeft,
     );

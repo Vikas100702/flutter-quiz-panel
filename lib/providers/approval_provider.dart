@@ -21,22 +21,23 @@ class ApprovalPendingScreen extends ConsumerStatefulWidget {
   const ApprovalPendingScreen({super.key});
 
   @override
-  ConsumerState<ApprovalPendingScreen> createState() => _ApprovalPendingScreenState();
+  ConsumerState<ApprovalPendingScreen> createState() =>
+      _ApprovalPendingScreenState();
 }
 
 class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     with SingleTickerProviderStateMixin {
-
   // **Animation Controllers:**
   // These are used to make the screen elements "pop" and fade in smoothly
   // instead of just appearing abruptly.
   late AnimationController _controller;
   late Animation<double> _scaleAnimation; // Makes the icon grow/shrink.
-  late Animation<double> _fadeAnimation;  // Makes the text fade in.
+  late Animation<double> _fadeAnimation; // Makes the text fade in.
 
   // **State Variables:**
   bool _isLoggingOut = false; // Shows a loader on the logout button.
-  bool _isCheckingStatus = false; // Shows a loader on the "Check Status" button.
+  bool _isCheckingStatus =
+      false; // Shows a loader on the "Check Status" button.
 
   @override
   void initState() {
@@ -53,19 +54,15 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     _scaleAnimation = Tween<double>(
       begin: 0.8,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
     // This makes the content fade in slowly after a short delay.
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
+      ),
+    );
 
     // Start the animation as soon as the screen opens.
     _controller.forward();
@@ -81,7 +78,9 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
   /// If the user is tired of waiting or wants to switch accounts, they can log out.
   /// This clears their session from Firebase Auth.
   Future<void> _handleSignOut() async {
-    setState(() { _isLoggingOut = true; });
+    setState(() {
+      _isLoggingOut = true;
+    });
 
     try {
       await ref.read(authRepositoryProvider).signOut();
@@ -98,7 +97,9 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
       }
     } finally {
       if (mounted) {
-        setState(() { _isLoggingOut = false; });
+        setState(() {
+          _isLoggingOut = false;
+        });
       }
     }
   }
@@ -108,13 +109,17 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
   /// to see if the Admin has approved the account yet.
   /// Currently, it simulates a check with a delay.
   Future<void> _checkStatus() async {
-    setState(() { _isCheckingStatus = true; });
+    setState(() {
+      _isCheckingStatus = true;
+    });
 
     // Simulate API call to check status
     await Future.delayed(const Duration(seconds: 2));
 
     if (mounted) {
-      setState(() { _isCheckingStatus = false; });
+      setState(() {
+        _isCheckingStatus = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Status checked - still pending approval'),
@@ -138,13 +143,13 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
           IconButton(
             icon: _isLoggingOut
                 ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
                 : const Icon(Icons.logout_rounded),
             tooltip: AppStrings.logoutButton,
             onPressed: _isLoggingOut ? null : _handleSignOut,
@@ -305,11 +310,7 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.schedule_rounded,
-                size: 18,
-                color: AppColors.primary,
-              ),
+              Icon(Icons.schedule_rounded, size: 18, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
                 'Typically approved within 24-48 hours',
@@ -342,18 +343,14 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
           ),
           child: Center(
             child: isCompleted
-                ? Icon(
-              Icons.check_rounded,
-              size: 18,
-              color: Colors.white,
-            )
+                ? Icon(Icons.check_rounded, size: 18, color: Colors.white)
                 : Text(
-              stepNumber.toString(),
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textTertiary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+                    stepNumber.toString(),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textTertiary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
           ),
         ),
         const SizedBox(height: 8),

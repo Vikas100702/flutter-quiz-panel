@@ -138,7 +138,8 @@ class RoleSelector extends StatelessWidget {
       // **Interaction:**
       // Calls the parent's function when tapped, passing back the role ID.
       onTap: () => onRoleChanged(role),
-      behavior: HitTestBehavior.translucent, // Ensures taps work on empty space inside the container.
+      behavior: HitTestBehavior
+          .translucent, // Ensures taps work on empty space inside the container.
       child: Container(
         // Fixed height for consistency.
         height: 75,

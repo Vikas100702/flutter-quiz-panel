@@ -25,7 +25,8 @@ import 'package:quiz_panel/config/theme/app_theme.dart';
 
 class ResponsiveAuthLayout extends StatelessWidget {
   final Widget child; // The main content (e.g., LoginForm).
-  final bool showBackground; // Option to disable the gradient background if needed.
+  final bool
+  showBackground; // Option to disable the gradient background if needed.
 
   const ResponsiveAuthLayout({
     super.key,
@@ -46,26 +47,27 @@ class ResponsiveAuthLayout extends StatelessWidget {
           // **Dynamic Decoration:**
           // Desktop: Show a gradient background to fill the empty space.
           // Mobile: Use the standard surface color (White) for a clean look.
-          decoration: showBackground ? BoxDecoration(
-            gradient: isDesktop
-                ? const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.background,
-                Color(0xFFE8ECF4),
-              ],
-            )
-                : null,
-            color: isDesktop ? null : AppColors.surface,
-          ) : null,
+          decoration: showBackground
+              ? BoxDecoration(
+                  gradient: isDesktop
+                      ? const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppColors.background, Color(0xFFE8ECF4)],
+                        )
+                      : null,
+                  color: isDesktop ? null : AppColors.surface,
+                )
+              : null,
           child: Center(
             // **Constraints:**
             // This Box ensures the login form never gets too wide or too narrow.
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxWidth: isDesktop ? 500 : 450, // Cap width on desktop.
-                minWidth: isLargeMobile ? 350 : 300, // Ensure minimum width on mobile.
+                minWidth: isLargeMobile
+                    ? 350
+                    : 300, // Ensure minimum width on mobile.
               ),
               // **Layout Switching Logic:**
               // If Desktop and background is on -> Show the "Card" style.
@@ -87,14 +89,9 @@ class ResponsiveAuthLayout extends StatelessWidget {
     return Card(
       elevation: 8,
       margin: const EdgeInsets.all(24),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 40,
-          vertical: 50,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 50),
         child: child,
       ),
     );

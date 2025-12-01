@@ -27,8 +27,10 @@ import 'package:quiz_panel/widgets/buttons/app_button.dart';
 
 /// Why we used this class: A StatelessWidget that displays necessary information and handles simple user actions for critical errors.
 class AuthErrorScreen extends StatelessWidget {
-  final String error; // What it is doing: The raw technical error message captured by the provider.
-  final VoidCallback onRetry; // What it is doing: The function to call when the user wants to re-attempt loading data (e.g., `ref.invalidate`).
+  final String
+  error; // What it is doing: The raw technical error message captured by the provider.
+  final VoidCallback
+  onRetry; // What it is doing: The function to call when the user wants to re-attempt loading data (e.g., `ref.invalidate`).
 
   const AuthErrorScreen({
     super.key,
@@ -83,7 +85,8 @@ class AuthErrorScreen extends StatelessWidget {
                 children: [
                   AppButton(
                     text: 'Try Again',
-                    onPressed: onRetry, // What it is doing: Executes the `onRetry` callback passed from the `AuthWrapper`.
+                    onPressed:
+                        onRetry, // What it is doing: Executes the `onRetry` callback passed from the `AuthWrapper`.
                     type: AppButtonType.primary,
                     icon: Icons.refresh_rounded,
                   ),
@@ -94,8 +97,10 @@ class AuthErrorScreen extends StatelessWidget {
                       // How it is working: Navigates back to the login screen and clears the entire navigation stack (`(route) => false`), essentially resetting the application session.
                       Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                            (route) => false,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                        (route) => false,
                       );
                     },
                     type: AppButtonType.outline,

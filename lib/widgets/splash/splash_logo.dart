@@ -55,10 +55,7 @@ class SplashLogo extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                AppColors.primaryLight,
-                AppColors.primary,
-              ],
+              colors: [AppColors.primaryLight, AppColors.primary],
             ),
             borderRadius: BorderRadius.circular(20), // Smooth rounded corners.
             // **Shadow:**
@@ -72,11 +69,7 @@ class SplashLogo extends StatelessWidget {
             ],
           ),
           // The actual vector icon.
-          child: const Icon(
-            Icons.quiz_rounded,
-            size: 50,
-            color: Colors.white,
-          ),
+          child: const Icon(Icons.quiz_rounded, size: 50, color: Colors.white),
         ),
 
         // Layer 3: Decorative Elements (Bubbles)

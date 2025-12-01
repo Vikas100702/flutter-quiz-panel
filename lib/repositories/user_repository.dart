@@ -104,8 +104,9 @@ class UserRepository {
 
       // Step 4: Create the secondary Role Profile document.
       if (role == UserRoles.student) {
-        final profileDocRef =
-        _db.collection('student_profiles').doc(newUser.uid);
+        final profileDocRef = _db
+            .collection('student_profiles')
+            .doc(newUser.uid);
         batch.set(profileDocRef, {
           'studentId': newUser.uid,
           'name': name,
@@ -114,8 +115,9 @@ class UserRepository {
           'grade': null,
         });
       } else if (role == UserRoles.teacher) {
-        final profileDocRef =
-        _db.collection('teacher_profiles').doc(newUser.uid);
+        final profileDocRef = _db
+            .collection('teacher_profiles')
+            .doc(newUser.uid);
         batch.set(profileDocRef, {
           'teacherId': newUser.uid,
           'name': name,
@@ -248,8 +250,9 @@ class UserRepository {
 
       // Create Role Profile Doc
       if (role == UserRoles.student) {
-        final profileDocRef =
-        _db.collection('student_profiles').doc(newUser.uid);
+        final profileDocRef = _db
+            .collection('student_profiles')
+            .doc(newUser.uid);
         batch.set(profileDocRef, {
           'studentId': newUser.uid,
           'name': name,
@@ -257,8 +260,9 @@ class UserRepository {
           'phone': newUser.phoneNumber,
         });
       } else if (role == UserRoles.teacher) {
-        final profileDocRef =
-        _db.collection('teacher_profiles').doc(newUser.uid);
+        final profileDocRef = _db
+            .collection('teacher_profiles')
+            .doc(newUser.uid);
         batch.set(profileDocRef, {
           'teacherId': newUser.uid,
           'name': name,
@@ -286,10 +290,10 @@ class UserRepository {
   /// 3. It intelligently finds the correct `_profiles` document (student or teacher)
   ///    and updates that too, keeping data in sync.
   Future<void> updateUserData(
-      String uid, {
-        String? displayName,
-        String? phoneNumber,
-      }) async {
+    String uid, {
+    String? displayName,
+    String? phoneNumber,
+  }) async {
     try {
       final userDocRef = _db.collection('users').doc(uid);
       final Map<String, dynamic> dataToUpdate = {};

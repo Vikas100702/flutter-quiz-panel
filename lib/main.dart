@@ -35,11 +35,6 @@ void main() async {
   // This line ensures that the binding is initialized so we can call native code (like Firebase).
   WidgetsFlutterBinding.ensureInitialized();
 
-
-
-
-
-
   if (WebViewPlatform.instance == null) {
     /* * Note: The youtube_player_iframe package uses webview_flutter internally.
        * We explicitly set the platform implementation to ensure it works correctly
@@ -48,11 +43,6 @@ void main() async {
     */
     AndroidWebViewPlatform.registerWith(); // Try this if the below line fails in newer versions
   }
-
-
-
-
-
 
   // **Step 2: Firebase Initialization**
   // We connect our app to the specific Firebase project configured in `firebase_options.dart`.
@@ -78,7 +68,6 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     // **Watch the Router:**
     // We get the `GoRouter` instance from our provider. This object contains all the logic
     // for URL paths (`/login`, `/dashboard`) and redirection rules.
@@ -93,8 +82,8 @@ class MyApp extends ConsumerWidget {
       // Applies our custom visual design (Colors, Fonts, Button Shapes) globally.
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light, // Forces light mode for now (can be made dynamic later).
-
+      themeMode: ThemeMode
+          .light, // Forces light mode for now (can be made dynamic later).
       // **App Title:**
       // The name shown in the browser tab or recent apps list.
       title: 'Pro Olympiad',

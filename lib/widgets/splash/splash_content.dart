@@ -35,9 +35,9 @@ class SplashContent extends StatefulWidget {
 
 class _SplashContentState extends State<SplashContent>
     with SingleTickerProviderStateMixin {
-
   // **Animation Controllers:**
-  late AnimationController _controller; // The engine driving the animation loop.
+  late AnimationController
+  _controller; // The engine driving the animation loop.
   late Animation<double> _fadeAnimation; // Controls opacity (0.0 -> 1.0).
   late Animation<double> _scaleAnimation; // Controls size (80% -> 100%).
 
@@ -90,10 +90,7 @@ class _SplashContentState extends State<SplashContent>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            AppColors.primaryDark,
-          ],
+          colors: [AppColors.primary, AppColors.primaryDark],
         ),
       ),
       // **Animation Builder:**
@@ -103,10 +100,7 @@ class _SplashContentState extends State<SplashContent>
         builder: (context, child) {
           return Opacity(
             opacity: _fadeAnimation.value,
-            child: Transform.scale(
-              scale: _scaleAnimation.value,
-              child: child,
-            ),
+            child: Transform.scale(scale: _scaleAnimation.value, child: child),
           );
         },
         // **Static Content:**
@@ -114,7 +108,9 @@ class _SplashContentState extends State<SplashContent>
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Spacer(flex: 2), // Pushes content slightly upwards for optical balance.
+            Spacer(
+              flex: 2,
+            ), // Pushes content slightly upwards for optical balance.
             SplashLogo(),
             SizedBox(height: 24),
             SplashSubtitle(),

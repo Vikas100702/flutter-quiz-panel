@@ -106,13 +106,13 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
       await ref
           .read(quizRepositoryProvider)
           .createQuiz(
-        title: _titleController.text.trim(),
-        subjectId: widget.subject.subjectId,
-        duration: duration,
-        totalQuestions: totalQuestions,
-        teacherUid: teacherUid,
-        marksPerQuestion: 4, // Sets a default mark value per question.
-      );
+            title: _titleController.text.trim(),
+            subjectId: widget.subject.subjectId,
+            duration: duration,
+            totalQuestions: totalQuestions,
+            teacherUid: teacherUid,
+            marksPerQuestion: 4, // Sets a default mark value per question.
+          );
 
       if (mounted) {
         // How it's helpful: Shows success feedback and resets the form for quick next entry.
@@ -151,7 +151,9 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.subject.name), // What it is doing: Displays the name of the parent subject in the title bar.
+        title: Text(
+          widget.subject.name,
+        ), // What it is doing: Displays the name of the parent subject in the title bar.
         backgroundColor: AppColors.primary,
       ),
       body: SingleChildScrollView(
@@ -296,7 +298,9 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                   // that depends on the current item (`quiz.quizId`) inside the `ListView.builder`.
                   builder: (context, ref, child) {
                     // What it is doing: Fetches the current list of questions for THIS quiz item in the list.
-                    final questionsAsync = ref.watch(questionsProvider(quiz.quizId));
+                    final questionsAsync = ref.watch(
+                      questionsProvider(quiz.quizId),
+                    );
 
                     return Wrap(
                       spacing: 4.0,
@@ -312,12 +316,17 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                           ),
                           error: (e, s) => Tooltip(
                             message: e.toString(),
-                            child: const Icon(Icons.error, color: AppColors.error),
+                            child: const Icon(
+                              Icons.error,
+                              color: AppColors.error,
+                            ),
                           ),
                           data: (questions) {
                             final int questionCount = questions.length;
-                            const int minQuestions = 25; // Business rule: minimum question requirement.
-                            final bool canPublish = questionCount >= minQuestions;
+                            const int minQuestions =
+                                25; // Business rule: minimum question requirement.
+                            final bool canPublish =
+                                questionCount >= minQuestions;
 
                             // What it is doing: The main toggle switch for Draft/Published status.
                             return Switch(
@@ -340,9 +349,9 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                                 ref
                                     .read(quizRepositoryProvider)
                                     .updateQuizStatus(
-                                  quizId: quiz.quizId,
-                                  newStatus: newStatus,
-                                );
+                                      quizId: quiz.quizId,
+                                      newStatus: newStatus,
+                                    );
 
                                 // How it's helpful: Provides success feedback.
                                 _showError(

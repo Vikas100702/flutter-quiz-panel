@@ -52,7 +52,8 @@ class LoginForm extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min, // How it is working: Takes only the minimum height needed, allowing correct centering.
+        mainAxisSize: MainAxisSize
+            .min, // How it is working: Takes only the minimum height needed, allowing correct centering.
         children: [
           // Header Section (Logo and Title)
           _buildHeader(),
@@ -66,7 +67,8 @@ class LoginForm extends StatelessWidget {
             keyboardType: TextInputType.emailAddress,
             // What it is doing: Triggers the login logic when the user presses "Enter" or "Done" on the keyboard.
             onSubmitted: (_) => _handleSubmit(context),
-            enabled: !isLoading, // Disables input while a network request is in progress.
+            enabled:
+                !isLoading, // Disables input while a network request is in progress.
           ),
           const SizedBox(height: 20),
 
@@ -88,9 +90,9 @@ class LoginForm extends StatelessWidget {
               onPressed: isLoading
                   ? null
                   : () {
-                // What it is doing: Navigates to the dedicated password reset screen.
-                context.push(AppRoutePaths.forgotPassword);
-              },
+                      // What it is doing: Navigates to the dedicated password reset screen.
+                      context.push(AppRoutePaths.forgotPassword);
+                    },
               child: Text(
                 'Forgot Password?',
                 style: AppTextStyles.bodyMedium.copyWith(
@@ -105,7 +107,9 @@ class LoginForm extends StatelessWidget {
           // Primary Action: Login Button
           AppButton(
             text: AppStrings.loginButton,
-            onPressed: isLoading ? null : onLogin, // Disables button to prevent double-clicks during loading.
+            onPressed: isLoading
+                ? null
+                : onLogin, // Disables button to prevent double-clicks during loading.
             isLoading: isLoading, // Shows a spinner inside the button.
             type: AppButtonType.primary,
           ),
@@ -128,11 +132,7 @@ class LoginForm extends StatelessWidget {
   Widget _buildHeader() {
     return Column(
       children: [
-        Icon(
-          Icons.quiz_rounded,
-          size: 64,
-          color: AppColors.primary,
-        ),
+        Icon(Icons.quiz_rounded, size: 64, color: AppColors.primary),
         const SizedBox(height: 16),
         Text(
           'Welcome Back',
@@ -158,9 +158,7 @@ class LoginForm extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Divider(
-            color: AppColors.outline.withValues(alpha: 0.5),
-          ),
+          child: Divider(color: AppColors.outline.withValues(alpha: 0.5)),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -172,9 +170,7 @@ class LoginForm extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: Divider(
-            color: AppColors.outline.withValues(alpha: 0.5),
-          ),
+          child: Divider(color: AppColors.outline.withValues(alpha: 0.5)),
         ),
       ],
     );

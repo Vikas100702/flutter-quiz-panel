@@ -45,11 +45,11 @@ class AdminRepository {
           .where('status', isEqualTo: UserStatus.pending)
           .snapshots() // Listen for real-time updates.
           .map((snapshot) {
-        // Convert the raw database documents into our 'UserModel' objects.
-        return snapshot.docs
-            .map((doc) => UserModel.fromFirestore(doc))
-            .toList();
-      });
+            // Convert the raw database documents into our 'UserModel' objects.
+            return snapshot.docs
+                .map((doc) => UserModel.fromFirestore(doc))
+                .toList();
+          });
     } catch (e) {
       // If permission is denied or an error occurs, return an empty list gracefully.
       return Stream.value([]);
@@ -117,10 +117,10 @@ class AdminRepository {
           .orderBy('createdAt', descending: true) // Newest users first.
           .snapshots()
           .map((snapshot) {
-        return snapshot.docs
-            .map((doc) => UserModel.fromFirestore(doc))
-            .toList();
-      });
+            return snapshot.docs
+                .map((doc) => UserModel.fromFirestore(doc))
+                .toList();
+          });
     } catch (e) {
       return Stream.value([]);
     }
@@ -184,10 +184,10 @@ class AdminRepository {
           .orderBy('createdAt', descending: true)
           .snapshots()
           .map((snapshot) {
-        return snapshot.docs
-            .map((doc) => UserModel.fromFirestore(doc))
-            .toList();
-      });
+            return snapshot.docs
+                .map((doc) => UserModel.fromFirestore(doc))
+                .toList();
+          });
     } catch (e) {
       return Stream.value([]);
     }
@@ -209,10 +209,10 @@ class AdminRepository {
           .orderBy('displayName', descending: false) // A-Z sorting
           .snapshots()
           .map((snapshot) {
-        return snapshot.docs
-            .map((doc) => UserModel.fromFirestore(doc))
-            .toList();
-      });
+            return snapshot.docs
+                .map((doc) => UserModel.fromFirestore(doc))
+                .toList();
+          });
     } catch (e) {
       return Stream.error(e);
     }
@@ -229,7 +229,10 @@ class AdminRepository {
   /// 1. It checks the user's role to decide which collection to look in.
   /// 2. It fetches the document with the same `uid`.
   /// 3. It returns the data as a Map to be displayed on the User Details screen.
-  Future<Map<String, dynamic>> getRoleProfileData(String uid, String role) async {
+  Future<Map<String, dynamic>> getRoleProfileData(
+    String uid,
+    String role,
+  ) async {
     String profileCollection;
 
     // Determine the correct collection based on role.

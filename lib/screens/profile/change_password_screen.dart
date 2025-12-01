@@ -62,9 +62,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     await ref
         .read(changePasswordProvider.notifier)
         .submitChangePassword(
-      _currentPasswordController.text,
-      _newPasswordController.text,
-    );
+          _currentPasswordController.text,
+          _newPasswordController.text,
+        );
   }
 
   // What it is doing: Custom validation logic for the new password field.
@@ -132,9 +132,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
     // What it is doing: Renders the primary Change Password form UI, centrally constrained for responsiveness.
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Change Password'),
-      ),
+      appBar: AppBar(title: const Text('Change Password')),
       body: Center(
         // How it's helpful: Constrains the width for optimal readability on large screens (like web or desktop), ensuring the form is centered.
         child: ConstrainedBox(

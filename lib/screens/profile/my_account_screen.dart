@@ -30,9 +30,7 @@ class MyAccountScreen extends ConsumerWidget {
     final userData = ref.watch(userDataProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Account'),
-      ),
+      appBar: AppBar(title: const Text('My Account')),
       body: Center(
         // How it's helpful: Constrains the content width to ensure readability and a professional look on large screens (e.g., web).
         child: ConstrainedBox(
@@ -49,53 +47,57 @@ class MyAccountScreen extends ConsumerWidget {
                   data: (user) => user == null
                       ? const SizedBox.shrink() // Handles case where user is null (safety fallback)
                       : Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          // What it is doing: Displays the user's profile picture or a default icon.
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundColor: AppColors.primaryLight,
-                            // How it's helpful: Renders a NetworkImage if a photoURL exists and is not empty.
-                            backgroundImage: (user.photoURL != null &&
-                                user.photoURL!.isNotEmpty)
-                                ? NetworkImage(user.photoURL!)
-                                : null,
-                            // What it is doing: Shows a fallback icon if no photo is available.
-                            child: (user.photoURL == null ||
-                                user.photoURL!.isEmpty)
-                                ? Icon(
-                              Icons.person,
-                              size: 30,
-                              color: AppColors.primary,
-                            )
-                                : null,
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              children: [
+                                // What it is doing: Displays the user's profile picture or a default icon.
+                                CircleAvatar(
+                                  radius: 30,
+                                  backgroundColor: AppColors.primaryLight,
+                                  // How it's helpful: Renders a NetworkImage if a photoURL exists and is not empty.
+                                  backgroundImage:
+                                      (user.photoURL != null &&
+                                          user.photoURL!.isNotEmpty)
+                                      ? NetworkImage(user.photoURL!)
+                                      : null,
+                                  // What it is doing: Shows a fallback icon if no photo is available.
+                                  child:
+                                      (user.photoURL == null ||
+                                          user.photoURL!.isEmpty)
+                                      ? Icon(
+                                          Icons.person,
+                                          size: 30,
+                                          color: AppColors.primary,
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 16),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // What it is doing: Displays the user's full name.
+                                    Text(
+                                      user.displayName,
+                                      style: AppTextStyles.titleLarge,
+                                    ),
+                                    // What it is doing: Displays the user's email (read-only in this view).
+                                    Text(
+                                      user.email,
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        color: AppColors.textTertiary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // What it is doing: Displays the user's full name.
-                              Text(
-                                user.displayName,
-                                style: AppTextStyles.titleLarge,
-                              ),
-                              // What it is doing: Displays the user's email (read-only in this view).
-                              Text(
-                                user.email,
-                                style: AppTextStyles.bodyMedium
-                                    .copyWith(color: AppColors.textTertiary),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                        ),
                   // State 2: Data is currently loading (shows a spinner).
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   // State 3: An error occurred during fetching (hides the widget).
                   error: (e, s) => const SizedBox.shrink(),
                 ),
@@ -108,11 +110,14 @@ class MyAccountScreen extends ConsumerWidget {
                     children: [
                       // Option 1: Manage Profile
                       ListTile(
-                        leading: const Icon(Icons.edit_outlined,
-                            color: AppColors.primary),
+                        leading: const Icon(
+                          Icons.edit_outlined,
+                          color: AppColors.primary,
+                        ),
                         title: const Text('Manage Profile'),
-                        subtitle:
-                        const Text('Update your name and phone number'),
+                        subtitle: const Text(
+                          'Update your name and phone number',
+                        ),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
                           // How it is working: Uses GoRouter to navigate to the profile editing screen.
@@ -122,8 +127,10 @@ class MyAccountScreen extends ConsumerWidget {
                       const Divider(height: 1),
                       // Option 2: Change Password
                       ListTile(
-                        leading: const Icon(Icons.lock_outline_rounded,
-                            color: AppColors.primary),
+                        leading: const Icon(
+                          Icons.lock_outline_rounded,
+                          color: AppColors.primary,
+                        ),
                         title: const Text('Change Password'),
                         subtitle: const Text('Update your account password'),
                         trailing: const Icon(Icons.arrow_forward_ios),

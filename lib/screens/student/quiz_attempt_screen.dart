@@ -77,7 +77,9 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
 
                 // Step 2: Trigger the submission logic.
                 // How it is working: The Notifier calculates the score and changes the QuizStatus to 'finished'.
-                ref.read(quizAttemptProvider(widget.quiz).notifier).submitQuiz();
+                ref
+                    .read(quizAttemptProvider(widget.quiz).notifier)
+                    .submitQuiz();
 
                 // Step 3: Navigate to the result screen.
                 // How it is helpful: pushReplacementNamed is used to replace the current screen in the navigation stack,
@@ -85,7 +87,8 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
                 context.pushReplacementNamed(
                   AppRouteNames.studentQuizResult,
                   pathParameters: {'quizId': widget.quiz.quizId},
-                  extra: widget.quiz, // Passes the QuizModel object for the result screen to use.
+                  extra: widget
+                      .quiz, // Passes the QuizModel object for the result screen to use.
                 );
               },
             ),
@@ -121,7 +124,9 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
                     Text(
                       _formatDuration(state.secondsRemaining),
                       style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -132,8 +137,9 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
       // The body content changes based on the current quiz status (loading, active, error).
       body: _buildBody(state, notifier),
       // The bottom navigation bar (Next/Previous/Submit buttons) is only visible when the quiz is running.
-      bottomNavigationBar:
-      state.status == QuizStatus.active ? _buildBottomNavBar(state, notifier) : null,
+      bottomNavigationBar: state.status == QuizStatus.active
+          ? _buildBottomNavBar(state, notifier)
+          : null,
     );
   }
 
@@ -146,8 +152,8 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
       case QuizStatus.error:
         return Center(child: Text('Error: ${state.error}'));
       case QuizStatus.active:
-      // How it is helpful: Uses LayoutBuilder to implement responsive design, allowing
-      // for a two-panel layout on wide (desktop) screens.
+        // How it is helpful: Uses LayoutBuilder to implement responsive design, allowing
+        // for a two-panel layout on wide (desktop) screens.
         return LayoutBuilder(
           builder: (context, constraints) {
             if (constraints.maxWidth > 800) {
@@ -158,10 +164,7 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
                     flex: 7,
                     child: _buildQuestionPanel(state, notifier),
                   ),
-                  Expanded(
-                    flex: 3,
-                    child: _buildQuestionGrid(state, notifier),
-                  ),
+                  Expanded(flex: 3, child: _buildQuestionGrid(state, notifier)),
                 ],
               );
             } else {
@@ -171,13 +174,16 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
           },
         );
       case QuizStatus.finished:
-      // This state is immediately followed by navigation in _showSubmitDialog, so this is just a transient message.
+        // This state is immediately followed by navigation in _showSubmitDialog, so this is just a transient message.
         return const Center(child: Text('Navigating to results...'));
     }
   }
 
   // What it is doing: Builds the main content area showing the current question and clickable options.
-  Widget _buildQuestionPanel(QuizAttemptState state, QuizAttemptNotifier notifier) {
+  Widget _buildQuestionPanel(
+    QuizAttemptState state,
+    QuizAttemptNotifier notifier,
+  ) {
     // Fetches the current question object based on the currentQuestionIndex.
     final question = state.questions[state.currentQuestionIndex];
     // Retrieves the index of the option the user previously selected for this question.
@@ -207,13 +213,17 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               final option = question.options[index];
-              final isSelected = (selectedAnswer == index); // Checks if this option is the selected one.
+              final isSelected =
+                  (selectedAnswer ==
+                  index); // Checks if this option is the selected one.
 
               return Card(
                 elevation: isSelected ? 4 : 1,
                 // Visually highlights the selected option.
                 color: isSelected
-                    ? Colors.blue.withValues(alpha: 0.1) // Fix: Changed withValues(alpha: 0.1) to withValues(alpha: )(0.1) for correct Flutter syntax.
+                    ? Colors.blue.withValues(
+                        alpha: 0.1,
+                      ) // Fix: Changed withValues(alpha: 0.1) to withValues(alpha: )(0.1) for correct Flutter syntax.
                     : Theme.of(context).cardColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -226,8 +236,9 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
                 child: ListTile(
                   leading: CircleAvatar(
                     // Shows the option letter (A, B, C, D).
-                    backgroundColor:
-                    isSelected ? Colors.blue : Colors.grey.shade200,
+                    backgroundColor: isSelected
+                        ? Colors.blue
+                        : Colors.grey.shade200,
                     child: Text(
                       String.fromCharCode(65 + index), // ASCII for 'A' is 65.
                       style: TextStyle(
@@ -250,7 +261,10 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
   }
 
   // What it is doing: Builds a navigation grid (1, 2, 3...) for quickly jumping between questions (Desktop Only).
-  Widget _buildQuestionGrid(QuizAttemptState state, QuizAttemptNotifier notifier) {
+  Widget _buildQuestionGrid(
+    QuizAttemptState state,
+    QuizAttemptNotifier notifier,
+  ) {
     return Container(
       // Fix: Changed withValues(alpha: 0.5) to withValues(alpha: )(0.5) for correct Flutter syntax.
       color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
@@ -258,10 +272,7 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Questions',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text('Questions', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           Expanded(
             child: GridView.builder(
@@ -302,9 +313,13 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
   }
 
   // What it is doing: Builds the bottom bar containing navigation and submission controls.
-  Widget _buildBottomNavBar(QuizAttemptState state, QuizAttemptNotifier notifier) {
+  Widget _buildBottomNavBar(
+    QuizAttemptState state,
+    QuizAttemptNotifier notifier,
+  ) {
     final bool isFirstQuestion = state.currentQuestionIndex == 0;
-    final bool isLastQuestion = state.currentQuestionIndex == state.questions.length - 1;
+    final bool isLastQuestion =
+        state.currentQuestionIndex == state.questions.length - 1;
 
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -332,13 +347,18 @@ class _QuizAttemptScreenState extends ConsumerState<QuizAttemptScreen> {
           ElevatedButton.icon(
             icon: const Icon(Icons.arrow_back),
             label: const Text(AppStrings.previousButton),
-            onPressed: isFirstQuestion ? null : () => notifier.previousQuestion(),
+            onPressed: isFirstQuestion
+                ? null
+                : () => notifier.previousQuestion(),
           ),
 
           // Submit Button (triggers the confirmation dialog).
           ElevatedButton.icon(
             icon: const Icon(Icons.check_circle, color: Colors.white),
-            label: const Text(AppStrings.submitButton, style: TextStyle(color: Colors.white)),
+            label: const Text(
+              AppStrings.submitButton,
+              style: TextStyle(color: Colors.white),
+            ),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => _showSubmitDialog(context, ref),
           ),

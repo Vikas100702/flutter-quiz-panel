@@ -97,10 +97,7 @@ class AuthLoadingScreen extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                AppColors.primary,
-                AppColors.primaryDark,
-              ],
+              colors: [AppColors.primary, AppColors.primaryDark],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
@@ -111,11 +108,7 @@ class AuthLoadingScreen extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.quiz_rounded,
-            size: 35,
-            color: Colors.white,
-          ),
+          child: const Icon(Icons.quiz_rounded, size: 35, color: Colors.white),
         ),
       ],
     );

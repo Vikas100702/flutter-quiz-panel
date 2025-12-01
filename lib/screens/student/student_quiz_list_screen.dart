@@ -26,10 +26,7 @@ class StudentQuizListScreen extends ConsumerWidget {
   /// What it is doing: Requires the subject data object to fetch quizzes linked to this ID.
   final SubjectModel subject;
 
-  const StudentQuizListScreen({
-    super.key,
-    required this.subject,
-  });
+  const StudentQuizListScreen({super.key, required this.subject});
 
   @override
   /// What it is doing: Builds the screen interface, displaying quiz cards fetched from the provider.
@@ -40,9 +37,7 @@ class StudentQuizListScreen extends ConsumerWidget {
     final quizzesAsync = ref.watch(publishedQuizzesProvider(subject.subjectId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(subject.name),
-      ),
+      appBar: AppBar(title: Text(subject.name)),
       body: quizzesAsync.when(
         // 1. Loading State: Display a central progress indicator.
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -87,8 +82,10 @@ class StudentQuizListScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  title: Text(quiz.title,
-                      style: Theme.of(context).textTheme.titleMedium),
+                  title: Text(
+                    quiz.title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   subtitle: Text(
                     // What it is doing: Displays quiz metadata (question count and duration).
                     '${quiz.totalQuestions} Questions | ${quiz.durationMin} ${AppStrings.minutesLabel}',
@@ -98,9 +95,11 @@ class StudentQuizListScreen extends ConsumerWidget {
                     // --- FINAL NAVIGATION LOGIC ---
                     // How it is working: Navigates to the QuizStartScreen to show instructions before starting.
                     context.pushNamed(
-                      AppRouteNames.studentQuizStart, // QuizStartScreen route name
+                      AppRouteNames
+                          .studentQuizStart, // QuizStartScreen route name
                       pathParameters: {'quizId': quiz.quizId},
-                      extra: quiz, // Passes the full quiz object to the next screen.
+                      extra:
+                          quiz, // Passes the full quiz object to the next screen.
                     );
                   },
                 ),

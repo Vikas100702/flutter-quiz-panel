@@ -15,17 +15,23 @@ class UserModel {
   final String uid; // The unique User ID provided by Firebase Authentication.
   final String displayName; // The name shown in the app (e.g., "John Doe").
   final String email; // The user's email address.
-  final String? phoneNumber; // Optional phone number (nullable because not everyone registers with phone).
+  final String?
+  phoneNumber; // Optional phone number (nullable because not everyone registers with phone).
   final String? photoURL; // Optional profile picture URL.
 
   // **Role & Access Control:**
-  final String role; // Defines what the user can do (e.g., 'student', 'teacher', 'admin').
-  final String status; // Current account state (e.g., 'pending_approval', 'approved').
-  final bool isActive; // A switch to quickly disable/ban a user without deleting them.
-  final String? approvedBy; // If the user is a teacher, this stores the UID of the Admin who approved them.
+  final String
+  role; // Defines what the user can do (e.g., 'student', 'teacher', 'admin').
+  final String
+  status; // Current account state (e.g., 'pending_approval', 'approved').
+  final bool
+  isActive; // A switch to quickly disable/ban a user without deleting them.
+  final String?
+  approvedBy; // If the user is a teacher, this stores the UID of the Admin who approved them.
 
   // **Metadata:**
-  final List<String> authProviders; // How did they log in? (e.g., ['password', 'google.com']).
+  final List<String>
+  authProviders; // How did they log in? (e.g., ['password', 'google.com']).
   final Timestamp createdAt; // When did they join?
 
   // **Constructor:**

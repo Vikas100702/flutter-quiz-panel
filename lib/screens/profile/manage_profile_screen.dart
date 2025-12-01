@@ -21,7 +21,8 @@ class ManageProfileScreen extends ConsumerStatefulWidget {
   const ManageProfileScreen({super.key});
 
   @override
-  ConsumerState<ManageProfileScreen> createState() => _ManageProfileScreenState();
+  ConsumerState<ManageProfileScreen> createState() =>
+      _ManageProfileScreenState();
 }
 
 class _ManageProfileScreenState extends ConsumerState<ManageProfileScreen> {
@@ -40,7 +41,8 @@ class _ManageProfileScreenState extends ConsumerState<ManageProfileScreen> {
     if (user != null) {
       // How it's helpful: Pre-fills the fields, giving the user a starting point for editing.
       _nameController.text = user.displayName;
-      _phoneController.text = user.phoneNumber ?? ''; // Handles null phone number safely.
+      _phoneController.text =
+          user.phoneNumber ?? ''; // Handles null phone number safely.
     }
   }
 
@@ -71,11 +73,13 @@ class _ManageProfileScreenState extends ConsumerState<ManageProfileScreen> {
       // Step 2: Call the repository to save changes to Firestore.
       // How it is working: The UserRepository handles updating both the main 'users'
       // document and the associated profile document (e.g., 'student_profiles').
-      await ref.read(userRepositoryProvider).updateUserData(
-        user.uid,
-        displayName: _nameController.text.trim(),
-        phoneNumber: _phoneController.text.trim(),
-      );
+      await ref
+          .read(userRepositoryProvider)
+          .updateUserData(
+            user.uid,
+            displayName: _nameController.text.trim(),
+            phoneNumber: _phoneController.text.trim(),
+          );
 
       // Step 3: Invalidate the provider.
       // How it's helpful: Forces Riverpod to discard the old user data and refetch the
@@ -118,9 +122,7 @@ class _ManageProfileScreenState extends ConsumerState<ManageProfileScreen> {
     final userData = ref.watch(userDataProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manage Profile'),
-      ),
+      appBar: AppBar(title: const Text('Manage Profile')),
       // How it's helpful: Uses the '.when' pattern for robust asynchronous state handling.
       body: userData.when(
         // Renders the form if data is available.

@@ -28,14 +28,18 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   // **Form and Input Controllers:**
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Key used to trigger validation on the whole form.
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<
+        FormState
+      >(); // Key used to trigger validation on the whole form.
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
 
   // **State Variables:**
   bool _isLoading = false; // Controls the loading spinner on the button.
-  String _selectedRole = UserRoles.student; // Stores the role chosen by the user (defaults to 'student').
+  String _selectedRole = UserRoles
+      .student; // Stores the role chosen by the user (defaults to 'student').
 
   /// **Logic: User Registration Handler**
   /// This function orchestrates the entire account creation workflow.
@@ -56,16 +60,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    setState(() { _isLoading = true; });
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
       // Step 2: Create user credentials in Firebase Authentication.
       final userCredential = await ref
           .read(authRepositoryProvider)
           .registerWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
 
       if (userCredential.user != null) {
         // Step 3: Create the user's profile document in the Firestore database.
@@ -73,10 +79,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         await ref
             .read(userRepositoryProvider)
             .registerUserInFireStore(
-          userCredential: userCredential,
-          name: _nameController.text.trim(),
-          role: _selectedRole,
-        );
+              userCredential: userCredential,
+              name: _nameController.text.trim(),
+              role: _selectedRole,
+            );
 
         // Step 4: Send the email verification link to the newly registered user.
         await ref
@@ -85,7 +91,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
 
       // Step 5: Registration successful! Redirect to the splash screen.
-      if(mounted) {
+      if (mounted) {
         // We use context.go to clear the navigation stack.
         // The AppRouterProvider (the router's gatekeeper) will then check the user's state
         // and automatically redirect them to the appropriate screen (/verify-email or /pending-approval).
@@ -105,7 +111,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
         );
         // Reset loading state.
-        setState(() { _isLoading = false; });
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -137,7 +145,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           isLoading: _isLoading,
           selectedRole: _selectedRole,
           // Callback to update the local state when the role selector is tapped.
-          onRoleChanged: (role) => setState(() { _selectedRole = role; }),
+          onRoleChanged: (role) => setState(() {
+            _selectedRole = role;
+          }),
           // Callback to trigger the main registration logic.
           onRegister: () => _registerUser(context),
           // Callback to navigate to the login screen.

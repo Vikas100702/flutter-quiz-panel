@@ -147,7 +147,6 @@ class AppTextStyles {
 /// Flutter automatically knows how to style every standard widget (Buttons, TextFields, AppBars)
 /// without us needing to style them individually on every screen.
 class AppTheme {
-
   // **Light Theme Configuration:**
   static ThemeData get lightTheme {
     return ThemeData(
@@ -205,9 +204,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           elevation: 2,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           textStyle: AppTextStyles.buttonLarge,
         ),
       ),
@@ -218,10 +215,10 @@ class AppTheme {
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.primary),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: AppTextStyles.buttonMedium.copyWith(
+            color: AppColors.primary,
           ),
-          textStyle: AppTextStyles.buttonMedium.copyWith(color: AppColors.primary),
         ),
       ),
 
@@ -230,7 +227,9 @@ class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primary,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          textStyle: AppTextStyles.buttonMedium.copyWith(color: AppColors.primary),
+          textStyle: AppTextStyles.buttonMedium.copyWith(
+            color: AppColors.primary,
+          ),
         ),
       ),
 
@@ -254,7 +253,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         labelStyle: const TextStyle(color: AppColors.textSecondary),
         hintStyle: const TextStyle(color: AppColors.textTertiary),
       ),
@@ -263,9 +265,7 @@ class AppTheme {
       // Default style for Card widgets (used in lists and dashboards).
       cardTheme: CardThemeData(
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         color: AppColors.surface,
       ),
 
@@ -273,9 +273,7 @@ class AppTheme {
       // Styles pop-up alerts.
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 4,
       ),
 

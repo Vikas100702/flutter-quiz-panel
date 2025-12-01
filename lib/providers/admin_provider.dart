@@ -24,7 +24,9 @@ import 'package:quiz_panel/utils/constants.dart';
 /// 2. If the user is an Admin or Super Admin, it asks the `AdminRepository` to fetch the list.
 /// 3. If the user is a Student or Teacher, it returns an empty list (security check).
 /// 4. Because it is a `StreamProvider`, the list updates automatically in real-time if a new teacher registers.
-final pendingTeachersProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
+final pendingTeachersProvider = StreamProvider.autoDispose<List<UserModel>>((
+  ref,
+) {
   // We watch 'userDataProvider' to get the current user's profile details.
   final currentUserData = ref.watch(userDataProvider);
 
@@ -35,7 +37,6 @@ final pendingTeachersProvider = StreamProvider.autoDispose<List<UserModel>>((ref
       // Only run the database query if the user is an Admin or Super Admin.
       if (user != null &&
           (user.role == UserRoles.admin || user.role == UserRoles.superAdmin)) {
-
         // Fetch the AdminRepository.
         final adminRepo = ref.watch(adminRepositoryProvider);
 
@@ -64,14 +65,17 @@ final allTeachersProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
 
   return currentUserData.when(
     data: (user) {
-      if (user != null && (user.role == UserRoles.admin || user.role == UserRoles.superAdmin)) {
+      if (user != null &&
+          (user.role == UserRoles.admin || user.role == UserRoles.superAdmin)) {
         // Call repository to search for 'teacher' role.
-        return ref.watch(adminRepositoryProvider).getUsersByRole(UserRoles.teacher);
+        return ref
+            .watch(adminRepositoryProvider)
+            .getUsersByRole(UserRoles.teacher);
       }
       return Stream.value([]);
     },
     loading: () => Stream.value([]),
-    error: (e, s) => Stream.error(e,s),
+    error: (e, s) => Stream.error(e, s),
   );
 });
 
@@ -87,14 +91,17 @@ final allStudentsProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
 
   return currentUserData.when(
     data: (user) {
-      if (user != null && (user.role == UserRoles.admin || user.role == UserRoles.superAdmin)) {
+      if (user != null &&
+          (user.role == UserRoles.admin || user.role == UserRoles.superAdmin)) {
         // Call repository to search for 'student' role.
-        return ref.watch(adminRepositoryProvider).getUsersByRole(UserRoles.student);
+        return ref
+            .watch(adminRepositoryProvider)
+            .getUsersByRole(UserRoles.student);
       }
       return Stream.value([]);
     },
     loading: () => Stream.value([]),
-    error: (e, s) => Stream.error(e,s),
+    error: (e, s) => Stream.error(e, s),
   );
 });
 
@@ -112,12 +119,14 @@ final allAdminsProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
     data: (user) {
       // **Strict Security Check:** Only Super Admin can see this list.
       if (user != null && user.role == UserRoles.superAdmin) {
-        return ref.watch(adminRepositoryProvider).getUsersByRole(UserRoles.admin);
+        return ref
+            .watch(adminRepositoryProvider)
+            .getUsersByRole(UserRoles.admin);
       }
       return Stream.value([]);
     },
     loading: () => Stream.value([]),
-    error: (e, s) => Stream.error(e,s),
+    error: (e, s) => Stream.error(e, s),
   );
 });
 
@@ -152,7 +161,9 @@ final allUsersProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
 ///
 /// **Why we used this:**
 /// Was used to show Students + Teachers together for regular Admins.
-final adminManagedUsersProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
+final adminManagedUsersProvider = StreamProvider.autoDispose<List<UserModel>>((
+  ref,
+) {
   final currentUserData = ref.watch(userDataProvider);
 
   return currentUserData.when(

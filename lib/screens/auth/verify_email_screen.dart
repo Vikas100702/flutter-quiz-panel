@@ -25,12 +25,15 @@ class VerifyEmailScreen extends ConsumerStatefulWidget {
 
 class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
   // **State Variables:**
-  bool _isSending = false; // Controls loading spinner for the 'Resend Email' button.
-  bool _isChecking = false; // Controls loading spinner for the 'Refresh Status' button.
+  bool _isSending =
+      false; // Controls loading spinner for the 'Resend Email' button.
+  bool _isChecking =
+      false; // Controls loading spinner for the 'Refresh Status' button.
 
   // **Cooldown Logic:** Prevents user from spamming the verification email send button.
   Timer? _cooldownTimer;
-  int _cooldownSeconds = 0; // Starts countdown from 60 seconds after sending an email.
+  int _cooldownSeconds =
+      0; // Starts countdown from 60 seconds after sending an email.
 
   @override
   void dispose() {
@@ -203,8 +206,10 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
               AppButton(
                 text: canResend
                     ? AppStrings.resendEmailButton
-                    : AppStrings.resendEmailCooldown
-                    .replaceFirst('%s', _cooldownSeconds.toString()),
+                    : AppStrings.resendEmailCooldown.replaceFirst(
+                        '%s',
+                        _cooldownSeconds.toString(),
+                      ),
                 onPressed: (_isSending || !canResend) ? null : _resendEmail,
                 isLoading: _isSending,
                 type: AppButtonType.outline,

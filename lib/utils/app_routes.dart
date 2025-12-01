@@ -62,7 +62,8 @@ class AppRoutePaths {
   static const String pendingApproval = '/pending-approval';
   static const String verifyEmail = '/verify-email';
   static const String profile = '/profile';
-  static const String myAccount = '/account'; // Central hub for profile settings
+  static const String myAccount =
+      '/account'; // Central hub for profile settings
   static const String changePassword = '/account/change-password';
 
   // --- Teacher Paths (Dynamic Segments) ---
@@ -116,7 +117,6 @@ class AppRouteNames {
   static const String studentQuizAttempt = 'studentQuizAttempt';
   static const String studentQuizResult = 'studentQuizResult';
   static const String youtubeLearning = 'youtubeLearning';
-
 
   // Admin names
   static const String adminDashboard = 'adminDashboard';
@@ -247,7 +247,7 @@ final List<GoRoute> appRoutes = [
       if (subject == null) {
         return const StudentHomeScreen();
       }
-      return  StudentQuizListScreen(subject: subject);
+      return StudentQuizListScreen(subject: subject);
     },
   ),
   GoRoute(

@@ -25,12 +25,16 @@ enum QuizStatus { initial, loading, active, finished, error }
 /// we create a *new* version of this object. The UI listens to this object and updates automatically.
 class QuizAttemptState {
   // **Core Data:**
-  final QuizModel quiz; // The details of the quiz being attempted (Title, Duration, etc.).
-  final List<QuestionModel> questions; // The actual list of questions fetched from the database.
+  final QuizModel
+  quiz; // The details of the quiz being attempted (Title, Duration, etc.).
+  final List<QuestionModel>
+  questions; // The actual list of questions fetched from the database.
 
   // **Progress Tracking:**
-  final QuizStatus status; // The current stage of the quiz (e.g., active, finished).
-  final int currentQuestionIndex; // Tracks which question number the user is currently viewing (0, 1, 2...).
+  final QuizStatus
+  status; // The current stage of the quiz (e.g., active, finished).
+  final int
+  currentQuestionIndex; // Tracks which question number the user is currently viewing (0, 1, 2...).
 
   // **User Actions:**
   // We use a Map where:
@@ -40,7 +44,8 @@ class QuizAttemptState {
   final Map<String, int> userAnswers;
 
   final int secondsRemaining; // The countdown timer value in seconds.
-  final String? error; // Stores an error message if something goes wrong, otherwise null.
+  final String?
+  error; // Stores an error message if something goes wrong, otherwise null.
 
   // **Result Data (Calculated at the end):**
   // These fields store the final performance summary once the quiz is submitted.
@@ -117,7 +122,6 @@ class QuizAttemptState {
   }) {
     return QuizAttemptState(
       quiz: quiz, // The quiz metadata never changes during an attempt.
-
       // For all other fields: Use the new value if provided (??), otherwise keep the old value (this.field).
       questions: questions ?? this.questions,
       status: status ?? this.status,

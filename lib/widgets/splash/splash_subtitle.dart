@@ -34,13 +34,15 @@ class SplashSubtitle extends StatelessWidget {
         Text(
           'Pro Olympiad',
           style: AppTextStyles.displayMedium.copyWith(
-            color: Colors.white, // White text to contrast with the gradient background.
+            color: Colors
+                .white, // White text to contrast with the gradient background.
             fontWeight: FontWeight.w700, // Extra bold for emphasis.
           ),
         ),
 
-        const SizedBox(height: 8), // Vertical spacing between title and subtitle.
-
+        const SizedBox(
+          height: 8,
+        ), // Vertical spacing between title and subtitle.
         // 2. App Tagline/Slogan
         // Smaller text describing the app's purpose.
         Text(

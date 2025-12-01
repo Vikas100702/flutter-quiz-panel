@@ -27,7 +27,8 @@ class ErrorHandling {
       return 'Network connection unavailable. Please check your internet.';
     } else if (errorString.contains('timeout')) {
       return 'Request timed out. Please try again.';
-    } else if (errorString.contains('permission') || errorString.contains('access denied')) {
+    } else if (errorString.contains('permission') ||
+        errorString.contains('access denied')) {
       // What it is doing: Matches authorization failures.
       return 'You don\'t have permission to perform this action.';
     } else if (errorString.contains('user not found')) {

@@ -59,8 +59,8 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
         backgroundColor: user.role == UserRoles.superAdmin
             ? AppColors.error
             : (user.role == UserRoles.admin
-            ? AppColors.warning
-            : AppColors.primary),
+                  ? AppColors.warning
+                  : AppColors.primary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -87,19 +87,22 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                         Center(
                           child: CircleAvatar(
                             radius: 50,
-                            backgroundColor:
-                            AppColors.primaryLight.withValues(alpha: 0.1),
+                            backgroundColor: AppColors.primaryLight.withValues(
+                              alpha: 0.1,
+                            ),
                             backgroundImage:
-                            (user.photoURL != null && user.photoURL!.isNotEmpty)
+                                (user.photoURL != null &&
+                                    user.photoURL!.isNotEmpty)
                                 ? NetworkImage(user.photoURL!)
                                 : null,
-                            child: (user.photoURL == null ||
-                                user.photoURL!.isEmpty)
+                            child:
+                                (user.photoURL == null ||
+                                    user.photoURL!.isEmpty)
                                 ? Icon(
-                              Icons.person,
-                              size: 50,
-                              color: AppColors.primary,
-                            )
+                                    Icons.person,
+                                    size: 50,
+                                    color: AppColors.primary,
+                                  )
                                 : null,
                           ),
                         ),
@@ -114,30 +117,34 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                         ),
                         Text(
                           user.email,
-                          style: AppTextStyles.titleMedium
-                              .copyWith(color: AppColors.textTertiary),
+                          style: AppTextStyles.titleMedium.copyWith(
+                            color: AppColors.textTertiary,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const Divider(height: 24),
 
                         // **Technical Details:**
                         // Useful for Admins to debug issues (e.g., checking UID or Auth Provider).
-                        Text(
-                          'Core User Data',
-                          style: AppTextStyles.titleLarge,
-                        ),
+                        Text('Core User Data', style: AppTextStyles.titleLarge),
                         const SizedBox(height: 8),
                         _buildDetailRow('UID', user.uid),
                         _buildDetailRow('Role', user.role),
                         _buildDetailRow('Status', user.status),
                         _buildDetailRow('Is Active', user.isActive.toString()),
                         _buildDetailRow('Phone', user.phoneNumber ?? 'N/A'),
-                        _buildDetailRow('Created At',
-                            user.createdAt.toDate().toLocal().toString()),
                         _buildDetailRow(
-                            'Approved By', user.approvedBy ?? 'N/A'),
+                          'Created At',
+                          user.createdAt.toDate().toLocal().toString(),
+                        ),
                         _buildDetailRow(
-                            'Auth Providers', user.authProviders.join(', ')),
+                          'Approved By',
+                          user.approvedBy ?? 'N/A',
+                        ),
+                        _buildDetailRow(
+                          'Auth Providers',
+                          user.authProviders.join(', '),
+                        ),
                       ],
                     ),
                   ),
@@ -176,13 +183,11 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                 // - Teachers: Show their Subjects.
                 // - Students: Show their Quiz History (Placeholder).
                 switch (user.role) {
-                  UserRoles.teacher =>
-                      _TeacherContent(teacherUid: user.uid),
-                  UserRoles.student =>
-                      _StudentContent(studentUid: user.uid),
+                  UserRoles.teacher => _TeacherContent(teacherUid: user.uid),
+                  UserRoles.student => _StudentContent(studentUid: user.uid),
                   UserRoles.admin => _AdminContent(adminUid: user.uid),
                   _ => const SizedBox.shrink(),
-                }
+                },
               ],
             ),
           ),
@@ -205,11 +210,11 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
         }
         if (snapshot.hasError) {
           return Center(
-              child: Text('Error loading profile: ${snapshot.error}'));
+            child: Text('Error loading profile: ${snapshot.error}'),
+          );
         }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
-              child: Text('No additional profile data found.'));
+          return const Center(child: Text('No additional profile data found.'));
         }
 
         final profileData = snapshot.data!;
@@ -217,7 +222,8 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
         return Column(
           children: profileData.entries.map((entry) {
             return _buildDetailRow(
-              entry.key.capitalize(), // Format key (e.g., 'studentId' -> 'Studentid')
+              entry.key
+                  .capitalize(), // Format key (e.g., 'studentId' -> 'Studentid')
               entry.value?.toString() ?? 'N/A',
             );
           }).toList(),
@@ -241,16 +247,14 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
         children: [
           Text(
             '$title: ',
-            style: AppTextStyles.titleSmall
-                .copyWith(fontWeight: FontWeight.w600),
+            style: AppTextStyles.titleSmall.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(
             // Use SelectableText so admins can copy-paste IDs if needed.
-            child: SelectableText(
-              value,
-              style: AppTextStyles.bodyLarge,
-            ),
+            child: SelectableText(value, style: AppTextStyles.bodyLarge),
           ),
         ],
       ),
@@ -282,19 +286,17 @@ class _TeacherContent extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Teacher's Content",
-              style: AppTextStyles.titleLarge,
-            ),
+            Text("Teacher's Content", style: AppTextStyles.titleLarge),
             const Divider(height: 20),
             subjectsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, s) =>
-                  Text('Error loading subjects: ${e.toString()}'),
+              error: (e, s) => Text('Error loading subjects: ${e.toString()}'),
               data: (subjects) {
                 if (subjects.isEmpty) {
                   return const Center(
-                    child: Text('This teacher has not created any subjects yet.'),
+                    child: Text(
+                      'This teacher has not created any subjects yet.',
+                    ),
                   );
                 }
                 // List all subjects created by this teacher.
@@ -338,8 +340,9 @@ class _SubjectQuizzes extends ConsumerWidget {
           // Subject Name and Status
           Text(
             subject.name,
-            style:
-            AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold),
+            style: AppTextStyles.titleMedium.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           Text(
             "Status: ${subject.status}",
@@ -362,8 +365,7 @@ class _SubjectQuizzes extends ConsumerWidget {
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
-            error: (e, s) =>
-                Text('  Error loading quizzes: ${e.toString()}'),
+            error: (e, s) => Text('  Error loading quizzes: ${e.toString()}'),
             data: (quizzes) {
               if (quizzes.isEmpty) {
                 return const Padding(
@@ -388,7 +390,7 @@ class _SubjectQuizzes extends ConsumerWidget {
                 ),
               );
             },
-          )
+          ),
         ],
       ),
     );
@@ -412,10 +414,7 @@ class _StudentContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Student's Content",
-              style: AppTextStyles.titleLarge,
-            ),
+            Text("Student's Content", style: AppTextStyles.titleLarge),
             const Divider(height: 20),
             Text(
               "Student quiz history and attempts data will be shown here.",
@@ -424,7 +423,9 @@ class _StudentContent extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               "(This requires a new provider and repository function to fetch 'attempts' by studentId)",
-              style: AppTextStyles.bodySmall.copyWith(fontStyle: FontStyle.italic),
+              style: AppTextStyles.bodySmall.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ),
@@ -449,10 +450,7 @@ class _AdminContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Admin's Activity",
-              style: AppTextStyles.titleLarge,
-            ),
+            Text("Admin's Activity", style: AppTextStyles.titleLarge),
             const Divider(height: 20),
             Text(
               "Admin activity logs and approval/rejection history will be shown here.",
@@ -461,7 +459,9 @@ class _AdminContent extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               "(This requires a new 'admin_logs' collection in Firestore and a corresponding provider)",
-              style: AppTextStyles.bodySmall.copyWith(fontStyle: FontStyle.italic),
+              style: AppTextStyles.bodySmall.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ),

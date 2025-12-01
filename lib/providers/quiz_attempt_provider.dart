@@ -16,10 +16,9 @@ import 'package:quiz_panel/repositories/quiz_repository.dart';
 ///    This way, we can have different states for different quizzes at the same time if needed.
 final quizAttemptProvider = StateNotifierProvider.autoDispose
     .family<QuizAttemptNotifier, QuizAttemptState, QuizModel>((ref, quiz) {
-
-  // We allow the Notifier to talk to the database via the repository.
-  return QuizAttemptNotifier(ref.read(quizRepositoryProvider), quiz);
-});
+      // We allow the Notifier to talk to the database via the repository.
+      return QuizAttemptNotifier(ref.read(quizRepositoryProvider), quiz);
+    });
 
 /// **Why we used this class (QuizAttemptNotifier):**
 /// This is the "Brain" of the active quiz screen. It handles all the logic:
@@ -35,7 +34,7 @@ class QuizAttemptNotifier extends StateNotifier<QuizAttemptState> {
   // We initialize the state with the 'initial' factory we defined in the Model.
   // This sets up the default timer duration and empty lists.
   QuizAttemptNotifier(this._quizRepository, QuizModel quiz)
-      : super(QuizAttemptState.initial(quiz));
+    : super(QuizAttemptState.initial(quiz));
 
   // --- 3. Public Functions (Called from UI) ---
 
@@ -60,7 +59,8 @@ class QuizAttemptNotifier extends StateNotifier<QuizAttemptState> {
         state = state.copyWith(
           questions: questions,
           status: QuizStatus.active, // The quiz is now live.
-          secondsRemaining: state.quiz.durationMin * 60, // Reset timer to full duration.
+          secondsRemaining:
+              state.quiz.durationMin * 60, // Reset timer to full duration.
         );
 
         // Start the countdown logic.
@@ -124,7 +124,8 @@ class QuizAttemptNotifier extends StateNotifier<QuizAttemptState> {
   /// 3. Compares the user's selected answer with the correct answer from the database.
   /// 4. Calculates the total score based on `marksPerQuestion`.
   void submitQuiz() {
-    _timer?.cancel(); // Important: Stop the timer so it doesn't keep ticking in the background.
+    _timer
+        ?.cancel(); // Important: Stop the timer so it doesn't keep ticking in the background.
 
     // Initialize counters
     int correct = 0;
@@ -152,7 +153,9 @@ class QuizAttemptNotifier extends StateNotifier<QuizAttemptState> {
     }
 
     // Calculate final numeric score.
-    final finalScore = correct * marksPerQuestion; // (We are not deducting marks for wrong answers here).
+    final finalScore =
+        correct *
+        marksPerQuestion; // (We are not deducting marks for wrong answers here).
 
     // Update the state to 'finished' and save the results.
     // The UI will see this change and automatically navigate to the Result Screen.

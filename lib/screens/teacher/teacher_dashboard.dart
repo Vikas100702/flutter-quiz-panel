@@ -87,10 +87,10 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
       await ref
           .read(quizRepositoryProvider)
           .createSubject(
-        name: _nameController.text.trim(),
-        description: _descController.text.trim(),
-        teacherUid: teacherUid,
-      );
+            name: _nameController.text.trim(),
+            description: _descController.text.trim(),
+            teacherUid: teacherUid,
+          );
 
       // How it's helpful: Shows a success notification and clears the form for repeated use.
       _showError(AppStrings.subjectCreatedSuccess, isError: false);
@@ -214,7 +214,9 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
             const SizedBox(height: 20),
             AppButton(
               text: AppStrings.createSubjectButton,
-              onPressed: _isCreating ? null : _createSubject, // Disabled if currently creating.
+              onPressed: _isCreating
+                  ? null
+                  : _createSubject, // Disabled if currently creating.
               isLoading: _isCreating,
               type: AppButtonType.primary,
             ),
@@ -282,7 +284,8 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
-                childAspectRatio: 2.0, // What it is doing: Creates rectangular cards (2x wider than tall).
+                childAspectRatio:
+                    2.0, // What it is doing: Creates rectangular cards (2x wider than tall).
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
@@ -348,21 +351,28 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                           // that is only available inside this `ListView.builder` context.
                           builder: (context, ref, child) {
                             // What it is doing: Watches the live count of Quizzes under this specific Subject.
-                            final quizzesAsync = ref.watch(quizzesProvider(subject.subjectId));
+                            final quizzesAsync = ref.watch(
+                              quizzesProvider(subject.subjectId),
+                            );
 
                             // How it is working: Handles the asynchronous states for fetching the quiz count before displaying the switch.
                             return quizzesAsync.when(
                               loading: () => const Center(
                                 child: Padding(
                                   padding: EdgeInsets.all(8.0),
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 ),
                               ),
                               error: (e, s) => Tooltip(
                                 message: e.toString(),
                                 child: const ListTile(
                                   title: Text('Error loading quizzes'),
-                                  leading: Icon(Icons.error, color: AppColors.error),
+                                  leading: Icon(
+                                    Icons.error,
+                                    color: AppColors.error,
+                                  ),
                                 ),
                               ),
                               data: (quizzes) {
@@ -383,7 +393,9 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  subtitle: const Text(AppStrings.publishSubject),
+                                  subtitle: const Text(
+                                    AppStrings.publishSubject,
+                                  ),
                                   value: isPublished,
                                   activeThumbColor: AppColors.success,
                                   onChanged: (newValue) {
@@ -402,9 +414,9 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                                     ref
                                         .read(quizRepositoryProvider)
                                         .updateSubjectStatus(
-                                      subjectId: subject.subjectId,
-                                      newStatus: newStatus,
-                                    );
+                                          subjectId: subject.subjectId,
+                                          newStatus: newStatus,
+                                        );
                                     // How it's helpful: Provides confirmation feedback to the teacher.
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(

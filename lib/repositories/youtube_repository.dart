@@ -8,7 +8,9 @@ import 'package:quiz_panel/models/youtube_video_model.dart';
 ///
 /// **Why do we need it?**
 /// This allows our `YoutubeSearchNotifier` (in the provider folder) to access the API functions easily.
-final youtubeRepositoryProvider = Provider<YoutubeRepository>((ref) => YoutubeRepository());
+final youtubeRepositoryProvider = Provider<YoutubeRepository>(
+  (ref) => YoutubeRepository(),
+);
 
 /// **Why we used this class (YoutubeRepository):**
 /// This class handles all communication with the YouTube Data API.
@@ -22,7 +24,8 @@ class YoutubeRepository {
 
   // Get the API Key and Base URL securely from the .env file.
   String get _apiKey => dotenv.env['YOUTUBE_API_KEY'] ?? '';
-  String get _baseUrl => dotenv.env['YOUTUBE_BASE_URL'] ?? 'https://www.googleapis.com/youtube/v3';
+  String get _baseUrl =>
+      dotenv.env['YOUTUBE_BASE_URL'] ?? 'https://www.googleapis.com/youtube/v3';
 
   // --- PUBLIC FUNCTION: Search Videos ---
 
@@ -45,7 +48,8 @@ class YoutubeRepository {
 
     // --- LAYER 1: Educational Context Injection ---
     // We modify the query to prioritize learning resources.
-    final String educationalQuery = "$query learning tutorial education class chapter";
+    final String educationalQuery =
+        "$query learning tutorial education class chapter";
 
     try {
       // Perform the GET request
@@ -75,9 +79,9 @@ class YoutubeRepository {
 
         // Filter out channels/playlists and Convert the raw list into a list of our clean YoutubeVideoModel
         return items
-            .where((item) =>
-        item['id'] != null &&
-            item['id']['videoId'] != null) // Filter out bad data
+            .where(
+              (item) => item['id'] != null && item['id']['videoId'] != null,
+            ) // Filter out bad data
             .map((item) => YoutubeVideoModel.fromJson(item))
             .toList();
       } else {
@@ -88,8 +92,7 @@ class YoutubeRepository {
       if (e.type == DioExceptionType.connectionTimeout) {
         throw 'Connection Timed Out. Please check your internet.';
       } else if (e.response != null) {
-        throw 'Server Error: ${e.response?.statusCode} ${e.response
-            ?.statusMessage}';
+        throw 'Server Error: ${e.response?.statusCode} ${e.response?.statusMessage}';
       } else {
         throw 'Network Error: ${e.message}';
       }

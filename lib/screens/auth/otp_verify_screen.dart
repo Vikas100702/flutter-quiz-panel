@@ -28,7 +28,8 @@ class OtpVerifyScreen extends ConsumerStatefulWidget {
 
 class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
   // **State Variables:**
-  final _otpController = TextEditingController(); // Captures the 6-digit code entered by the user.
+  final _otpController =
+      TextEditingController(); // Captures the 6-digit code entered by the user.
   final _formKey = GlobalKey<FormState>(); // Used to validate the input field.
   bool _isLoading = false; // Controls the loading spinner on the button.
 
@@ -48,7 +49,8 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
   /// 5. **Failure:** Shows an error message (e.g., "Invalid OTP code").
   Future<void> _verifyOtp() async {
     FocusScope.of(context).unfocus();
-    if (!_formKey.currentState!.validate()) return; // Stop if OTP is invalid length.
+    if (!_formKey.currentState!.validate())
+      return; // Stop if OTP is invalid length.
 
     setState(() {
       _isLoading = true;
@@ -75,10 +77,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
       });
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: AppColors.error,
-        ),
+        SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
       );
     }
   }

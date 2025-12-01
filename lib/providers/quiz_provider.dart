@@ -20,9 +20,10 @@ import 'package:quiz_panel/repositories/quiz_repository.dart';
 ///    We need this because we only want quizzes for *one specific subject*, not all quizzes ever created.
 /// 2. **.autoDispose:** When the teacher leaves the screen, this provider stops listening to Firebase
 ///    to save battery and data.
-final quizzesProvider =
-StreamProvider.autoDispose.family<List<QuizModel>, String>((ref, subjectId) {
-
+final quizzesProvider = StreamProvider.autoDispose.family<List<QuizModel>, String>((
+  ref,
+  subjectId,
+) {
   // Safety Check: If no subject ID is provided, return an empty list immediately.
   if (subjectId.isEmpty) {
     return Stream.value([]);
@@ -36,7 +37,6 @@ StreamProvider.autoDispose.family<List<QuizModel>, String>((ref, subjectId) {
   return quizRepo.getQuizzesForSubject(subjectId);
 });
 
-
 // --- 2. Provider: Student's Quiz List (publishedQuizzesProvider) ---
 
 /// **Why we used this Provider:**
@@ -46,15 +46,14 @@ StreamProvider.autoDispose.family<List<QuizModel>, String>((ref, subjectId) {
 /// **How it works:**
 /// It is similar to the teacher's provider but calls a different repository function
 /// (`getPublishedQuizzesForSubject`) which applies a filter: `where('status', isEqualTo: 'published')`.
-final publishedQuizzesProvider =
-StreamProvider.autoDispose.family<List<QuizModel>, String>((ref, subjectId) {
+final publishedQuizzesProvider = StreamProvider.autoDispose
+    .family<List<QuizModel>, String>((ref, subjectId) {
+      if (subjectId.isEmpty) {
+        return Stream.value([]);
+      }
 
-  if (subjectId.isEmpty) {
-    return Stream.value([]);
-  }
-
-  // Watch the repository and get only the published quizzes for this subject.
-  return ref
-      .watch(quizRepositoryProvider)
-      .getPublishedQuizzesForSubject(subjectId);
-});
+      // Watch the repository and get only the published quizzes for this subject.
+      return ref
+          .watch(quizRepositoryProvider)
+          .getPublishedQuizzesForSubject(subjectId);
+    });

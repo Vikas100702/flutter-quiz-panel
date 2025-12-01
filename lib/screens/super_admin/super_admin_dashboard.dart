@@ -39,25 +39,26 @@ class SuperAdminDashboard extends ConsumerWidget {
         'title': 'Pending Approvals',
         'icon': Icons.pending_actions,
         'color': AppColors.warning,
-        'filter': 'pending' // Filter key to fetch newly registered teachers/phone users.
+        'filter':
+            'pending', // Filter key to fetch newly registered teachers/phone users.
       },
       {
         'title': 'Manage Teachers',
         'icon': Icons.school,
         'color': AppColors.primary,
-        'filter': 'teachers' // Filter key to fetch all teachers.
+        'filter': 'teachers', // Filter key to fetch all teachers.
       },
       {
         'title': 'Manage Students',
         'icon': Icons.person,
         'color': AppColors.success,
-        'filter': 'students' // Filter key to fetch all students.
+        'filter': 'students', // Filter key to fetch all students.
       },
       {
         'title': 'Manage Admins',
         'icon': Icons.verified_user,
         'color': AppColors.secondary,
-        'filter': 'admins' // Filter key to fetch all regular admins.
+        'filter': 'admins', // Filter key to fetch all regular admins.
       },
     ];
 
@@ -96,7 +97,8 @@ class SuperAdminDashboard extends ConsumerWidget {
             // How it is working: Configures the grid structure with the calculated column count.
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
-              childAspectRatio: 1.2, // What it is doing: Makes the cards slightly rectangular (wider than tall).
+              childAspectRatio:
+                  1.2, // What it is doing: Makes the cards slightly rectangular (wider than tall).
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),
@@ -138,7 +140,8 @@ class SuperAdminDashboard extends ConsumerWidget {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
-        onTap: onTap, // What it is doing: Executes the navigation logic when the card is tapped.
+        onTap:
+            onTap, // What it is doing: Executes the navigation logic when the card is tapped.
         borderRadius: BorderRadius.circular(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -152,8 +155,9 @@ class SuperAdminDashboard extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               title,
-              style: AppTextStyles.titleMedium
-                  .copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.titleMedium.copyWith(
+                color: AppColors.textPrimary,
+              ),
               textAlign: TextAlign.center,
             ),
           ],

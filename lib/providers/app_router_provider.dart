@@ -18,7 +18,6 @@ import 'package:quiz_panel/utils/app_strings.dart';
 /// If a logged-out user tries to access a protected page (like the dashboard), this router
 /// automatically kicks them back to the login screen.
 final routerProvider = Provider<GoRouter>((ref) {
-
   return GoRouter(
     // **Initial Route:**
     // Where the app starts when opened. We start at the Splash screen to load data.
@@ -32,7 +31,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     // This function runs every time the user tries to navigate to a new screen.
     // It returns a String (the new path) to redirect them, or null to let them proceed.
     redirect: (BuildContext context, GoRouterState state) {
-
       // 1. Watch the Authentication State (Is the user logged in to Firebase?)
       final authState = ref.watch(authStateProvider);
 
@@ -63,8 +61,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             location != AppRoutePaths.register &&
             location != AppRoutePaths.forgotPassword &&
             location != AppRoutePaths.phoneLogin &&
-            location != AppRoutePaths.otpVerify
-        ) {
+            location != AppRoutePaths.otpVerify) {
           // If they try to go anywhere else (like Dashboard), send them to Login.
           return AppRoutePaths.login;
         }
@@ -76,7 +73,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       // SCENARIO 3: User IS logged in (Authenticated)
       // ---------------------------------------------------------
       if (authState.value != null) {
-
         // **Edge Case: Missing Firestore Data**
         // Sometimes a user is created in Auth (Firebase) but their document isn't in Firestore yet.
         // This usually happens during a brand new registration.
@@ -89,7 +85,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 
             // **Check: Is this a Phone User?**
             // Phone users need an extra step to enter their Name and Role.
-            final bool isPhoneUser = authUser.providerData.any((p) => p.providerId == 'phone');
+            final bool isPhoneUser = authUser.providerData.any(
+              (p) => p.providerId == 'phone',
+            );
 
             if (isPhoneUser) {
               // Redirect new phone users to the details form.
@@ -142,7 +140,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           // **Check: Role-Based Redirection**
           // If the user is Approved and Active, we decide where they should go.
           if (userModel.status == UserStatus.approved) {
-
             // If they are banned (isActive = false), show pending/blocked screen.
             if (!userModel.isActive) {
               if (location != AppRoutePaths.pendingApproval) {
@@ -178,8 +175,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 location == AppRoutePaths.verifyEmail ||
                 location == AppRoutePaths.phoneLogin ||
                 location == AppRoutePaths.otpVerify ||
-                location == AppRoutePaths.phoneRegisterDetails
-            ) {
+                location == AppRoutePaths.phoneRegisterDetails) {
               return dashboardPath;
             }
           }

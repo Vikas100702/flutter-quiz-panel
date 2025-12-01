@@ -12,13 +12,13 @@ import 'package:quiz_panel/repositories/auth_repository.dart';
 /// 2. It creates an instance of `PasswordResetNotifier` and gives it that tool.
 /// 3. The UI watches this provider to know if it's currently "loading" or if the email was "sent successfully".
 final passwordResetProvider =
-StateNotifierProvider<PasswordResetNotifier, PasswordResetState>((ref) {
-  // Dependency Injection: Get the repository that handles Firebase calls.
-  final authRepository = ref.watch(authRepositoryProvider);
+    StateNotifierProvider<PasswordResetNotifier, PasswordResetState>((ref) {
+      // Dependency Injection: Get the repository that handles Firebase calls.
+      final authRepository = ref.watch(authRepositoryProvider);
 
-  // Create and return the logic controller.
-  return PasswordResetNotifier(authRepository);
-});
+      // Create and return the logic controller.
+      return PasswordResetNotifier(authRepository);
+    });
 
 /// **Why we used this class (PasswordResetState):**
 /// This class holds all the variables related to the "Forgot Password" screen in one place.
@@ -27,9 +27,10 @@ StateNotifierProvider<PasswordResetNotifier, PasswordResetState>((ref) {
 class PasswordResetState {
   final bool isLoading; // Is the app currently talking to the server?
   final bool isSuccess; // Was the email sent successfully?
-  final String? error;  // Did something go wrong? (e.g., "User not found").
-  final String? email;  // The email address the user entered.
-  final DateTime? lastSent; // The time when the last email was sent (for cooldown).
+  final String? error; // Did something go wrong? (e.g., "User not found").
+  final String? email; // The email address the user entered.
+  final DateTime?
+  lastSent; // The time when the last email was sent (for cooldown).
 
   // **Constructor:**
   // Sets default values (not loading, not successful yet).
@@ -85,11 +86,7 @@ class PasswordResetNotifier extends StateNotifier<PasswordResetState> {
   /// This function handles the entire process of sending the recovery link.
   Future<void> sendResetEmail(String email) async {
     // 1. Update state to 'Loading'. Clear old errors.
-    state = state.copyWith(
-      isLoading: true,
-      error: null,
-      email: email,
-    );
+    state = state.copyWith(isLoading: true, error: null, email: email);
 
     try {
       // 2. Call the repository to send the email via Firebase.

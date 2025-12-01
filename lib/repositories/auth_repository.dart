@@ -159,7 +159,8 @@ class AuthRepository {
     required String phoneNumber,
     required void Function(String verificationId, int? resendToken) onCodeSent,
     required void Function(FirebaseAuthException e) onVerificationFailed,
-    required void Function(PhoneAuthCredential credential) onVerificationCompleted,
+    required void Function(PhoneAuthCredential credential)
+    onVerificationCompleted,
   }) async {
     try {
       if (kIsWeb) {
@@ -198,11 +199,13 @@ class AuthRepository {
   }) async {
     try {
       final credential = PhoneAuthProvider.credential(
-          verificationId: verificationId,
-          smsCode: smsCode
+        verificationId: verificationId,
+        smsCode: smsCode,
       );
 
-      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final userCredential = await _firebaseAuth.signInWithCredential(
+        credential,
+      );
       return userCredential;
     } on FirebaseAuthException catch (e) {
       throw _handleFirebaseAuthException(e);
@@ -220,8 +223,10 @@ class AuthRepository {
   /// Changing a password is a sensitive action. Firebase requires the user to prove
   /// they are who they say they are (by entering their *current* password) right before
   /// allowing the change. This prevents hackers from changing your password if you left your phone unlocked.
-  Future<void> changePassword(String currentPassword,
-      String newPassword) async {
+  Future<void> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
     try {
       final user = _firebaseAuth.currentUser;
       if (user == null) {

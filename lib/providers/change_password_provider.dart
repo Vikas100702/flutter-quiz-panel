@@ -17,7 +17,8 @@ import 'package:quiz_panel/providers/auth_provider.dart';
 class ChangePasswordState {
   final bool isLoading; // Is the app currently talking to Firebase?
   final bool isSuccess; // Did the password change successfully?
-  final String? error;  // Did something go wrong? (e.g., "Wrong current password").
+  final String?
+  error; // Did something go wrong? (e.g., "Wrong current password").
 
   // **Constructor:**
   // Sets default values (not loading, no success yet, no error).
@@ -67,7 +68,9 @@ class ChangePasswordNotifier extends StateNotifier<ChangePasswordState> {
   /// 3. **Handle Success:** If successful, it updates state to `isSuccess: true`.
   /// 4. **Handle Error:** If it fails (e.g., wrong password), it catches the error and saves the message in the state.
   Future<void> submitChangePassword(
-      String currentPassword, String newPassword) async {
+    String currentPassword,
+    String newPassword,
+  ) async {
     // Set loading to true and clear any previous errors.
     state = state.copyWith(isLoading: true, clearError: true);
 
@@ -92,6 +95,6 @@ class ChangePasswordNotifier extends StateNotifier<ChangePasswordState> {
 /// 1. Read the current state (Loading? Error?).
 /// 2. Call the `submitChangePassword` function.
 final changePasswordProvider =
-StateNotifierProvider<ChangePasswordNotifier, ChangePasswordState>((ref) {
-  return ChangePasswordNotifier(ref);
-});
+    StateNotifierProvider<ChangePasswordNotifier, ChangePasswordState>((ref) {
+      return ChangePasswordNotifier(ref);
+    });

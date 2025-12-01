@@ -18,14 +18,13 @@ import 'package:quiz_panel/repositories/quiz_repository.dart';
 ///    We need this because we are not fetching *all* questions, just the ones for *this* quiz.
 /// 2. **.autoDispose:** As soon as the teacher goes back to the dashboard, this provider
 ///    stops listening to the database. This saves internet data and memory.
-final questionsProvider =
-StreamProvider.autoDispose.family<List<QuestionModel>, String>((ref, quizId) {
+final questionsProvider = StreamProvider.autoDispose
+    .family<List<QuestionModel>, String>((ref, quizId) {
+      // 1. Get the tool (Repository) that knows how to talk to the database.
+      //    'ref.watch' ensures we always use the latest version of the repository.
+      final quizRepo = ref.watch(quizRepositoryProvider);
 
-  // 1. Get the tool (Repository) that knows how to talk to the database.
-  //    'ref.watch' ensures we always use the latest version of the repository.
-  final quizRepo = ref.watch(quizRepositoryProvider);
-
-  // 2. Ask the repository to fetch the questions for the specific 'quizId'.
-  //    This returns a Stream<List<QuestionModel>>.
-  return quizRepo.getQuestionsForQuiz(quizId);
-});
+      // 2. Ask the repository to fetch the questions for the specific 'quizId'.
+      //    This returns a Stream<List<QuestionModel>>.
+      return quizRepo.getQuestionsForQuiz(quizId);
+    });

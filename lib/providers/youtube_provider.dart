@@ -16,7 +16,8 @@ import 'package:quiz_panel/repositories/youtube_repository.dart';
 /// The UI simply watches this one object and redraws itself based on the current values.
 class YoutubeVideoState {
   final bool isLoading; // Shows a loading spinner if true.
-  final List<YoutubeVideoModel> videos; // The list of videos fetched from YouTube.
+  final List<YoutubeVideoModel>
+  videos; // The list of videos fetched from YouTube.
   final String? error; // Stores an error message if the search failed.
 
   // **Constructor:**
@@ -27,7 +28,7 @@ class YoutubeVideoState {
     this.error,
   });
 
-// Helper method to update specific fields while keeping others the same
+  // Helper method to update specific fields while keeping others the same
   YoutubeVideoState copyWith({
     bool? isLoading,
     List<YoutubeVideoModel>? videos,
@@ -73,7 +74,7 @@ class YoutubeVideoNotifier extends StateNotifier<YoutubeVideoState> {
     }*/
 
     // Step 1: Start loading.
-    state = YoutubeVideoState(isLoading: true,  videos: state.videos);
+    state = YoutubeVideoState(isLoading: true, videos: state.videos);
 
     try {
       // Step 2: Fetch data (pass maxResults for pagination control).
@@ -84,9 +85,9 @@ class YoutubeVideoNotifier extends StateNotifier<YoutubeVideoState> {
     } catch (e) {
       // Step 4: Handle failure.
       state = YoutubeVideoState(
-          isLoading: false,
-          error: e.toString(),
-          videos: [] // Clear previous results on error.
+        isLoading: false,
+        error: e.toString(),
+        videos: [], // Clear previous results on error.
       );
     }
   }
@@ -98,12 +99,13 @@ class YoutubeVideoNotifier extends StateNotifier<YoutubeVideoState> {
 /// **Key Features:**
 /// - **autoDispose:** Automatically resets the video state (clears results) when the user leaves the screen.
 /// - **Dependency Injection:** Automatically finds and injects the `youtubeRepositoryProvider`.
-final youtubeVideoProvider = StateNotifierProvider.autoDispose<
-    YoutubeVideoNotifier,
-    YoutubeVideoState>((ref) {
-  // We get the repository from the provider we created in Step 2
-  final repository = ref.watch(youtubeRepositoryProvider);
+final youtubeVideoProvider =
+    StateNotifierProvider.autoDispose<YoutubeVideoNotifier, YoutubeVideoState>((
+      ref,
+    ) {
+      // We get the repository from the provider we created in Step 2
+      final repository = ref.watch(youtubeRepositoryProvider);
 
-  // Watch the repository provider to get the tool needed for searching.
-  return YoutubeVideoNotifier(repository);
-});
+      // Watch the repository provider to get the tool needed for searching.
+      return YoutubeVideoNotifier(repository);
+    });

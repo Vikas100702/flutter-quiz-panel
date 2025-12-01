@@ -31,7 +31,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   // **State Variable:** Controls the loading spinner on the button.
   bool _isLoading = false;
 
-
   // --- Logic: Email/Password Login ---
 
   /// **What is this function doing?**
@@ -51,10 +50,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     try {
-      await ref.read(authRepositoryProvider).signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      await ref
+          .read(authRepositoryProvider)
+          .signInWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
       // The application's GoRouter handles the redirection after successful login.
     } catch (e) {
       if (mounted) {
@@ -87,13 +88,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     // **Platform Check:** Conditionally shows the "Login with Phone" option on Android only.
     // This is because phone authentication logic is simpler and often preferred on mobile platforms.
-    final isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+    final isAndroid =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pro Olympiad'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Pro Olympiad'), centerTitle: true),
       // **Responsive Wrapper (ResponsiveAuthLayout):**
       // This widget centers the content and constrains its maximum width for a good desktop/web view.
       body: ResponsiveAuthLayout(
@@ -126,8 +125,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onPressed: _isLoading
                       ? null
                       : () {
-                    context.push(AppRoutePaths.phoneLogin); // Navigate to phone login screen.
-                  },
+                          context.push(
+                            AppRoutePaths.phoneLogin,
+                          ); // Navigate to phone login screen.
+                        },
                   type: AppButtonType.outline,
                   icon: Icons.phone,
                 ),

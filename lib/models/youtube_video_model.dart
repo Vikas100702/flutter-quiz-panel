@@ -12,10 +12,13 @@ class YoutubeVideoModel {
   // **Data Fields:**
   // These variables hold the specific details for one video.
 
-  final String id; // The unique Video ID (e.g., "dQw4w9WgXcQ"). Used to play the video.
+  final String
+  id; // The unique Video ID (e.g., "dQw4w9WgXcQ"). Used to play the video.
   final String title; // The main headline/title of the video.
-  final String thumbnailUrl; // The internet link (URL) to the video's cover image.
-  final String channelTitle; // The name of the YouTube channel that uploaded this video.
+  final String
+  thumbnailUrl; // The internet link (URL) to the video's cover image.
+  final String
+  channelTitle; // The name of the YouTube channel that uploaded this video.
 
   // **Constructor:**
   // Creates a standard YoutubeVideoModel instance.

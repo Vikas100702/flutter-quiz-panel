@@ -98,7 +98,8 @@ class QuizStartScreen extends ConsumerWidget {
                       context.pushReplacementNamed(
                         AppRouteNames.studentQuizAttempt,
                         pathParameters: {'quizId': quiz.quizId},
-                        extra: quiz, // Pass the quiz model to the attempt screen.
+                        extra:
+                            quiz, // Pass the quiz model to the attempt screen.
                       );
                     },
                   ),
@@ -114,11 +115,11 @@ class QuizStartScreen extends ConsumerWidget {
   /// What it is doing: A reusable helper widget to display a single instruction detail line.
   /// How it's helpful: Ensures consistent styling for icon, title, and value across all instructions.
   Widget _buildInstructionRow(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required String value,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
     // final textTheme = Theme.of(context).textTheme; // Unused variable from original code
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),

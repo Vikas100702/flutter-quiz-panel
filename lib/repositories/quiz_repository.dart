@@ -83,10 +83,10 @@ class QuizRepository {
         .orderBy('createdAt', descending: true) // Show newest first.
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => SubjectModel.fromFirestore(doc))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => SubjectModel.fromFirestore(doc))
+              .toList();
+        });
   }
 
   /// **Logic: Get Student's Subjects**
@@ -103,10 +103,10 @@ class QuizRepository {
           .orderBy('name', descending: false) // Sort A-Z.
           .snapshots()
           .map((snapshot) {
-        return snapshot.docs
-            .map((doc) => SubjectModel.fromFirestore(doc))
-            .toList();
-      });
+            return snapshot.docs
+                .map((doc) => SubjectModel.fromFirestore(doc))
+                .toList();
+          });
     } catch (e) {
       return Stream.value([]);
     }
@@ -176,10 +176,10 @@ class QuizRepository {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => QuizModel.fromFirestore(doc))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => QuizModel.fromFirestore(doc))
+              .toList();
+        });
   }
 
   /// **Logic: Publish/Unpublish Quiz**
@@ -209,10 +209,10 @@ class QuizRepository {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => QuizModel.fromFirestore(doc))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => QuizModel.fromFirestore(doc))
+              .toList();
+        });
   }
 
   // ---------------------------------------------------------------------------
@@ -233,10 +233,10 @@ class QuizRepository {
         .collection('questions') // Go into the sub-collection.
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => QuestionModel.fromFirestore(doc))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => QuestionModel.fromFirestore(doc))
+              .toList();
+        });
   }
 
   /// **Logic: Add Question**

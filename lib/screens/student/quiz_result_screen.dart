@@ -273,11 +273,11 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                   onPressed: _isSharing
                       ? null
                       : () => _shareNative(
-                    resultState,
-                    maxScore.toDouble(),
-                    percentage,
-                    userAsync.value,
-                  ),
+                          resultState,
+                          maxScore.toDouble(),
+                          percentage,
+                          userAsync.value,
+                        ),
                 ),
 
                 const SizedBox(height: 24),
@@ -286,7 +286,8 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                 AppButton(
                   text: 'Watch Related Videos',
                   icon: Icons.video_library_rounded,
-                  type: AppButtonType.secondary, // Uses the secondary theme color
+                  type:
+                      AppButtonType.secondary, // Uses the secondary theme color
                   onPressed: () {
                     // How it's helpful: Navigates to the learning screen, auto-searching for content
                     // related to the quiz title, making the learning path seamless.
@@ -346,11 +347,11 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
   // What it is doing: Handles the native sharing process using the SharePlus package.
   Future<void> _shareNative(
-      QuizAttemptState resultState,
-      double maxScore,
-      double percentage,
-      UserModel? user,
-      ) async {
+    QuizAttemptState resultState,
+    double maxScore,
+    double percentage,
+    UserModel? user,
+  ) async {
     final box = context.findRenderObject() as RenderBox?;
     setState(() {
       _isSharing = true;
@@ -401,8 +402,9 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) {
@@ -415,12 +417,12 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
   // What it is doing: Triggers the PDF creation and download function on first load or manual retry.
   Future<void> _triggerAutoDownload(
-      QuizAttemptState result,
-      UserModel user,
-      double maxScore,
-      double percentage, {
-        bool isRetry = false,
-      }) async {
+    QuizAttemptState result,
+    UserModel user,
+    double maxScore,
+    double percentage, {
+    bool isRetry = false,
+  }) async {
     // Prevents redundant downloads unless explicitly requested via the "Download Again" button.
     if (_hasDownloaded && !isRetry) return;
     try {
@@ -438,21 +440,25 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
         });
         if (!isRetry) {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Certificate Downloaded!')));
+            const SnackBar(content: Text('Certificate Downloaded!')),
+          );
         }
       }
     } catch (e) {
       if (mounted && isRetry) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Download failed: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Download failed: $e')));
       }
     }
   }
 
   // What it is doing: Builds the row of social icons (WhatsApp, LinkedIn, X) for direct web sharing.
   Widget _buildSocialShareRow(
-      QuizAttemptState state, double maxScore, double percentage) {
-
+    QuizAttemptState state,
+    double maxScore,
+    double percentage,
+  ) {
     // Constructs the share text used in the URL parameters for web sharing.
     final String shareText =
         "I scored ${state.score.toInt()}/${maxScore.toInt()} on ${widget.quiz.title}! Can you beat me? #ProOlympiad";
@@ -464,21 +470,31 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
           icon: FontAwesomeIcons.whatsapp,
           color: const Color(0xFF25D366),
           // How it is working: Opens the external WhatsApp web share URL.
-          onTap: () => launchUrl(Uri.parse('https://wa.me/?text=${Uri.encodeComponent(shareText)}')),
+          onTap: () => launchUrl(
+            Uri.parse('https://wa.me/?text=${Uri.encodeComponent(shareText)}'),
+          ),
         ),
         const SizedBox(width: 20),
         _buildSocialIconBtn(
           icon: FontAwesomeIcons.linkedinIn,
           color: const Color(0xFF0077B5),
           // How it is working: Opens the external LinkedIn share URL.
-          onTap: () => launchUrl(Uri.parse('https://www.linkedin.com/feed/?shareActive=true&text=${Uri.encodeComponent(shareText)}')),
+          onTap: () => launchUrl(
+            Uri.parse(
+              'https://www.linkedin.com/feed/?shareActive=true&text=${Uri.encodeComponent(shareText)}',
+            ),
+          ),
         ),
         const SizedBox(width: 20),
         _buildSocialIconBtn(
           icon: FontAwesomeIcons.xTwitter,
           color: const Color(0xFF000000),
           // How it is working: Opens the external X/Twitter post creation URL.
-          onTap: () => launchUrl(Uri.parse('https://twitter.com/intent/tweet?text=${Uri.encodeComponent(shareText)}')),
+          onTap: () => launchUrl(
+            Uri.parse(
+              'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(shareText)}',
+            ),
+          ),
         ),
       ],
     );

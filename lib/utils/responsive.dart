@@ -24,7 +24,8 @@ import 'package:flutter/material.dart';
 /// Why we used this class: A StatelessWidget designed specifically to choose and render one child widget based on screen size.
 class Responsive extends StatelessWidget {
   final Widget mobile;
-  final Widget? tablet; // Why it is nullable: Allows developers to skip designing a specific tablet layout if the mobile layout is sufficient.
+  final Widget?
+  tablet; // Why it is nullable: Allows developers to skip designing a specific tablet layout if the mobile layout is sufficient.
   final Widget desktop;
 
   const Responsive({
@@ -46,7 +47,7 @@ class Responsive extends StatelessWidget {
   /// What it is doing: Checks if the width falls into the tablet category (>= 650px AND < 1100px).
   static bool isTablet(BuildContext context) =>
       MediaQuery.of(context).size.width >= _mobileWidth &&
-          MediaQuery.of(context).size.width < _tabletWidth;
+      MediaQuery.of(context).size.width < _tabletWidth;
 
   /// What it is doing: Checks if the width falls into the desktop category (>= 1100px).
   static bool isDesktop(BuildContext context) =>

@@ -72,19 +72,19 @@ class AuthWrapper extends ConsumerWidget {
     // If the user exists, check their approval status from constants.dart.
     switch (userModel.status) {
       case UserStatus.pending:
-      // Teacher registered but waiting for Admin approval.
+        // Teacher registered but waiting for Admin approval.
         return const ApprovalPendingScreen();
 
       case UserStatus.rejected:
-      // Teacher was rejected by Admin. (Currently uses the pending screen for messaging).
+        // Teacher was rejected by Admin. (Currently uses the pending screen for messaging).
         return _buildRejectedScreen(context, ref);
 
       case UserStatus.approved:
-      // User is active and ready; redirect to their respective dashboard based on role.
+        // User is active and ready; redirect to their respective dashboard based on role.
         return _buildRoleBasedDashboard(userModel.role);
 
       default:
-      // Failsafe for unexpected status values.
+        // Failsafe for unexpected status values.
         return _buildUnknownStatusScreen(context, ref);
     }
   }
@@ -102,7 +102,7 @@ class AuthWrapper extends ConsumerWidget {
       case UserRoles.student:
         return const StudentHomeScreen();
       default:
-      // Failsafe for an undefined role string.
+        // Failsafe for an undefined role string.
         return _buildUnknownRoleScreen();
     }
   }
@@ -158,11 +158,7 @@ class AuthWrapper extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.person_off_rounded,
-              size: 64,
-              color: Colors.red,
-            ),
+            const Icon(Icons.person_off_rounded, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             Text(
               'Unknown User Role',
@@ -175,10 +171,7 @@ class AuthWrapper extends ConsumerWidget {
             const SizedBox(height: 8),
             const Text(
               'Please contact administrator',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
         ),

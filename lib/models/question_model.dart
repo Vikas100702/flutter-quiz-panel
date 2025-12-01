@@ -10,10 +10,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class QuestionModel {
   // **What these variables do:**
   // They hold the specific data for one question.
-  final String questionId; // The unique ID given by Firebase to identify this specific question.
-  final String questionText; // The actual question (e.g., "What is the capital of India?").
-  final List<String> options; // A list of choices (e.g., ["Delhi", "Mumbai", "Kolkata", "Chennai"]).
-  final int correctAnswerIndex; // The index (0, 1, 2, or 3) of the correct answer in the options list.
+  final String
+  questionId; // The unique ID given by Firebase to identify this specific question.
+  final String
+  questionText; // The actual question (e.g., "What is the capital of India?").
+  final List<String>
+  options; // A list of choices (e.g., ["Delhi", "Mumbai", "Kolkata", "Chennai"]).
+  final int
+  correctAnswerIndex; // The index (0, 1, 2, or 3) of the correct answer in the options list.
 
   // **Constructor:**
   // This is used to create a new 'QuestionModel' object.

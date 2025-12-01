@@ -59,13 +59,13 @@ final subjectsProvider = StreamProvider.autoDispose<List<SubjectModel>>((ref) {
 /// It calls a special repository function that ignores the "Creator ID" and instead looks for
 /// subjects where `status == 'published'`. This ensures students don't see unfinished drafts.
 final allPublishedSubjectsProvider =
-StreamProvider.autoDispose<List<SubjectModel>>((ref) {
-  // 1. Get the repository tool.
-  final quizRepo = ref.watch(quizRepositoryProvider);
+    StreamProvider.autoDispose<List<SubjectModel>>((ref) {
+      // 1. Get the repository tool.
+      final quizRepo = ref.watch(quizRepositoryProvider);
 
-  // 2. Ask for the public stream of data.
-  return quizRepo.getAllPublishedSubjects();
-});
+      // 2. Ask for the public stream of data.
+      return quizRepo.getAllPublishedSubjects();
+    });
 
 // --- 3. Provider: Specific Teacher's Subjects (subjectsByTeacherProvider) ---
 
@@ -77,16 +77,16 @@ StreamProvider.autoDispose<List<SubjectModel>>((ref) {
 /// Unlike the first provider (which uses the *logged-in* user's ID), this provider
 /// accepts a `teacherUid` as an **argument** (using `.family`).
 /// It fetches subjects created specifically by that target teacher.
-final subjectsByTeacherProvider =
-StreamProvider.autoDispose.family<List<SubjectModel>, String>((ref, teacherUid) {
-  // Safety check: don't query if ID is missing.
-  if (teacherUid.isEmpty) {
-    return Stream.value([]);
-  }
+final subjectsByTeacherProvider = StreamProvider.autoDispose
+    .family<List<SubjectModel>, String>((ref, teacherUid) {
+      // Safety check: don't query if ID is missing.
+      if (teacherUid.isEmpty) {
+        return Stream.value([]);
+      }
 
-  // 1. Get the repository.
-  final quizRepo = ref.watch(quizRepositoryProvider);
+      // 1. Get the repository.
+      final quizRepo = ref.watch(quizRepositoryProvider);
 
-  // 2. Fetch subjects for the requested teacher UID.
-  return quizRepo.getSubjectsForTeacher(teacherUid);
-});
+      // 2. Fetch subjects for the requested teacher UID.
+      return quizRepo.getSubjectsForTeacher(teacherUid);
+    });

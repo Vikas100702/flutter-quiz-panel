@@ -31,12 +31,15 @@ class AppTextField extends StatefulWidget {
   final String label; // The title displayed above the field.
   final String? hint; // Placeholder text inside the field.
   final IconData? prefixIcon; // Icon shown at the start of the field.
-  final IconData? suffixIcon; // Icon shown at the end (overridden if isPassword is true).
+  final IconData?
+  suffixIcon; // Icon shown at the end (overridden if isPassword is true).
   final bool isPassword; // If true, enables the show/hide toggle logic.
-  final TextInputType keyboardType; // Keyboard layout (e.g., email, number, text).
+  final TextInputType
+  keyboardType; // Keyboard layout (e.g., email, number, text).
   final bool enabled; // If false, the field is grayed out and uneditable.
   final Function(String)? onSubmitted; // Called when user presses "Enter".
-  final String? Function(String?)? validator; // Function to check if input is valid.
+  final String? Function(String?)?
+  validator; // Function to check if input is valid.
 
   const AppTextField({
     super.key,
@@ -93,10 +96,7 @@ class _AppTextFieldState extends State<AppTextField> {
           decoration: InputDecoration(
             hintText: widget.hint,
             prefixIcon: widget.prefixIcon != null
-                ? Icon(
-              widget.prefixIcon,
-              color: AppColors.textTertiary,
-            )
+                ? Icon(widget.prefixIcon, color: AppColors.textTertiary)
                 : null,
             // Logic: Calls helper to determine if we show a custom icon or the password toggle eye.
             suffixIcon: _buildSuffixIcon(),
@@ -119,10 +119,7 @@ class _AppTextFieldState extends State<AppTextField> {
             // Focused Border (User is typing) - Highlighted with Primary Color.
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppColors.primary,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             // Disabled Border - Dimmed outline.
             disabledBorder: OutlineInputBorder(
@@ -136,9 +133,7 @@ class _AppTextFieldState extends State<AppTextField> {
               vertical: 16,
             ),
           ),
-          style: AppTextStyles.bodyLarge.copyWith(
-            color: AppColors.textPrimary,
-          ),
+          style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textPrimary),
         ),
       ],
     );
@@ -154,7 +149,9 @@ class _AppTextFieldState extends State<AppTextField> {
     if (widget.isPassword) {
       return IconButton(
         icon: Icon(
-          _obscureText ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+          _obscureText
+              ? Icons.visibility_rounded
+              : Icons.visibility_off_rounded,
           color: AppColors.textTertiary,
         ),
         onPressed: () {
@@ -167,10 +164,7 @@ class _AppTextFieldState extends State<AppTextField> {
     }
 
     if (widget.suffixIcon != null) {
-      return Icon(
-        widget.suffixIcon,
-        color: AppColors.textTertiary,
-      );
+      return Icon(widget.suffixIcon, color: AppColors.textTertiary);
     }
 
     return null;

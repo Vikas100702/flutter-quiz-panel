@@ -28,7 +28,7 @@ import 'package:quiz_panel/repositories/auth_repository.dart';
 /// **How it works:**
 /// It simply returns the singleton instance of FirebaseAuth.
 final firebaseAuthProvider = Provider<FirebaseAuth>(
-      (ref) => FirebaseAuth.instance,
+  (ref) => FirebaseAuth.instance,
 );
 
 /// **2. Provider: Auth Repository (authRepositoryProvider)**
@@ -41,12 +41,10 @@ final firebaseAuthProvider = Provider<FirebaseAuth>(
 /// 1. It asks (watches) for the `firebaseAuthProvider` to get the tool it needs.
 /// 2. It creates a new `AuthRepository` and passes that tool to it.
 /// 3. Now, any widget can just ask for `authRepositoryProvider` to perform login actions.
-final authRepositoryProvider = Provider<AuthRepository>(
-        (ref) {
-      // Dependency Injection: We inject the FirebaseAuth instance into the repository.
-      return AuthRepository(ref.watch(firebaseAuthProvider));
-    }
-);
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  // Dependency Injection: We inject the FirebaseAuth instance into the repository.
+  return AuthRepository(ref.watch(firebaseAuthProvider));
+});
 
 // -----------------------------------------------------------------
 //  STATE LAYER PROVIDERS (The "Live" Status)
@@ -66,12 +64,10 @@ final authRepositoryProvider = Provider<AuthRepository>(
 /// **How it works:**
 /// Our `AppRouterProvider` watches this. As soon as this value changes (e.g., becomes null),
 /// the router automatically kicks the user back to the login screen.
-final authStateProvider = StreamProvider<User?>(
-        (ref) {
-      // 1. Get the repository.
-      final authRepository = ref.watch(authRepositoryProvider);
+final authStateProvider = StreamProvider<User?>((ref) {
+  // 1. Get the repository.
+  final authRepository = ref.watch(authRepositoryProvider);
 
-      // 2. Return the live stream of authentication changes.
-      return authRepository.authStateChanges;
-    }
-);
+  // 2. Return the live stream of authentication changes.
+  return authRepository.authStateChanges;
+});

@@ -25,19 +25,23 @@ class ApprovalPendingScreen extends ConsumerStatefulWidget {
 }
 
 class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
-// **Why SingleTickerProviderStateMixin?**
-// This mixin is essential for managing the animation controller (`_controller`).
-// It provides the "ticker" that drives the animation timeline.
-    with SingleTickerProviderStateMixin {
-
+        // **Why SingleTickerProviderStateMixin?**
+        // This mixin is essential for managing the animation controller (`_controller`).
+        // It provides the "ticker" that drives the animation timeline.
+        with
+        SingleTickerProviderStateMixin {
   // **Animation Controllers:**
   late AnimationController _controller; // Manages the animation over time.
-  late Animation<double> _scaleAnimation; // Controls the icon's size (0.8 -> 1.0).
-  late Animation<double> _fadeAnimation; // Controls the content's visibility (0.0 -> 1.0).
+  late Animation<double>
+  _scaleAnimation; // Controls the icon's size (0.8 -> 1.0).
+  late Animation<double>
+  _fadeAnimation; // Controls the content's visibility (0.0 -> 1.0).
 
   // **Screen State:**
-  bool _isLoggingOut = false; // Controls the loading state of the Logout button.
-  bool _isCheckingStatus = false; // Controls the loading state of the Check Status button.
+  bool _isLoggingOut =
+      false; // Controls the loading state of the Logout button.
+  bool _isCheckingStatus =
+      false; // Controls the loading state of the Check Status button.
 
   @override
   void initState() {
@@ -50,22 +54,24 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     );
 
     // **Scale Animation:** Creates a bouncy, dynamic entrance effect for the primary icon.
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut, // Gives a pleasant "pop" effect.
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut, // Gives a pleasant "pop" effect.
+      ),
+    );
 
     // **Fade Animation:** Ensures the text and buttons fade in smoothly.
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.3, 1.0, curve: Curves.easeInOut), // Starts fading in after a slight delay (0.3s).
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(
+          0.3,
+          1.0,
+          curve: Curves.easeInOut,
+        ), // Starts fading in after a slight delay (0.3s).
+      ),
+    );
 
     // Start the animation immediately when the screen is built.
     _controller.forward();
@@ -155,13 +161,13 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
           IconButton(
             icon: _isLoggingOut
                 ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
                 : const Icon(Icons.logout_rounded),
             tooltip: AppStrings.logoutButton,
             onPressed: _isLoggingOut ? null : _handleSignOut,
@@ -275,7 +281,8 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
         ),
         const SizedBox(height: 16),
         Text(
-          AppStrings.approvalPendingSubtitle, // "Your account has been registered but is awaiting..."
+          AppStrings
+              .approvalPendingSubtitle, // "Your account has been registered but is awaiting..."
           style: AppTextStyles.bodyLarge.copyWith(
             color: AppColors.textTertiary,
             height: 1.5,
@@ -324,11 +331,7 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.schedule_rounded,
-                size: 18,
-                color: AppColors.primary,
-              ),
+              Icon(Icons.schedule_rounded, size: 18, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
                 'Typically approved within 24-48 hours',
@@ -362,18 +365,14 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
           ),
           child: Center(
             child: isCompleted
-                ? const Icon(
-              Icons.check_rounded,
-              size: 18,
-              color: Colors.white,
-            )
+                ? const Icon(Icons.check_rounded, size: 18, color: Colors.white)
                 : Text(
-              stepNumber.toString(), // Show number if not yet completed.
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textTertiary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+                    stepNumber.toString(), // Show number if not yet completed.
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textTertiary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
           ),
         ),
         const SizedBox(height: 8),
@@ -425,20 +424,12 @@ class _ApprovalPendingScreenState extends ConsumerState<ApprovalPendingScreen>
     return Responsive(
       // Mobile Layout (Vertical)
       mobile: Column(
-        children: [
-          checkStatusButton,
-          const SizedBox(height: 12),
-          logoutButton,
-        ],
+        children: [checkStatusButton, const SizedBox(height: 12), logoutButton],
       ),
       // Desktop Layout (Horizontal)
       desktop: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          checkStatusButton,
-          const SizedBox(width: 16),
-          logoutButton,
-        ],
+        children: [checkStatusButton, const SizedBox(width: 16), logoutButton],
       ),
     );
   }

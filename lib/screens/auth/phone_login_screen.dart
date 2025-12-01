@@ -24,7 +24,8 @@ class PhoneLoginScreen extends ConsumerStatefulWidget {
 
 class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
   // **State Variables:**
-  final _phoneController = TextEditingController(); // Captures the 10-digit number.
+  final _phoneController =
+      TextEditingController(); // Captures the 10-digit number.
   final _formKey = GlobalKey<FormState>(); // Used for input validation.
   bool _isLoading = false; // Controls the loading spinner.
 
@@ -102,10 +103,7 @@ class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
       });
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: AppColors.error,
-        ),
+        SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
       );
     }
   }

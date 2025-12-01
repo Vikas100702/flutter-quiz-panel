@@ -142,7 +142,7 @@ class StudentHomeScreen extends ConsumerWidget {
                               context.pushNamed(
                                 AppRouteNames.studentQuizList,
                                 pathParameters: {
-                                  'subjectId': subject.subjectId
+                                  'subjectId': subject.subjectId,
                                 },
                                 // Passes the SubjectModel object to the next screen.
                                 extra: subject,
@@ -163,8 +163,9 @@ class StudentHomeScreen extends ConsumerWidget {
                                     // Subject Name
                                     Text(
                                       subject.name,
-                                      style:
-                                      Theme.of(context).textTheme.titleLarge,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleLarge,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -172,13 +173,14 @@ class StudentHomeScreen extends ConsumerWidget {
                                     if (subject.description != null &&
                                         subject.description!.isNotEmpty)
                                       Padding(
-                                        padding:
-                                        const EdgeInsets.only(top: 4.0),
+                                        padding: const EdgeInsets.only(
+                                          top: 4.0,
+                                        ),
                                         child: Text(
                                           subject.description!,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall,
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.bodySmall,
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),

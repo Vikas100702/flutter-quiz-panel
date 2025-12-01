@@ -40,13 +40,14 @@ void main() async {
 
 
 
-  /*if (WebViewPlatform.instance == null) {
-    *//* * Note: The youtube_player_iframe package uses webview_flutter internally.
-      * We explicitly set the platform implementation to ensure it works correctly
-      * on Android devices that might have issues with the default SurfaceAndroidWebView.
-      *//*
+  if (WebViewPlatform.instance == null) {
+    /* * Note: The youtube_player_iframe package uses webview_flutter internally.
+       * We explicitly set the platform implementation to ensure it works correctly
+       * on Android devices that might have issues with the default SurfaceAndroidWebView.
+       *
+    */
     AndroidWebViewPlatform.registerWith(); // Try this if the below line fails in newer versions
-  }*/
+  }
 
 
 

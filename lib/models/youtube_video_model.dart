@@ -44,7 +44,7 @@ class YoutubeVideoModel {
       id: json['id']['videoId'] ?? '',
 
       // Title is directly inside the snippet.
-      title: snippet['title'] ?? '',
+      title: snippet['title'] ?? 'No Title',
 
       // Thumbnails are nested deep: snippet -> thumbnails -> high -> url.
       thumbnailUrl: snippet['thumbnails']['high']['url'] ?? '',

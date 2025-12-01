@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_panel/models/youtube_video_model.dart';
 
 /// **What is this Provider? (youtubeRepositoryProvider)**
@@ -37,7 +37,7 @@ class YoutubeRepository {
   ///    - `safeSearch: strict` (Layer 3).
   ///    - `videoCategoryId: 27` (Layer 4 - Education Category).
   /// 4. **Parsing:** Converts the raw JSON response into a list of `YoutubeVideoModel` objects.
-  Future<List<YoutubeVideoModel>> fetchVideosForTopic(String query, {int maxResults = 10}) async {
+  Future<List<YoutubeVideoModel>> fetchRelatedVideos(String query) async {
     // Safety Check: Ensure API key exists.
     if (_apiKey.isEmpty) {
       throw 'API Key not found. Please check your .env file.';
@@ -53,11 +53,12 @@ class YoutubeRepository {
         '$_baseUrl/search',
         queryParameters: {
           'part': 'snippet', // We only need the title/image (snippet).
-          'maxResults': maxResults,
+          'maxResults': 50,
           'q': educationalQuery,
           'type': 'video',
           'key': _apiKey,
-          'safeSearch': 'strict', // Layer 2: YouTube's strict filter.
+          'safeSearch': 'strict',
+          // Layer 2: YouTube's strict filter which Filter out inappropriate content.
           'videoCategoryId': '27', // Layer 3: Restrict to 'Education' category.
           'videoEmbeddable': 'true', // Ensure we can play it inside our app.
         },
@@ -66,27 +67,34 @@ class YoutubeRepository {
       if (response.statusCode == 200) {
         // Request Successful
         final data = response.data;
+        if (data['items'] == null) {
+          return [];
+        }
+
         final List<dynamic> items = data['items'];
 
-        // Filter out channels/playlists and convert to our Model
+        // Filter out channels/playlists and Convert the raw list into a list of our clean YoutubeVideoModel
         return items
-            .where((item) => item['id']['kind'] == 'youtube#video')
+            .where((item) =>
+        item['id'] != null &&
+            item['id']['videoId'] != null) // Filter out bad data
             .map((item) => YoutubeVideoModel.fromJson(item))
             .toList();
       } else {
         throw 'Failed to fetch videos. Status: ${response.statusCode}';
       }
     } on DioException catch (e) {
-      // Handle network errors gracefully
+      // Handle Dio-specific errors (timeouts, no internet, etc.) gracefully
       if (e.type == DioExceptionType.connectionTimeout) {
         throw 'Connection Timed Out. Please check your internet.';
       } else if (e.response != null) {
-        throw 'YouTube API Error: ${e.response?.statusCode}';
+        throw 'Server Error: ${e.response?.statusCode} ${e.response
+            ?.statusMessage}';
       } else {
-        throw 'Something went wrong: ${e.message}';
+        throw 'Network Error: ${e.message}';
       }
     } catch (e) {
-      throw e.toString();
+      throw 'Unexpected Error: $e';
     }
   }
 }

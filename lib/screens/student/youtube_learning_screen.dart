@@ -52,12 +52,12 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
     // How it is working: Automatically fetch videos when the screen loads.
     // *after* the widget has been built and rendered to the screen, preventing potential frame-build errors.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // What it is doing: Automatically Automatically fetch videos when the screen loads.
-      _fetchVideos(widget.initialQuery);
+      // What it is doing: Automatically fetch videos when the screen loads.
+      ref.read(youtubeVideoProvider.notifier).fetchVideos(widget.initialQuery);
     });
   }
 
-  /// What it is doing: Calculate limits and call the provider
+  /*/// What it is doing: Calculate limits and call the provider
   void _fetchVideos(String query) {
     if (query.trim().isNotEmpty) {
       // --- LIMIT LOGIC ---
@@ -69,14 +69,24 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
       ref.read(youtubeVideoProvider.notifier).fetchVideos(
           query, maxResults: limit);
     }
-  }
+  }*/
 
   /// What it is doing: Loads and plays the video corresponding to the given ID.
   void _playVideo(String videoId) {
     if (_controller != null) {
+      _controller!.close();
       // How it is working: If a player instance already exists, it simply loads the new video by ID, which is faster than re-initializing.
       _controller!.loadVideoById(videoId: videoId);
-    } else {
+    }
+
+    _controller =
+        YoutubePlayerController.fromVideoId(
+            videoId: videoId, autoPlay: true, params: const YoutubePlayerParams(
+            showControls: true,
+            showFullscreenButton: true,
+            mute: false
+        ));
+    /*else {
       // How it is working: If this is the first video, it initializes the controller with specific, safe parameters.
       // Why we used these params: `strictRelatedVideos` is helpful for maintaining focus on educational content and minimizing distractions.
       _controller = YoutubePlayerController.fromVideoId(
@@ -85,11 +95,12 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
         params: const YoutubePlayerParams(
           showControls: true,
           showFullscreenButton: true,
+          mute: false,
           // strictRelatedVideos: true,
           // playsInline: true,
         ),
       );
-    }
+    }*/
     // What it is doing: Triggers a state change to render the newly created or updated video player widget.
     setState(() {});
   }
@@ -98,14 +109,16 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
   /// What it is doing: Cleans up the `YoutubePlayerController` and `TextEditingController`.
   /// How it's helpful: Essential for preventing memory leaks, especially when dealing with platform-specific resources like video players.
   void dispose() {
-    _controller?.close(); // Specific method to properly close the YouTube player.
+    // Important: Close the player to prevent memory leaks
+    _controller
+        ?.close(); // Specific method to properly close the YouTube player.
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Watch the updated provider
-    final videoState = ref.watch(youtubeVideoProvider);
+    // Watch the state from our provider
+    final state = ref.watch(youtubeVideoProvider);
     final size = MediaQuery
         .of(context)
         .size;
@@ -115,6 +128,7 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
         // Display the topic name in the AppBar since there's no search bar.
         title: Text('Study: ${widget.initialQuery}'),
         backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
       ),
       body: Column(
         children: [
@@ -124,25 +138,28 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
             Container(
               color: Colors.black,
               width: double.infinity,
-              alignment: Alignment.center,
+              // alignment: Alignment.center,
               // Centers the video if constrained
               // Add vertical padding on web for better aesthetics
               padding: kIsWeb
                   ? const EdgeInsets.symmetric(vertical: 20)
                   : EdgeInsets.zero,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  // On Web: Limit height to 60% of screen so it doesn't push the list off.
-                  // On Mobile: Allow it to take natural height based on width.
-                  maxHeight: kIsWeb ? size.height * 0.6 : double.infinity,
-                  // On Web: Limit width so it doesn't look stretched on ultra-wide monitors.
-                  maxWidth: double.infinity,
-                ),
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: YoutubePlayer(
-                    controller: _controller!,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    // On Web: Limit height to 60% of screen so it doesn't push the list off.
+                    // On Mobile: Allow it to take natural height based on width.
+                    maxHeight: kIsWeb ? size.height * 0.6 : double.infinity,
+                    // On Web: Limit width so it doesn't look stretched on ultra-wide monitors.
+                    maxWidth: 800,
+                  ),
+                  child: AspectRatio(
                     aspectRatio: 16 / 9,
+                    child: YoutubePlayer(
+                      key: ObjectKey(_controller),
+                      controller: _controller!,
+                      aspectRatio: 16 / 9,
+                    ),
                   ),
                 ),
               ),
@@ -150,22 +167,12 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
 
           // 2. Video Grid
           Expanded(
-            child: videoState.isLoading
+            child: state.isLoading
             // How it's helpful: Provides immediate visual feedback that a request is in progress.
                 ? const Center(child: CircularProgressIndicator())
-                : videoState.error != null
-                ? Center(
-              // What it is doing: Displays the error message received from the provider, such as network failure or API issues.
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Error: ${videoState.error}',
-                  style: const TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            )
-                : videoState.videos.isEmpty
+                : state.error != null
+                ? _buildErrorView(state.error!)
+                : state.videos.isEmpty
                 ? const Center(
               // What it is doing: Shows a friendly prompt when there are no search results or before the first search.
               child: Column(
@@ -182,7 +189,7 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
               ),
             )
             // Use _buildGridView for both, but configure columns differently.
-                : _buildResponsiveGrid(videoState.videos),
+                : _buildVideoGrid(state.videos),
           ),
         ],
       ),
@@ -206,27 +213,54 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
   }
 */
 
+  // Helper: Error View
+  Widget _buildErrorView(String error) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 16),
+            Text(
+              'Oops! $error',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                ref
+                    .read(youtubeVideoProvider.notifier)
+                    .fetchVideos(widget.initialQuery);
+              },
+              child: const Text("Try Again"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // --- Grid View for both Web and Mobile ---
   /// What it is doing: Constructs a responsive grid layout.
   /// Mobile: Fixed 2 columns.
   /// Web: Adaptive max extent (responsive).
-  Widget _buildResponsiveGrid(List<YoutubeVideoModel> videos) {
+  Widget _buildVideoGrid(List<YoutubeVideoModel> videos) {
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       // How it is working: `SliverGridDelegateWithMaxCrossAxisExtent` automatically calculates the number of columns
       // based on the available width, ensuring responsiveness.
-      gridDelegate: kIsWeb
-      // Web Logic: Keep existing adaptive behavior (max width 350px).
-          ? const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 350, // What it is doing: Specifies the max width (approx) for each video card.
-        childAspectRatio: 0.95, // What it is doing: Controls the height-to-width ratio of the cards.
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      )
-      // Mobile Logic: Fixed 2 columns as requested.
-          : const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // Explicitly set to 2 columns.
-        childAspectRatio: 0.85, // Adjusted ratio for mobile cards.
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        // Responsive columns: 1 on phone, 2 on tablet, 3-4 on web
+        crossAxisCount: kIsWeb
+            ? (MediaQuery
+            .of(context)
+            .size
+            .width > 800 ? 4 : 3)
+            : 2,
+        childAspectRatio: 0.85, // Adjust card height
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
@@ -242,8 +276,6 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
   /// What it is doing: Renders a single video result card.
   Widget _buildVideoCard(YoutubeVideoModel video) {
     return Card(
-      // How it is working: Uses a ternary operator to conditionally remove the bottom margin when the card is inside a GridView (where the GridView handles spacing).
-      margin: EdgeInsets.zero, // Margins handled by GridView spacing.
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
@@ -252,59 +284,56 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Thumbnail Image
             Expanded(
-              flex: 3, // Image takes 60% of card height
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(12),
-                    ),
-                    child: Image.network(
+              flex: 6,
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
                       video.thumbnailUrl,
                       fit: BoxFit.cover,
-                      width: double.infinity,
-                      // How it's helpful: Displays a placeholder if the YouTube thumbnail image fails to load.
-                      errorBuilder: (ctx, err, stack) =>
-                          Container(color: Colors.grey[300]),
+                      errorBuilder: (c, e, s) =>
+                          Container(
+                            color: Colors.grey,
+                          ), // c: context, e: error, s: stackTrace
                     ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Colors.black54,
-                      shape: BoxShape.circle,
+                    const Center(
+                      child: Icon(
+                        Icons.play_circle_fill,
+                        color: Colors.white,
+                        size: 40,
+                      ),
                     ),
-                    // What it is doing: Visually indicates the card is clickable and will start a video.
-                    child: const Icon(
-                      Icons.play_arrow,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
+            // Title & Channel
             Expanded(
-              flex: 2, // Text takes 40% of card height
+              flex: 4,
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: EdgeInsets.all(8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       video.title,
-                      style: AppTextStyles.titleMedium.copyWith(fontSize: 14),
                       maxLines: 2,
-                      overflow: TextOverflow
-                          .ellipsis, // How it's helpful: Prevents text overflow on small screens.
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                     const Spacer(),
                     Text(
                       video.channelTitle,
-                      style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textTertiary, fontSize: 11),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 11),
                     ),
                   ],
                 ),

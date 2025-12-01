@@ -26,6 +26,21 @@ class YoutubeVideoState {
     this.videos = const [],
     this.error,
   });
+
+// Helper method to update specific fields while keeping others the same
+  YoutubeVideoState copyWith({
+    bool? isLoading,
+    List<YoutubeVideoModel>? videos,
+    String? error,
+  }) {
+    return YoutubeVideoState(
+      isLoading: isLoading ?? this.isLoading,
+      videos: videos ?? this.videos,
+      // If error is explicitly passed as null, we clear it. Otherwise keep existing.
+      // NOTE: We logic this slightly differently usually, but for simplicity:
+      error: error,
+    );
+  }
 }
 
 /// **Why we used this class (YoutubeVideoNotifier):**
@@ -51,20 +66,21 @@ class YoutubeVideoNotifier extends StateNotifier<YoutubeVideoState> {
   /// 3. **Fetch:** Calls the repository to get data from the YouTube API.
   /// 4. **Success:** Updates state with the list of videos and `isLoading: false`.
   /// 5. **Error:** Catches any crashes, updates state with the error message, and stops loading.
-  Future<void> fetchVideos(String query, {int maxResults = 10}) async {
-    if (query.trim().isEmpty) {
+  Future<void> fetchVideos(String query) async {
+    // state = YoutubeVideoState(isLoading: true, videos: state.videos);
+    /*if (query.trim().isEmpty) {
       return; // Don't search for empty strings.
-    }
+    }*/
 
     // Step 1: Start loading.
-    state = YoutubeVideoState(isLoading: true);
+    state = YoutubeVideoState(isLoading: true,  videos: state.videos);
 
     try {
       // Step 2: Fetch data (pass maxResults for pagination control).
-      final videos = await _repository.fetchVideosForTopic(query, maxResults: maxResults);
+      final videos = await _repository.fetchRelatedVideos(query);
 
       // Step 3: Update state with success.
-      state = YoutubeVideoState(videos: videos, isLoading: false);
+      state = YoutubeVideoState(isLoading: false, videos: videos);
     } catch (e) {
       // Step 4: Handle failure.
       state = YoutubeVideoState(
@@ -85,6 +101,9 @@ class YoutubeVideoNotifier extends StateNotifier<YoutubeVideoState> {
 final youtubeVideoProvider = StateNotifierProvider.autoDispose<
     YoutubeVideoNotifier,
     YoutubeVideoState>((ref) {
+  // We get the repository from the provider we created in Step 2
+  final repository = ref.watch(youtubeRepositoryProvider);
+
   // Watch the repository provider to get the tool needed for searching.
-  return YoutubeVideoNotifier(ref.watch(youtubeRepositoryProvider));
+  return YoutubeVideoNotifier(repository);
 });

@@ -296,7 +296,7 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
                     );
                   },
                 ),
-                const SizedBox(height: 40),
+                // const SizedBox(height: 40),
               ],
             ),
           ),

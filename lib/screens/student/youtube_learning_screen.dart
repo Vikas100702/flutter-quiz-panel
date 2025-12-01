@@ -24,6 +24,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quiz_panel/config/theme/app_theme.dart';
 import 'package:quiz_panel/models/youtube_video_model.dart';
 import 'package:quiz_panel/providers/youtube_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 /// Why we used this Widget:
@@ -71,22 +72,12 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
     }
   }*/
 
-  /// What it is doing: Loads and plays the video corresponding to the given ID.
+  /// For web play video inside the app
   void _playVideo(String videoId) {
     if (_controller != null) {
-      _controller!.close();
       // How it is working: If a player instance already exists, it simply loads the new video by ID, which is faster than re-initializing.
       _controller!.loadVideoById(videoId: videoId);
-    }
-
-    _controller =
-        YoutubePlayerController.fromVideoId(
-            videoId: videoId, autoPlay: true, params: const YoutubePlayerParams(
-            showControls: true,
-            showFullscreenButton: true,
-            mute: false
-        ));
-    /*else {
+    } else {
       // How it is working: If this is the first video, it initializes the controller with specific, safe parameters.
       // Why we used these params: `strictRelatedVideos` is helpful for maintaining focus on educational content and minimizing distractions.
       _controller = YoutubePlayerController.fromVideoId(
@@ -96,13 +87,28 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
           showControls: true,
           showFullscreenButton: true,
           mute: false,
-          // strictRelatedVideos: true,
-          // playsInline: true,
         ),
       );
-    }*/
+    }
     // What it is doing: Triggers a state change to render the newly created or updated video player widget.
     setState(() {});
+  }
+
+  /// For Mobil;e devices play video externally.
+  Future<void> _launchExternalVideo(String videoId) async {
+    try {
+      final Uri url = Uri.parse('https://www.youtube.com/watch?v=$videoId');
+      // mode: LaunchMode.externalApplication this ensures to play video in youtube app if it is installed.
+      if(!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        throw 'Could not launch video';
+      }
+    } catch(e) {
+      if(mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open video externally.')),
+        );
+      }
+    }
   }
 
   @override
@@ -132,7 +138,7 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
       ),
       body: Column(
         children: [
-          // 1. Player Area
+          // 1. Player Area (only visible on web because _controller is null for mobiles)
           // What it is doing: Conditionally renders the video player only if a controller has been initialized (i.e., a video has been selected).
           if (_controller != null)
             Container(
@@ -279,7 +285,14 @@ class _YoutubeLearningScreenState extends ConsumerState<YoutubeLearningScreen> {
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () => _playVideo(video.id),
+        // play videos internally inside the app for web and externally on youtube app or browser for mobile devices.
+        onTap: () {
+          if(kIsWeb) {
+            _playVideo(video.id);
+          } else {
+            _launchExternalVideo(video.id);
+          }
+        },
         borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

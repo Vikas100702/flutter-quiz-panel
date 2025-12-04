@@ -42,6 +42,7 @@ import 'package:quiz_panel/screens/student/quiz_result_screen.dart';
 import 'package:quiz_panel/screens/student/quiz_start_screen.dart';
 import 'package:quiz_panel/screens/student/student_home_screen.dart';
 import 'package:quiz_panel/screens/student/student_quiz_list_screen.dart';
+import 'package:quiz_panel/screens/student/student_subject_selection_screen.dart';
 import 'package:quiz_panel/screens/student/youtube_learning_screen.dart';
 import 'package:quiz_panel/screens/super_admin/edit_user_screen.dart';
 import 'package:quiz_panel/screens/super_admin/super_admin_dashboard.dart';
@@ -74,6 +75,7 @@ class AppRoutePaths {
 
   // --- Student Paths (Dynamic Segments) ---
   static const String studentDashboard = '/student/dashboard';
+  static const String studentSubjectSelection = '/student/select-subject/:actionType';
   static const String studentQuizList = '/student/subjects/:subjectId';
   static const String studentQuizStart = '/student/quiz/:quizId/start';
   static const String studentQuizAttempt = '/student/quiz/attempt/:quizId';
@@ -112,6 +114,7 @@ class AppRouteNames {
 
   // Student names
   static const String studentDashboard = 'studentDashboard';
+  static const String studentSubjectSelection = 'studentSubjectSelection';
   static const String studentQuizList = 'studentQuizList';
   static const String studentQuizStart = 'studentQuizStart';
   static const String studentQuizAttempt = 'studentQuizAttempt';
@@ -237,6 +240,15 @@ final List<GoRoute> appRoutes = [
     path: AppRoutePaths.studentDashboard,
     name: AppRouteNames.studentDashboard,
     builder: (context, state) => const StudentHomeScreen(),
+  ),
+  GoRoute(
+    path: AppRoutePaths.studentSubjectSelection,
+    name: AppRouteNames.studentSubjectSelection,
+    builder: (context, state) {
+      // Extracts the action type ('quiz' or 'learning') from the URL
+      final actionType = state.pathParameters['actionType'] ?? 'quiz';
+      return StudentSubjectSelectionScreen(actionType: actionType);
+    }
   ),
   GoRoute(
     path: AppRoutePaths.studentQuizList,

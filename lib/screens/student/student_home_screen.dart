@@ -14,7 +14,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quiz_panel/providers/subject_provider.dart';
 import 'package:quiz_panel/providers/user_data_provider.dart';
 import 'package:quiz_panel/utils/app_routes.dart';
 import 'package:quiz_panel/utils/app_strings.dart';
@@ -33,9 +32,9 @@ class StudentHomeScreen extends ConsumerWidget {
     // 1. Watch the current user's data to get their name and profile details.
     final userData = ref.watch(userDataProvider);
 
-    // 2. Watch the provider for all *published* subjects.
+    /*// 2. Watch the provider for all *published* subjects.
     // How it's helpful: This ensures students only see complete, ready-to-take content.
-    final subjectsAsync = ref.watch(allPublishedSubjectsProvider);
+    final subjectsAsync = ref.watch(allPublishedSubjectsProvider);*/
 
     return Scaffold(
       appBar: AppBar(
@@ -51,151 +50,123 @@ class StudentHomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 3. Show a personalized welcome message.
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // 3. Show a personalized welcome message.
               // How it is working: Uses .when() to display the welcome text only when user data is successfully loaded.
               userData.when(
-                data: (user) => Text(
-                  '${AppStrings.studentWelcome} ${user?.displayName ?? ''}!',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                loading: () => const SizedBox.shrink(), // Hide during loading.
+              data: (user) => Text(
+                '${AppStrings.studentWelcome} ${user?.displayName ?? ''}!',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              loading: () => const SizedBox.shrink(), // Hide during loading.
                 error: (e, s) => const SizedBox.shrink(), // Hide on error.
               ),
-              const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-              Text(
-                AppStrings.studentHomeTitle,
-                style: Theme.of(context).textTheme.headlineMedium,
+            Text(
+              'What would you like to do today?',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(color: Colors.grey[700]),
+            ),
+            const SizedBox(height: 24),
+
+            // OPTION 1: START QUIZ
+            Expanded(
+              child: _buildActionCard(
+                context,
+                title: "Start Quiz",
+                description: "Choose a subject and test your knowledge.",
+                icon: Icons.quiz_outlined,
+                color: Colors.blueAccent,
+                onTap: () {
+                  // Navigate to subject selection with actionType = 'quiz'
+                  context.pushNamed(
+                    AppRouteNames.studentSubjectSelection,
+                    pathParameters: {'actionType': 'quiz'},
+                  );
+                },
               ),
-              const SizedBox(height: 16),
+            ),
 
-              // 4. Display the list of subjects.
-              // How it is working: Uses .when() to handle the asynchronous states of the subjects data stream.
-              subjectsAsync.when(
-                // 4a. Loading State: Show a spinner while fetching subjects from Firestore.
-                loading: () => const Center(child: CircularProgressIndicator()),
+            const SizedBox(height: 16),
 
-                // 4b. Error State: Handles errors, particularly database index warnings.
-                error: (error, stackTrace) {
-                  // How it's helpful: Directly informs the user/developer about the potential missing Firestore Index.
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        '${AppStrings.firestoreIndexError}\n\nError: ${error.toString()}',
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
-                      ),
+            // OPTION 2: LEARNING TUTORIALS
+            Expanded(
+              child: _buildActionCard(
+                context,
+                title: "Learning Tutorials",
+                description: "Watch videos and learn new topics.",
+                icon: Icons.video_library_outlined,
+                color: Colors.redAccent,
+                onTap: () {
+                  // Navigate to subject selection with actionType = 'learning'
+                  context.pushNamed(
+                    AppRouteNames.studentSubjectSelection,
+                    pathParameters: {'actionType': 'learning'},
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionCard(
+    BuildContext context, {
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 40, color: color),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                  );
-                },
-
-                // 4c. Data State: Renders the grid of available subjects.
-                data: (subjects) {
-                  // If the list is empty, show a dedicated message.
-                  if (subjects.isEmpty) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text(AppStrings.noSubjectsAvailable),
-                      ),
-                    );
-                  }
-
-                  // Build the responsive subject grid.
-                  return LayoutBuilder(
-                    // How it is working: Dynamically adjusts the number of columns based on screen width.
-                    builder: (context, constraints) {
-                      int crossAxisCount = 1; // Default for mobile
-                      if (constraints.maxWidth > 1200) {
-                        crossAxisCount = 4;
-                      } else if (constraints.maxWidth > 800) {
-                        crossAxisCount = 3;
-                      } else if (constraints.maxWidth > 500) {
-                        crossAxisCount = 2;
-                      }
-
-                      return GridView.builder(
-                        itemCount: subjects.length,
-                        // Ensures the GridView takes minimum space needed.
-                        shrinkWrap: true,
-                        // Disables scrolling on the grid itself since the parent is scrollable.
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          // Aspect ratio makes the cards horizontal rectangles (2.5 times wider than high).
-                          childAspectRatio: 2.5,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                        ),
-                        itemBuilder: (context, index) {
-                          final subject = subjects[index];
-                          return InkWell(
-                            onTap: () {
-                              // Navigates to the quiz list screen for the selected subject.
-                              context.pushNamed(
-                                AppRouteNames.studentQuizList,
-                                pathParameters: {
-                                  'subjectId': subject.subjectId,
-                                },
-                                // Passes the SubjectModel object to the next screen.
-                                extra: subject,
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(12),
-                            child: Card(
-                              elevation: 2,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    // Subject Name
-                                    Text(
-                                      subject.name,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleLarge,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    // Subject Description (if available)
-                                    if (subject.description != null &&
-                                        subject.description!.isNotEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          top: 4.0,
-                                        ),
-                                        child: Text(
-                                          subject.description!,
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.bodySmall,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
+                    const SizedBox(height: 8),
+                    Text(
+                      description,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
               ),
+              Icon(Icons.arrow_forward_ios, color: Colors.grey[400]),
             ],
           ),
         ),
